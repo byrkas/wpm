@@ -1,0 +1,99 @@
+<?php $this->headScript()->appendFile($this->basePath('plugins/DataTables/datatables.min.js'))
+->appendFile($this->basePath('plugins/summernote/summernote.min.js'));
+$this->headlink()->appendStylesheet($this->basePath('plugins/DataTables/datatables.min.css'))
+->appendStylesheet($this->basePath('plugins/summernote/summernote.css'))?>
+<?php 
+if(isset($title)) $this->headTitle($title);
+?>
+<div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="" class="btn btn-danger" onclick="confirm('Are you sure?') ? $('#submit').click() : false;" data-original-title="Delete"><i class="fa fa-trash-o"></i></button>
+         <a href="<?= $this->url('backend/payment_page')?>" data-toggle="tooltip" title="" class="btn btn-default" data-original-title="Cancel"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>Payment Pages</h1>
+    </div>
+</div>
+<div class="container-fluid">
+    <?= $this->showMessages()?>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-list"></i> Pages List</h3>
+        </div>
+        <div class="panel-body">
+            <?php $form->prepare(); echo $this->form()->openTag($form);?>            
+                <div class="well">
+                    <div class="row">
+                        <div class="col-sm-10">
+                            <?= $this->formRow($form->get('id'));?>
+                            <?= $this->formRow($form->get('title'));?>
+                        </div>
+                        <div class="col-sm-2">
+                            <button id="submit" type="submit" name="submit" data-toggle="tooltip" title="" class="btn btn-primary pull-right" data-original-title="Save">
+                            <?php if($effect == 'edit'):?><i class="fa fa-save"></i> Update page
+                            <?php else:?><i class="fa fa-save"></i> Add new page<?php endif;?>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-10">
+                            <?= $this->formRow($form->get('content'));?>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <?= $this->formRow($form->get('isPublished'));?>
+                        </div>
+                        <div class="col-sm-5">
+                            <?= $this->formRow($form->get('isPaymentDefault'));?>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="table-data" class="table table-bordered table-hover" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                              <td style="width: 1px;" class="no-sort text-center">
+                                    <input onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" type="checkbox">
+                              </td>
+                              <td class="text-left">Title</td>
+                              <td class="text-left">Is Published</td>
+                              <td class="text-left">Is Default Payment</td>
+                              <td class="text-left">Slug</td>
+                              <td class="no-sort text-right" style="width:50px;"></td>
+                            </tr>
+                          </thead>
+                        <tbody>
+                            <?php foreach ($pages as $entry):?>
+                            <tr>
+                                <td class="text-center"><input name="selected[]" value="<?= $entry['id']?>" type="checkbox"></td>
+                                <td><?= $entry['title']?></td>
+                                <td><?php if($entry['isPublished']):?><i class="fa fa-check-square-o"></i><?php else:?><i class="fa fa-square-o"></i><?php endif;?></td>
+                                <td><?php if($entry['isPaymentDefault']):?><i class="fa fa-check-square-o"></i><?php else:?><i class="fa fa-square-o"></i><?php endif;?></td>
+                                <td><?= $entry['slug']?></td>
+                                <td class="text-right"><a href="<?= $this->url('backend/payment_page',['effect' => 'edit','id' => $entry['id']])?>" data-toggle="tooltip" title="" class="btn btn-primary" data-original-title="Edit"><i class="fa fa-pencil"></i></a></td>
+                            </tr>
+                            <?php endforeach;?>
+                        </tbody>
+                    </table>
+                </div>
+                <?= $this->form()->closeTag();?>
+        </div>
+    </div>
+</div>
+<?php $this->inlineScript()->captureStart();
+echo <<<JS
+$(function() {
+     $('#table-data').DataTable( {
+         "columnDefs": [ {
+          "targets"  : 'no-sort',
+          "orderable": false,
+          "order": []
+        }],
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+    } );
+     $('.summernote').summernote();
+});
+JS;
+$this->inlineScript()->captureEnd();
+?>

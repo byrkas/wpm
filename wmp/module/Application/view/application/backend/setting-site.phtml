@@ -1,0 +1,25 @@
+<?php $this->headScript()->appendFile($this->basePath('plugins/bootstrap-toggle/js/bootstrap-toggle.min.js'));
+$this->headlink()->appendStylesheet($this->basePath('plugins/bootstrap-toggle/css/bootstrap-toggle.min.css'))?>
+<?php 
+if(isset($title)) $this->headTitle($title);
+$form->prepare();
+echo $this->form()->openTag($form);?>
+<div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" name="submit" data-toggle="tooltip" title="" class="btn btn-primary" data-original-title="Save"><i class="fa fa-save"></i></button>
+        <a href="<?= $this->url('backend')?>" data-toggle="tooltip" title="" class="btn btn-default" data-original-title="Cancel"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>Site mode open</h1>
+    </div>
+</div>
+<div class="container-fluid">
+    <?= $this->showMessages()?>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <?= $this->formRow($form->get('id'));?>
+            <?= $this->formRow($form->get('value'));?>         
+        </div>
+    </div>
+</div>
+<?= $this->form()->closeTag();?>

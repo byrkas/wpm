@@ -1,0 +1,118 @@
+<?php $this->headScript()->appendFile($this->basePath('plugins/DataTables/datatables.min.js'));
+$this->headlink()->appendStylesheet($this->basePath('plugins/DataTables/datatables.min.css'))?>
+<?php 
+if(isset($title)) $this->headTitle($title);
+?>
+<form id="form" action="" method="post" enctype="multipart/form-data">
+<div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="" class="btn btn-danger" onclick="confirm('Are you sure?') ? $('#form').submit() : false;" data-original-title="Delete"><i class="fa fa-trash-o"></i></button>
+         <a href="<?= $this->url('backend/tracks')?>" data-toggle="tooltip" title="" class="btn btn-default" data-original-title="Cancel"><i class="fa fa-reply"></i></a>
+         <a href="<?= $this->url('backend/default',['action'=>'publish-tracks'])?>" class="btn btn-primary"><i class="fa fa-check-square-o"></i> Publish all</a>
+       </div>
+      <h1>Tracks</h1>
+    </div>
+</div>
+<div class="container-fluid">
+    <?= $this->showMessages()?>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-list"></i> Tracks List</h3>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table id="table-data" class="table table-bordered table-hover" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                          <td style="width: 1px;" class="no-sort text-center">
+                            <input onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" type="checkbox">
+                          </td>
+                          <td class="text-left">Track</td>
+                          <td class="text-left">File Type</td>
+                          <td class="text-left">Artists</td>
+                          <td class="text-left">Label</td>
+                          <td class="text-left">Genre</td>
+                          <td class="text-left">Album</td>
+                          <td class="text-left">Releases</td>
+                          <td style="width:100px;" class="no-sort text-left">Cover</td>
+                          <td style="width:100px;" class="no-sort text-left">Wave</td>
+                          <td class="text-left">Type</td>
+                          <td class="no-sort text-left">Published</td>
+                        </tr>
+                      </thead>
+                    <tbody>                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+<?php 
+$urlUpdate= $this->url('backend/default',['action' => 'update-wave']);
+$urlData= $this->url('backend/default',['action' => 'get-tracks']);
+$this->inlineScript()->captureStart();
+echo <<<JS
+function updateWave(linkId, obj){
+    $(obj).button('loading');
+    $.get( "$urlUpdate"+linkId)
+    .done(function( data ) {
+        $(obj).button('reset');
+        if(data.wave){
+            $('#wave'+linkId).attr('src',data.wave);
+        }else{
+            alert(data.error);
+        }
+    });  
+}
+$(function() {
+    $('#table-data').DataTable( {
+          "processing": true,
+          "serverSide": true,
+          "order": [[ 7, "desc" ]],
+          "ajax": {"url": "$urlData","type": "POST"},
+            "columns": [
+                { "data": "id" , "orderable": false},
+                { "data": "title" },
+                { "data": "fileType" },
+                { "data": "artists" },
+                { "data": "label" },
+                { "data": "genre" },
+                { "data": "album" },
+                { "data": "publishDate" },
+                { "data": "cover" },
+                { "data": "wave" },
+                { "data": "type" },
+                { "data": "isPublished" },
+            ],
+          "columnDefs": [{
+            "targets": -1,
+            "render": function ( data, type, row ) {
+                    return '<i class="fa '+(data?'fa-check-square-o':'fa-square-o')+'"></i>';
+             }
+            },{
+            "targets": -3,
+            "render": function ( data, type, row ) {
+                    return '<img style="max-width:150px;" id="wave'+row.id+'" alt="" src="'+row.wave+'">'+
+                        '<button onclick="updateWave('+row.id+',this)" type="button" class="btn btn-primary btn-sm update-result" data-loading-text="&lt;i class=\'fa fa-spinner fa-spin \'&gt;&lt;/i&gt; Result Updating">Update wave</button>';
+             }
+            },{
+            "targets": -4,
+            "render": function ( data, type, row ) {
+                    return '<img style="max-width:150px;" alt="" src="'+row.cover+'">';
+             }
+            }, {
+            "targets": 0,
+            "orderable": false,
+            "render": function ( data, type, row ) {
+                    return '<input name="selected[]" value="'+data+'" type="checkbox">';
+             }
+            },
+        ],
+        "lengthMenu": [[100, 50, 25, -1], [100, 50, 25, "All"]]
+    } );
+});
+JS;
+$this->inlineScript()->captureEnd();
+?>

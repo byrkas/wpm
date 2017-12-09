@@ -1,0 +1,52 @@
+<?= $this->doctype() ?>
+<html lang="en" ng-app>
+    <head>
+        <meta charset="utf-8">
+        <?= $this->headTitle('Who Play Music')->setSeparator(' - ')->setAutoEscape(false) ?>
+
+        <?= $this->headMeta()
+            ->appendName('viewport', 'width=device-width, initial-scale=1.0')
+            ->appendHttpEquiv('X-UA-Compatible', 'IE=edge')
+        ?>
+
+        <!-- Le styles -->
+        <?= $this->headLink(['rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/favicon.ico'])
+            ->prependStylesheet($this->basePath('css/screen.css?v=0.0.0.1'))
+            //->prependStylesheet($this->basePath('css/bootstrap.min.css'))
+        ?>
+
+        <!-- Scripts -->
+        <?= $this->headScript()
+            //->prependFile($this->basePath('js/bootstrap.min.js'))
+            //->prependFile($this->basePath('js/jquery-3.1.0.min.js'))
+            ->prependFile('https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js')
+        ?>
+    </head>
+    <body>
+        <?= $this->partial('layout/partial/header')?>
+        <div id="pjax-target">
+            <div id="pjax-inner-wrapper" class="pjax-inner-wrapper">
+                <section class="page-content-container">
+                    <main class="interior">
+                        <div>
+                          <label>Name:</label>
+                          <input type="text" ng-model="yourName" placeholder="Enter a name here">
+                          <hr>
+                          <h1>Hello {{yourName}}!</h1>
+                        </div>
+                        <?= $this->content ?>
+                    </main>
+                </section>
+            </div>
+        </div>
+        <footer class="footer">
+            <div class="footer-content-container"></div>
+        </footer>
+<?php $this->inlineScript()->captureStart();
+echo <<<JS
+JS;
+$this->inlineScript()->captureEnd();
+?>   
+        <?= $this->inlineScript() ?>
+    </body>
+</html>

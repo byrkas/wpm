@@ -1,0 +1,25 @@
+<div class="container-fluid">
+    <br/><br/>
+    <div class="row">
+        <div class="col-sm-offset-4 col-sm-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h1 class="panel-title"><i class="fa fa-lock"></i> Please enter your login details.</h1>
+          </div>
+          <div class="panel-body">
+<?php $form->prepare();
+echo $this->form()->openTag($form);?> 
+            <?= $this->formRow($form->get('redirect_url'));?>
+            <?= $this->formRow($form->get('email'));?>
+            <?= $this->formRow($form->get('password'));?>
+            <?= $this->formRow($form->get('remember_me'));?>
+            <div class="text-right">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-key"></i> Login</button>
+            </div>
+<?= $this->form()->closeTag();?>                   
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+<?= $this->showMessages()?>

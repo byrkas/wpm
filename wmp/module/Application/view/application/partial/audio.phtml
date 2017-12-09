@@ -1,0 +1,18 @@
+<?php $this->headScript()->appendFile($this->basePath('uppod/uppod-0.12.19.js'));?>
+<?php if(isset($poster)):?>
+<div class="player" id="<?= $playerId?>" style="height:135px;"></div>
+<?php $this->inlineScript()->captureStart();
+echo <<<JS
+this.player = new Uppod({m:"audio",uid:"$playerId",file:"$file", poster: "$poster"});
+JS;
+$this->inlineScript()->captureEnd();
+?>
+<?php else:?>
+<div class="player" id="<?= $playerId?>" style="height:35px;"></div>
+<?php $this->inlineScript()->captureStart();
+echo <<<JS
+this.player = new Uppod({m:"audio",uid:"$playerId",file:"$file"});
+JS;
+$this->inlineScript()->captureEnd();
+?>
+<?php endif;?>

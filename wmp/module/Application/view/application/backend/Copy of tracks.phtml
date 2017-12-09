@@ -1,0 +1,82 @@
+<?php $this->headScript()->appendFile($this->basePath('plugins/DataTables/datatables.min.js'));
+$this->headlink()->appendStylesheet($this->basePath('plugins/DataTables/datatables.min.css'))?>
+<?php 
+if(isset($title)) $this->headTitle($title);
+?>
+<form id="form" action="" method="post" enctype="multipart/form-data">
+<div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="" class="btn btn-danger" onclick="confirm('Are you sure?') ? $('#form').submit() : false;" data-original-title="Delete"><i class="fa fa-trash-o"></i></button>
+         <a href="<?= $this->url('backend/tracks')?>" data-toggle="tooltip" title="" class="btn btn-default" data-original-title="Cancel"><i class="fa fa-reply"></i></a>
+       </div>
+      <h1>Tracks</h1>
+    </div>
+</div>
+<div class="container-fluid">
+    <?= $this->showMessages()?>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-list"></i> Tracks List</h3>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table id="table-data" class="table table-bordered table-hover" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                          <td style="width: 1px;" class="no-sort text-center">
+                            <input onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" type="checkbox">
+                          </td>
+                          <td class="text-left">Track</td>
+                          <td class="text-left">File Type</td>
+                          <td class="text-left">Artists</td>
+                          <td class="text-left">Label</td>
+                          <td class="text-left">Genre</td>
+                          <td class="text-left">Album</td>
+                          <td class="text-left">Releases</td>
+                          <td style="width:100px;" class="no-sort text-left">Cover</td>
+                          <td class="text-left">Type</td>
+                        </tr>
+                      </thead>
+                    <tbody>
+                        <?php foreach ($tracks as $i => $entry):?>
+                        <tr>
+                            <td class="text-center"><input name="selected[]" value="<?= $entry['id']?>" type="checkbox"></td>
+                            <td><?= $entry['title']?><br/>(<?= $entry['playtimeString']?>)
+                            </td>
+                            <td><?= $entry['fileType']?></td>
+                            <td><?= $entry['artists']?></td>
+                            <td><?= $entry['label']?></td>
+                            <td><?= $entry['genre']?></td>
+                            <td><?= $entry['album']?></td>
+                            <td><?= $entry['publishDate']->format('Y-m-d')?></td>
+                            <td><?= $this->partial('application/partial/cover',['cover' => $entry['cover']])?></td>
+                            <td><?= $entry['type']?></td>
+                        </tr>
+                        <tr>
+                            <td colspan="10">
+                            <?= $this->partial('application/partial/audio',['playerId' =>'audioPlayer'.$entry['id'],'file' => $entry['track'],'poster' => $entry['wave']])?></td>
+                        </tr>
+                        <?php endforeach;?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+<?php $this->inlineScript()->captureStart();
+echo <<<JS
+$(function() {
+     $('#table-data').DataTable( {
+         "columnDefs": [ {
+          "targets"  : 'no-sort',
+          "orderable": false,
+          "order": []
+        }],
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+    } );
+});
+JS;
+$this->inlineScript()->captureEnd();
+?>

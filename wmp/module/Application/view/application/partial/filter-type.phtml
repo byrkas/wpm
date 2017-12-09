@@ -1,0 +1,14 @@
+<div class="filter-parent filter-type-parent filter-standard-parent filter-parent-active">
+  <a href="javascript:void(0)" class="filter-link filter-type-link">Type</a>
+  <div class="filter-drop filter-type-drop">
+    <a href="javascript:void(0)" class="filter-drop-reset-link">Reset</a>
+    <ul class="filter-type-drop-list">
+        <?php foreach ($types as $entry):?>
+        <li class="filter-type-drop-list-item">
+            <input name="<?= $entry['name']?>" id="fg-type-<?= $entry['name']?>" class="filter-drop-checkbox" type="checkbox">
+            <label for="fg-type-<?= $entry['name']?>" class="filter-drop-checkbox-label"><?= $entry['name']?> <span class="filter-item-count"><?= $entry['cnt']?></span></label>
+        </li>
+        <?php endforeach;?>
+    </ul>
+  </div>
+</div>

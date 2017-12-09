@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="80px" height="220px" viewBox="0 0 80 220" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 41.2 (35397) - http://www.bohemiancoding.com/sketch -->
+    <title>hero-nav</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="hero-nav">
+            <g id="Group-2">
+                <path d="M80,165 L47.3684211,220 L47.3684211,110 L80,165 Z M0,165 L32.6315789,110 L32.6315789,220 L0,165 Z M80,55 L47.3684211,110 L47.3684211,0 L80,55 Z M0,55 L32.6315789,0 L32.6315789,110 L0,55 Z M32.6315789,0 L47.3684211,0 L47.3684211,220 L32.6315789,220 L32.6315789,0 Z" id="background" fill-opacity="0.75" fill="#000000"></path>
+                <path d="M29.4736842,165 L16.8421053,171 L16.8421053,159 L29.4736842,165 Z M50.5263158,165 L63.1578947,159 L63.1578947,171 L50.5263158,165 Z" id="bottom-arrows" fill="#94D500"></path>
+                <path d="M50.5263158,55 L63.1578947,49 L63.1578947,61 L50.5263158,55 Z M29.4736842,55 L16.8421053,61 L16.8421053,49 L29.4736842,55 Z" id="top-arrows" fill="#AAAAAA"></path>
+            </g>
+        </g>
+    </g>
+</svg>

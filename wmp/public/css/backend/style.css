@@ -1,0 +1,151 @@
+body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
+
+.zf-green {
+    color: #68b604;
+}
+
+.btn-success {
+    background-color: #57a900;
+    background-image: -moz-linear-gradient(top, #70d900, #57a900);
+    background-image: -ms-linear-gradient(top, #70d900, #57a900);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#70d900), to(#57a900));
+    background-image: -webkit-linear-gradient(top, #70d900, #57a900);
+    background-image: -o-linear-gradient(top, #70d900, #57a900);
+    background-image: linear-gradient(top, #70d900, #57a900);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#70d900', endColorstr='#57a900', GradientType=0);
+}
+
+.btn-success:hover,
+.btn-success:active,
+.btn-success.active,
+.btn-success.disabled,
+.btn-success[disabled] {
+    background-color: #57a900;
+}
+
+div.container a.navbar-brand > img {
+    display: inline;
+    margin-right: 4px;
+    margin-top: -2px;
+}
+h1, h2, h3, h4, h5, h6, p {
+    margin-top: 0;
+}
+.page-header h1 {
+    color: #848484;
+    display: inline-block;
+    font-family: "Open Sans",sans-serif;
+    font-size: 30px;
+    font-weight: 400;
+    margin-bottom: 15px;
+}
+.panel-default {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: #bfbfbf #e8e8e8 #e8e8e8;
+    border-image: none;
+    border-style: solid;
+    border-width: 2px 1px 1px;
+}
+.panel {
+    border-radius: 0;
+}
+.panel-default .panel-heading {
+    background: #fcfcfc none repeat scroll 0 0;
+    border-color: #e8e8e8;
+    color: #595959;
+}
+.panel .panel-heading {
+    position: relative;
+}
+div.required .control-label:not(span)::before, td.required::before, label.required::before {
+    color: #f00;
+    content: "* ";
+    font-weight: bold;
+}
+form .help-block{list-style: none;}
+.has-error .help-block, .has-error .control-label, .has-error .radio, .has-error .checkbox, .has-error .radio-inline, .has-error .checkbox-inline, .has-error.radio label, .has-error.checkbox label, .has-error.radio-inline label, .has-error.checkbox-inline label {
+    color: #f56b6b;
+}
+.has-error .form-control {
+    border-color: #f56b6b;
+}
+.alert {
+    overflow: auto;
+}
+.alert-success {
+    background-color: #ecf3e6;
+    border-color: #dfebd5;
+    color: #8fbb6c;
+	background-image: none;	
+}
+.alert-danger {
+    background-color: #fef1f1;
+    border-color: #fde2e2;
+    color: #f56b6b;
+	background-image: none;
+}
+.en_GB.flag::after{background-image: url("../flags/16/gb.png"); background-position: center;background-repeat: no-repeat;}
+.fr_FR.flag::after{background-image: url("../flags/16/fr.png"); background-position: center;background-repeat: no-repeat;}
+.de_DE.flag::after{background-image: url("../flags/16/de.png"); background-position: center;background-repeat: no-repeat;}
+.flag::after{ content: ""; display: block; height: 16px; position: absolute; right: -5px; top: 7px; width: 16px;}
+.zebra-fieldset .checkbox{padding:0 10px 0 35px;}
+.zebra-fieldset fieldset {
+    margin: 0 !important;
+    padding: 10px !important;
+}
+.zebra-fieldset fieldset:nth-of-type(2n+1) {
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #ddd;
+    border-top: 1px solid #ddd;
+}
+.panel-default{border:0!important;}
+.form-horizontal .form-inline .form-group {
+    margin-left:0;
+    margin-right: 0;
+}
+.nav.navbar-nav li > ul{display:none;}
+.nav.navbar-nav li:hover > ul {
+    display: block;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    margin-top: 0;	
+}
+.nav.navbar-nav li > ul {
+    background-clip: padding-box;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+    display: none;
+    float: left;
+    font-size: 14px;
+    left: 0;
+    list-style: outside none none;
+    margin: 2px 0 0;
+    min-width: 160px;
+    padding: 5px 0;
+    position: absolute;
+    text-align: left;
+    top: 100%;
+    z-index: 1000;
+}
+.nav.navbar-nav li:hover > ul > li > a {
+    clear: both;
+    color: #333;
+    display: block;
+    font-weight: 400;
+    line-height: 1.42857;
+    padding: 3px 20px;
+    white-space: nowrap;
+	text-decoration: none;
+}
+.nav.navbar-nav li > ul > li > a:hover{
+	background-color: #f5f5f5;
+	color:#262626;
+}

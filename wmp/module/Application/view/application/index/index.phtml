@@ -1,0 +1,128 @@
+<div class="interior-top">
+    <div class="interior-title"><h1><?= $title?></h1></div>
+    <div class="play-queue-all-buttons">
+        <button class="playable-play-all button-play" data-tracks="">
+          <svg viewBox="0 0 200 200" class="button-play-icon"><use xlink:href="/static/images/defs.svg#icon-play"/></svg>
+        </button>
+        <button class="playable-queue-all button-queue" data-tracks="">
+          <svg viewBox="0 0 200 200" class="button-queue-icon"><use xlink:href="/static/images/defs.svg#icon-add-queue"/></svg>
+        </button>
+  </div>
+</div>
+<div class="full-col">
+    <div class="filter-page-top">
+        <div class="filter-page-sort-menu-parent">
+            <span>Sort by:</span>
+            <select class="filter-page-sort-menu">
+              <option value="release-desc" selected="">Newest to Oldest</option>
+              <option value="release-asc">Oldest to Newest</option>
+              <option value="title-asc">Title A-Z</option>
+              <option value="title-desc">Title Z-A</option>
+              <option value="label-asc">Label A-Z</option>
+              <option value="label-desc">Label Z-A</option>          
+              <option value="genre-asc">Genre A-Z</option>
+              <option value="genre-desc">Genre Z-A</option>
+            </select>
+        </div>
+        <div class="filters">
+            <?php if(count($types) > 1) echo $this->partial('application/partial/filter-type',['types' => $types]);?>
+            <?php if(count($genres) > 1) echo $this->partial('application/partial/filter-genre',['genres' => $genres]);?>
+            <?php if(count($artists) > 1) echo $this->partial('application/partial/filter-artist',['artists' => $artists]);?>
+            <?php if(count($labels) > 1) echo $this->partial('application/partial/filter-label',['labels' => $labels]);?>
+            <a href="#" class="filter-reset-all-link">Reset all</a>
+        </div>
+    </div>
+    <div class="bucket tracks standard-interior-tracks">
+        <div class="pagination-container pagination-top-container">
+          <div class="pag-num-list-container">   
+              <a href="/tracks/all?last=7d&amp;per-page=150&amp;page=22" class="pag-prev" rel="prev"><span class="icon icon-scroll-left"></span></a>
+              <div class="pag-numbers">
+                  <a href="/tracks/all?last=7d&amp;per-page=150&amp;page=1" class="pag-number">1</a>
+                  <span class="pag-number-ellipsis">...</span>
+                  <a href="/tracks/all?last=7d&amp;per-page=150&amp;page=22" class="pag-number">22</a>
+                  <strong class="pag-number pag-number-current">23</strong>
+                  <a href="/tracks/all?last=7d&amp;per-page=150&amp;page=24" class="pag-number">24</a>
+                  <span class="pag-number-ellipsis">...</span>
+                  <a href="/tracks/all?last=7d&amp;per-page=150&amp;page=117" class="pag-number">117</a>
+              </div>
+              <a href="/tracks/all?last=7d&amp;per-page=150&amp;page=24" class="pag-next" rel="next"><span class="icon icon-scroll-right"></span></a>
+          </div>  
+          <div class="pag-jump-to-container">
+            <h3>Jump to page</h3>
+            <!-- Can we make the placeholder be the current page number??? -->
+            <input class="pag-jump-to-input" placeholder="23" type="text">
+          </div> 
+        
+          <div class="pag-results-per-container">    
+            <h3>Results per page</h3>
+            <a href="#" class="pag-results-per-link">25</a>
+            <a href="#" class="pag-results-per-link">50</a>
+            <a href="#" class="pag-results-per-link">100</a>
+            <a href="#" class="pag-results-per-link results-per-link-active">150</a> 
+          </div>
+        </div>
+        <!-- Pagination end -->
+        <!-- Table header start -->
+        <div class="bucket-track-header">
+            <div class="bucket-track-header-meta">    
+                <p class="buk-track-title bucket-track-header-col"><a data-key="title" href="#" class="track-sortable">Title</a></p>
+                <p class="buk-track-artists bucket-track-header-col">Artists</p>
+                <p class="buk-track-labels bucket-track-header-col"><a data-key="label" href="#" class="track-sortable">Label</a></p>
+                <p class="buk-track-genre bucket-track-header-col"><a data-key="genre" href="#" class="track-sortable">Genre</a></p>  
+                <p class="buk-track-released bucket-track-header-col"><a data-key="release" href="#" class="track-sortable">Released</a></p>
+            </div>
+        </div>
+        <!-- Table header end -->
+        
+        <ul class="bucket-items  ec-bucket">
+            <?php foreach ($tracks as $key => $entry):?>
+            <li class="bucket-item ec-item track" data-ec-position="<?= $key+1?>" data-ec-type="product" data-ec-name="<?= $entry['title']?>" data-ec-creative="Tracks All" data-ec-brand="Mountain People" data-ec-category="Tracks" data-ec-list="Tracks All" data-ec-price="1.99" data-ec-variant="track" data-ec-id="<?= $entry['id']?>" data-ec-d1="The Mountain People" data-ec-d3="<?= $entry['genre']?>">
+                <div class="buk-track-artwork-parent">
+                  <?php if($entry['albumId']):?><a href="<?= $this->url('home/album',['id' => $entry['albumId']])?>"><?php endif;?>
+                  <?= $this->partial('application/partial/track-artwork',['cover' => $entry['cover']])?>
+                  <?php if($entry['albumId']):?></a><?php endif;?>
+                </div>
+                
+                <div class="buk-track-meta-parent">
+                  <p class="buk-track-title">
+                    <a href="<?= $this->url('home/track',['id' => $entry['id']])?>">
+                      <span class="buk-track-primary-title" title="<?= $entry['title']?>"><?= $entry['title']?></span>
+                    </a>
+                  </p>
+                  <p class="buk-track-artists">            
+                    <a href="/artist/the-mountain-people/17470" data-artist="17470">The Mountain People</a>
+                  </p>
+                  <p class="buk-track-labels"><a href="<?= $this->url('home/label',['labelId' => $entry['labelId']])?>" data-label="<?= $entry['labelId']?>"><?= $entry['label']?></a></p>
+                  <p class="buk-track-genre"><a href="<?= $this->url('home/genre',['genreId' => $entry['genreId']])?>" data-genre="<?= $entry['genreId']?>"><?= $entry['genre']?></a></p>                            
+                  <p class="buk-track-released"><?= $entry['publishDate']->format('Y-m-d')?></p>
+                </div>
+    
+                <div class="track-actions-parent">
+                  <div class="track-actions">
+                    <div class="track-play-queue">
+                      <button href="#" class="playable-play track-play" data-track="<?= $entry['id']?>">
+                        <svg viewBox="0 0 200 200" class="play-icon"><use xlink:href="/static/images/defs.svg#icon-play"/></svg>
+                        <svg viewBox="0 0 100 100" class="replay-icon"><use xlink:href="/static/images/defs.svg#icon-replay"/></svg>
+                      </button>
+                      <button class="playable-queue track-queue" data-track="<?= $entry['id']?>">
+                        <svg viewBox="0 0 200 200" class="queue-icon"><use xlink:href="/static/images/defs.svg#icon-add-queue"/></svg>
+                      </button>
+                      <div class="equalizer-container"></div>
+                    </div>
+                    <div class="buy-button track-buy-button" data-track="<?= $entry['id']?>" data-price="$1.99">      
+                    	<button class="add-to-default">$1.99</button>
+                    	<button class="launch-menu">
+                        	<div class="launch-menu-icon">
+                        	  <svg viewBox="0 0 200 200" class="icon"><use xlink:href="/static/images/defs.svg#icon-chevron-down"/></svg>
+                        	</div>
+                        	<div class="loading-menu-icon"><div class="icon"></div></div>
+                    	</button>    
+                      </div>
+                  </div>
+                  <a href="#" class="icon icon-ellipsis track-ellipsis mobile-action"></a>
+                </div>
+          </li>
+          <?php endforeach;?>
+        </ul>
+    </div>
+</div>

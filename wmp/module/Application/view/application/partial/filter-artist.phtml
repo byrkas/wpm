@@ -1,0 +1,14 @@
+<div class="filter-parent filter-artists-parent filter-standard-parent filter-twocol-parent">
+  <a href="javascript:void(0)" class="filter-link filter-artists-link">Artists</a>
+  <div class="filter-drop filter-artists-drop">
+    <a href="javascript:void(0)" class="filter-drop-reset-link">Reset</a>
+    <ul class="filter-artists-drop-list">
+        <?php foreach ($artists as $entry):?>
+        <li class="filter-type-drop-list-item">
+            <input name="<?= $entry['id']?>" id="fg-artist-<?= $entry['id']?>" class="filter-drop-checkbox" type="checkbox">
+            <label for="fg-artist-<?= $entry['id']?>" class="filter-drop-checkbox-label"><?= $entry['name']?> <span class="filter-item-count"><?= $entry['cnt']?></span></label>
+        </li>
+        <?php endforeach;?>
+    </ul>
+  </div>
+</div>

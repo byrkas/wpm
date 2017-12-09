@@ -1,0 +1,150 @@
+<?= $this->doctype() ?>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <?= $this->headTitle('Who Play Music Backend')->setSeparator(' - ')->setAutoEscape(false) ?>
+
+        <?= $this->headMeta()
+            ->appendName('viewport', 'width=device-width, initial-scale=1.0')
+            ->appendHttpEquiv('X-UA-Compatible', 'IE=edge')
+        ?>
+
+        <!-- Le styles -->
+        <?= $this->headLink(['rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/favicon.ico'])
+            ->prependStylesheet($this->basePath('css/backend/style.css?v=1.0.1'))
+            ->prependStylesheet($this->basePath('css/bootstrap-theme.min.css'))
+            ->prependStylesheet($this->basePath('css/bootstrap.min.css'))
+            ->prependStylesheet($this->basePath('plugins/font-awesome-4.7.0/css/font-awesome.min.css'))
+            ->appendStylesheet($this->basePath('plugins/select2/select2.min.css'))
+            ->appendStylesheet($this->basePath('css/bootstrap-datetimepicker.css'))
+        ?>
+
+        <!-- Scripts -->
+        <?php $this->headScript()
+            ->prependFile($this->basePath('js/bootstrap.min.js'))
+            ->prependFile($this->basePath('js/jquery-3.1.0.min.js'))
+            ->appendFile($this->basePath('plugins/select2/select2.full.min.js'))
+            ->appendFile($this->basePath('plugins/moment/moment-with-locales.min.js'))
+            ->appendFile($this->basePath('js/bootstrap-datetimepicker.js'))
+        ?>
+    </head>
+    <body>
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="<?= $this->url('backend') ?>">WhoPlayMusic Backend</a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <a href="<?= $this->url('backend/default',['action' => 'import'])?>">Import</a>
+                        </li>
+                        <li>
+                            <a href="<?= $this->url('backend/tracks')?>">Tracks</a>
+                        </li>
+                        <li>
+                            <a href="<?= $this->url('backend/user')?>">Users</a>
+                        </li>
+                        <li>
+                            <a href="<?= $this->url('backend/page')?>">Pages</a>
+                        </li>
+                        <li>
+                            <a href="<?= $this->url('backend/payment_page')?>">Payment Pages</a>
+                        </li>
+                        <li>
+                            <a href="<?= $this->url('backend/genre')?>">Genre</a>
+                        </li>
+                        <li>
+                            <a href="<?= $this->url('backend/ban_ip')?>">Ban IP</a>
+                        </li>
+                    </ul>
+                    <ul class="pull-right nav navbar-nav">
+                        <li>
+                            <a href="javascript:void(0)"><i class="fa fa-cog"></i> Settings</a>
+                            <ul>
+                                <li><a href="<?= $this->url('backend/setting',['code' => 'artists'])?>">Artists</a></li>
+                                <li><a href="<?= $this->url('backend/setting',['code' => 'label'])?>">Label</a></li>
+                                <li><a href="<?= $this->url('backend/setting',['code' => 'maintain_mode'])?>">Maintain mode</a></li>
+                                <li><a href="<?= $this->url('backend/setting',['code' => 'site_mode'])?>">Site mode</a></li>
+                                <li><a href="<?= $this->url('backend/setting',['code' => 'footer'])?>">Footer</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="<?= $this->url('backend/logout')?>"><i class="fa fa-power-off"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="<?php if(isset($this->contentFluid) && $this->contentFluid):?>container-fluid<?php else:?>container<?php endif;?>">
+            <?= $this->content ?>
+            <hr>
+            <footer>
+                <p>&copy; <?= date('Y')?></p>
+            </footer>
+        </div>        
+<?= $this->headScript();?>
+<?php $this->inlineScript()->captureStart();
+echo <<<JS
+function add_field(name,index,max) {
+    max = typeof max !== 'undefined' ? max: 0;
+    var currentCount = $('#'+name+'  fieldset').length ;
+    if((max > 0 && max > currentCount) || max == 0){
+        var template = $('#'+name+'  > span').data('template');
+        var re = new RegExp("__"+index+"__","g");
+        template = $($(template.replace(re, currentCount)));        
+        $('#'+name+' ').append(template);   
+        initSelect2(template); 
+    }      
+    return false;
+}  
+function remove_button(e, name, min)
+{
+    min = typeof min !== 'undefined' ? min: 0;
+    name = typeof name !== 'undefined' ? name: '';
+    if(name == ''){
+        $(e).closest("fieldset").remove();
+    }
+    else if(name!=''){
+        if(min>0){
+            var currentCount = $('#'+name+' fieldset').length ;
+            if(currentCount > min)
+                $(e).closest("fieldset").remove();  
+        }else{
+            $(e).closest("fieldset").remove();  
+        }                
+    }                 
+    return false;
+}  
+function confirmRemove(obj,txt, callback){
+    $(obj).closest("fieldset").addClass('to-remove');
+    var name = $(obj).parent().parent().attr('id');
+    if(confirm(txt)){
+        if (callback) {
+            callback();
+        }
+        return remove_button(obj,name);
+    }else{    
+        $(obj).closest("fieldset").removeClass('to-remove');
+    }        
+}
+function initSelect2(objParent){   
+   $(objParent).find('.select2').select2();
+   $(objParent).find('.select2simple').select2({
+      minimumResultsForSearch: Infinity
+    });        
+}
+$(function() {
+    $('.select2').select2();
+    $('.date_timepicker').datetimepicker({format:"YYYY-MM-DD HH:mm", sideBySide: true, showClear: true, showClose: true, icons: {close: 'ok'}});
+});
+JS;
+$this->inlineScript()->captureEnd();
+?>   
+        <?= $this->inlineScript() ?>
+    </body>
+</html>
