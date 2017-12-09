@@ -1,0 +1,12 @@
+<div class="filter-parent filter-type-parent filter-standard-parent" ng-class="{'filter-parent-active': isActive()}">
+  <a href="javascript:void(0)" class="filter-link filter-type-link">Type</a>
+  <div class="filter-drop filter-type-drop">
+    <a ng-click="resetType()" href="javascript:void(0)" class="filter-drop-reset-link">Reset</a>
+    <ul class="filter-type-drop-list">
+    	<li class="filter-type-drop-list-item" ng-repeat="type in types" type="type">
+			<input type="radio" name="activeType" ng-value="{{type.id}}" ng-model="$parent.activeType" id="fg-type-{{type.id}}" class="filter-drop-checkbox">
+			<label for="fg-type-{{type.id}}" class="filter-drop-checkbox-label">{{type.name}} <span class="filter-item-count">{{type.cnt}}</span></label>
+		</li>
+    </ul>
+  </div>
+</div>

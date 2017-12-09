@@ -1,0 +1,41 @@
+<main class="interior misc-account login-page">
+	<div class="small-mid-col">
+      <h1>Get Access</h1>
+      <p class="signup-page-message">
+      	You don’t have to worry if you are a beginner! It’s easy and faster.<br><br>
+      	You need to send a registration form in order to qualify for our community.
+      </p>   
+      <div class="misc-account-content">
+        <form name="form" role="form" ng-submit="signup()" class="signup-page-form" >
+          <ul class="signup-page-form-list">
+          	<li class="account-form-item account-form-item-text-box">
+              <label class="account-form-label account-form-label-text-box" for="full_name">Full Name</label>
+              <input class="account-form-value account-form-value-text-box" id="full_name" ng-model="fullname" name="full_name" required type="text">
+            </li>
+            <li class="account-form-item account-form-item-text-box">
+              <label class="account-form-label account-form-label-text-box" for="email_address">Email Address</label>
+              <input class="account-form-value account-form-value-text-box" id="email_address" ng-model="email" name="email" required type="text">
+            </li>
+            <li class="account-form-item account-form-item-text-box">
+              <label class="account-form-label account-form-label-text-box" for="payment_options">Payment Options</label>
+              <label ng-repeat="option in paymentOptions">
+		         <input id="payment_options" type="radio" name="payment" ng-model="$parent.payment" ng-value="option" required /> 
+		         {{option}}
+		      </label>
+            </li>
+            <li class="account-form-item account-form-item-text-box">
+              <label class="account-form-label account-form-label-text-box" for="info">Additional Information</label>
+              <textarea placeholder="eg: skype name / facebook link / soundcloud..." class="account-form-value account-form-value-text-box" ng-model="info" name="info" required></textarea>
+            </li>
+            <li class="account-form-item account-form-item-text-box">
+            	<label class="account-form-label account-form-label-text-box" for="recaptcha">Verification</label>
+            	<div class="account-form-value account-form-value-text-box" vc-recaptcha  on-create="setWidgetId(widgetId)" on-success="setResponse(response)" ng-model="captcha"></div>
+            </li>
+            <li class="account-form-item account-form-item-button-parent">
+              <input value="Create Account" class="signup-page-form-button green-button" type="submit">
+            </li>
+          </ul>
+        </form>
+      </div>
+    </div>
+</main>

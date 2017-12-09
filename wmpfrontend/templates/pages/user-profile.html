@@ -1,0 +1,30 @@
+<main class="interior misc-account login-page">
+	<div class="small-mid-col">
+      <h1>Account Settings</h1>      
+      <div class="misc-account-content">
+        <p>Your password must be at least 8 characters long, contain no spaces, and contain at least 1 number and 1 alphabetic character. Remember, your password is CaSe SeNsiTiVe.</p>
+    
+        <form class="account-content account-identity-password-content" name="form" role="form" ng-submit="profile()">          
+    		<ul class="account-form account-identity-password-form">
+    			<li class="account-form-item account-form-item-text-box">
+    				<label class="account-form-label account-form-label-text-box" for="old_password">Old Password</label>
+    				<input class="account-form-value account-form-value-text-box" name="old_password" placeholder="OLD PASSWORD" required ng-model="old_password" type="password">
+            		<p class="account-form-error-message" ng-show="form.old_password.$dirty && form.old_password.$error.required"><span class="icon icon-dead-robot-head"></span>Current password is required.</p>
+    			</li>
+    			<li class="account-form-item account-form-item-text-box">
+    				<label class="account-form-label account-form-label-text-box" for="new_password">New Password</label>
+    				<input class="account-form-value account-form-value-text-box" name="new_password" placeholder="NEW PASSWORD" required ng-model="new_password" type="password">
+    				<p ng-show="error.new_password" class="account-form-error-message"><span class="icon icon-dead-robot-head"></span>Password must contain both numbers and alphabetic characters.</p>
+    			</li>
+    			<li class="account-form-item account-form-item-text-box">
+    				<label class="account-form-label account-form-label-text-box" for="confirm_password">Retype New Password</label>
+    				<input class="account-form-value account-form-value-text-box" name="confirm_password" placeholder="RETYPE NEW PASSWORD" required ng-model="confirm_password" type="password">
+    				<p ng-show="error.confirm_password" class="account-form-error-message"><span class="icon icon-dead-robot-head"></span>Passwords must match.</p>
+    			</li>
+    			<li class="account-form-item account-form-item-button-parent">
+			        <button type="submit" value="Save" class="blue-button account-save-changes-button">Save Changes</button>
+			      </li>
+    		</ul>
+        </form>
+    </div>
+</main>

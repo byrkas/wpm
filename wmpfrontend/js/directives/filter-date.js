@@ -1,0 +1,60 @@
+angular.module('WhoPlayMusic')
+.directive('filterDate', function() {
+  return {
+    replace: true,
+    restrict: "E",
+    scope: {
+    	startDate: "=",
+    	endDate: "=",
+    	releasedLast: "=",
+    	applyDates: "="
+    },
+    controller: function($scope, $filter) {
+    	$scope.visibilityStart = false;
+    	$scope.visibilityEnd = false;
+    	
+    	$scope.isActive = function()
+    	{    		
+    		return ($scope.startDate !== '' || $scope.endDate !== '' ||  $scope.releasedLast !== '');
+    	}   
+    	$scope.dateApply = function()
+    	{
+    		$scope.applyDates = true;
+    		$scope.releasedLast = '';
+    	}
+    	$scope.today = function()
+    	{
+    		var date = new Date();
+    		return $filter('date')(date, 'yyyy-MM-dd');
+    	}
+    },
+    templateUrl: '/templates/directives/filter-date.html',
+    link: function(scope, element, attrs) {
+    	scope.resetDate = function(){
+    	  scope.startDate = '';
+    	  scope.endDate = '';
+    	  scope.releasedLast = '';
+    	  scope.applyDates = false;
+    	}
+    	scope.setDate = function(type){
+    		scope.releasedLast = type;
+    		scope.startDate = '';
+      	  	scope.endDate = '';
+      	  	scope.applyDates = false;
+    	}    	
+    	$(document).bind('click', function(event){
+            var isClickedElementChildOfPopup = element
+                .find(event.target)
+                .length > 0;
+
+            if (isClickedElementChildOfPopup)
+                return;
+
+            scope.$apply(function(){
+            	scope.visibilityStart = false;
+            	scope.visibilityEnd = false;
+            });
+        });
+    }
+  };
+});

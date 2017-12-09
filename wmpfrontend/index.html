@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html lang="en" ng-app="WhoPlayMusic" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" ng-app="WhoPlayMusic" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" ng-app="WhoPlayMusic" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html lang="en" ng-app="WhoPlayMusic">
+<!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta name="robots" content="index, follow">
+	<title ng-bind="ngMeta.title"></title>   
+	<meta name="description" content="{{ngMeta.description}}" />
+	
+	<!-- Arbitrary tags -->
+	<meta property="og:type" content="website" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:title" content="{{ngMeta['og:title']}}" />
+	<meta property="og:description" content="{{ngMeta['og:description']}}" />
+	<meta property="og:image" content="{{ngMeta['og:image']}}" />
+	<meta property="og:url" content="{{ngMeta['og:url']}}" />
+	
+	<meta name="twitter:card" content="player" />
+    <meta name="twitter:site" content="@whoPlayMusic" />
+    <meta name="twitter:title" content="{{ngMeta['twitter:title']}}" />
+    <meta name="twitter:description" content="{{ngMeta['twitter:description']}}" />
+    <meta name="twitter:image" content="{{ngMeta['twitter:image']}}" />	
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link href="/css/screen.css?v=0.0.0.1" media="screen" rel="stylesheet" type="text/css">
+	<link href="/js/vendor/angular-datepicker.min.css" media="screen" rel="stylesheet" type="text/css">
+	<link href="/css/custom.css?v=0.0.0.2" media="screen" rel="stylesheet" type="text/css">
+	<link href="/img/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
+	<link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.9.0/loading-bar.min.css' type='text/css' media='all' />
+    <base href="/" />
+</head>
+<body ng-style="cursorStyle">
+	<div class="overflow" id="overflow"></div>
+	<div ng-hide="isMaintain == 1" class="header-container" ng-class="{'has-notification':hasNotification}">
+		<div class="header-bg-wrap">
+	     <div class="head-mobile-nav">
+	         <div class="mobile-menu-icon" ng-class="{'active':mobileMenu}" ng-click="mobileMenu = !mobileMenu">
+	             <svg class="icon-menu" width="25" height="25">
+	               <path d="M0,5 25,5" stroke="#fff" stroke-width="4"/>
+	               <path d="M0,13 25,13" stroke="#fff" stroke-width="4"/>
+	               <path d="M0,21 25,21" stroke="#fff" stroke-width="4"/>
+	             </svg>
+	             <span class="icon-close">
+	                 <svg viewBox="0 0 40 40">
+	                   <path class="close-x" d="M 10,10 L 30,30 M 30,10 L 10,30"/>
+	                 </svg>
+	             </span>
+	           </div>
+	           <div class="mobile-menu-body" ng-class="{'mobile-nav-appear':mobileMenu}">
+	              <ul class="navigation">
+				    <li ng-show="siteModeShow()"><a href="/tracks">Tracks</a></li>
+				    <li ng-show="siteModeShow()"><a href="/top100">TOP 100</a></li>
+				    <li><a href="/page/about-us">About us</a></li>
+				    <li><a href="/page/contact-us">Contact us</a></li>
+				    <li><a href="/page/faq-help">FAQ (Help)</a></li>
+				    <li><a href="/page/report-abuse">Report Abuse</a></li>
+				</ul>
+			</div>
+	     </div>
+	       <header class="header" ng-class="{'loading':isLoading}">
+	           <a href="/" class="beatport-logo">
+	               <svg viewBox="0 0 200 200" alt="Beatport" class="logo-icon logo-icon-default">
+	               <use xlink:href="/static/images/defs.svg#logo-headphones"/>
+	               </svg>
+	               <svg viewBox="0 0 200 200" alt="Beatport" class="logo-icon logo-icon-loading">
+	                 <!-- NOTE: Chrome does not currently support animations in externally loaded svgs, so we must define this here -->
+	                  <g>
+	                    <path d="M172.6,99.6 C172.6,59.6 140,27 100,27 C60,27 27.4,59.6 27.4,99.6
+	                      C27.4,118.1 34.4,135.8 47.1,149.3 L47.1,149.3 C48.8,151.1 51.6,151.2
+	                      53.5,149.5 L61.3,142.1 C63.1,140.4 63.2,137.6 61.5,135.8 L61.5,135.8
+	                      C52.3,126 47.2,113.1 47.2,99.7 C47.2,70.6 70.9,46.9 100,46.9 C129.1,46.9
+	                      152.8,70.6 152.8,99.7 C152.8,113.2 147.7,126 138.5,135.8 L138.5,135.8
+	                      C136.8,137.6 136.9,140.4 138.7,142.1 L146.5,149.5 C148.3,151.2 151.2,151.1
+	                      152.9,149.3 L152.9,149.3 C165.6,135.7 172.6,118.1 172.6,99.6">
+	                      <animateTransform attributeName="transform" type="rotate" from="360 100 100" to="0 100 100" begin="0s" dur="1.2s" values="360 100 100;3 100 100;-3 100 100;0 100 100;0 100 100" keySplines="
+	                          .5 0 .8 1;
+	                          0 0 1 1;
+	                          0 0 1 1;
+	                          0 0 1 1" keyTimes="0;0.5;0.57;0.64;1" calcMode="spline" repeatCount="indefinite"/>
+	                    </path>
+	                    <g>
+	                      <path d="M200,99.2 C200,89.3 198.5,79.6 195.6,70.2 L195.6,70.2 L195.6,70.2
+	                        C194.8,67.9 192.3,66.6 190,67.3 L179.7,70.5 C177.3,71.2 176,73.7
+	                        176.7,76.1 L176.7,76.1 C179,83.6 180.2,91.3 180.2,99.2 C180.2,113.2
+	                        176.4,126.8 169.3,138.8 L169.3,138.8 C168,140.9 168.7,143.7 170.9,144.9
+	                        L180.1,150.4 C182.2,151.7 185,151 186.3,148.9 C195.3,134
+	                        200,116.8 200,99.2"/>
+	                      <path d="M30.7,138.8 C23.6,126.9 19.8,113.2 19.8,99.2 C19.8,91.3 21,83.5
+	                        23.3,76.1 L23.3,76.1 C24,73.7 22.7,71.2 20.3,70.5 L10,67.3 C7.6,66.6
+	                        5.1,67.9 4.4,70.2 L4.4,70.2 C1.5,79.6 0,89.3 0,99.2 C0,116.8 4.8,134
+	                        13.7,149 L13.7,149 C15,151.1 17.7,151.8 19.9,150.5 L29.1,145 C31.2,143.7
+	                        31.9,140.9 30.7,138.8 L30.7,138.8 L30.7,138.8 Z"/>
+	                      <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" begin="0s" dur="1.2s" values="0 100 100;363 100 100;357 100 100;360 100 100;360 100 100" keySplines="
+	                          .5 0 .8 1;
+	                          0 0 1 1;
+	                          0 0 1 1;
+	                          0 0 1 1" keyTimes="0;0.5;0.57;0.64;1" calcMode="spline" repeatCount="indefinite"/>
+	                    </g>
+	                  </g>
+	                </svg>
+	                <svg viewBox="0 0 935.5 200" alt="Beatport" class="logo-type">
+	                  <use xlink:href="/static/images/defs.svg#logo-type"/>
+	                </svg>
+	              </a>
+	              <div class="nav-links"><ul class="navigation">
+				    <li ng-show="siteModeShow()"><a href="/tracks">Tracks</a></li>
+				    <li ng-show="siteModeShow()"><a href="/top100">TOP 100</a></li>
+				    <li><a href="/page/about-us">About us</a></li>
+				    <li><a href="/page/contact-us">Contact us</a></li>
+				    <li><a href="/page/faq-help">FAQ (Help)</a></li>
+				    <li><a href="/page/report-abuse">Report Abuse</a></li>
+				    <li ng-show="siteModeShow()"><a href="/payment-page">Premium</a></li>
+				</ul>
+			</div>
+	          <div class="header-icons">
+	            <div class="head-parent head-account-parent">	            	
+            		<span class="head-account-link">
+				      <svg viewBox="0 0 200 200" class="head-account-icon" ng-show="!globals.currentUser">
+				        <use xlink:href="/static/images/defs.svg#icon-user"/>
+				      </svg>
+				      <span class="head-account-default-image" style="display:inline-block;" ng-show="globals.currentUser"></span>
+				      <span class="head-account-content">
+				      	<a ng-show="!isLogged()" ng-href="/account/login">Login</a>
+				      	<span ng-show="isLogged()">{{globals.currentUser.username}}</span>
+				      </span>
+				    </span>
+				    <div class="head-drop account-drop header-tooltip-menu">
+					    <div ng-show="!isLogged()" class="account-drop-logged-out" style="display: block;">
+					      <h2>Log in to start using My WhoPlayMusic!</h2>
+					      <a ng-href="/account/signup" class="button button--large" style="">Create an Account</a>
+					      <p class="login-link-parent">
+					        Already have an account? <a ng-href="/account/login" class="blue-button head-mybeatport-zero-button" style="">Log In</a>
+					      </p>
+					      <div class="forgot-login-link-parent">
+				              <a ng-href="/account/forgot-password" class="forgot-login-link" style="">Forgot your username or password?</a>
+				          </div>
+					    </div>
+				    	<div ng-show="isLogged()" class="account-drop-logged-in" style="display: block;">
+				    		<h3>Quotes:</h3><hr/>
+				    		<p>Promo: {{globals.currentUser.quotes.quotePromo}} downloads<br/>
+				    		Exclusive: {{globals.currentUser.quotes.quoteExclusive}} downloads<br/>
+				    		Expire date: {{globals.currentUser.quotes.expireDate}}
+				    		</p>
+					        <a ng-href="/account/profile">Account Settings</a>
+					        <a ng-href="/account/downloads">My Downloads</a>
+					        <a ng-href="/account/favorite">My Favorite</a>
+					        <a href ng-click="logout()" class="log-out">Log Out</a>
+					      </div>
+				  	</div>
+	             </div>
+	         </div>
+	         <div class="search" search></div>
+	       </header>
+	    </div>
+	    <div ng-show="hasNotification" ng-class="{'header-notif-success':notifType == 'success','header-notif-failure':notifType == 'failure','header-notif-neutral':notifType == 'neutral'}"
+	     class="header-notif header-notif-appear">
+	    	<div class="header-notif-text"><span class="notif-subject-primary">{{notifMessage}}</span></div>
+	    	<a class="header-notif-dismiss icon icon-delete" href ng-click="hasNotification = false"></a>
+	    </div>
+	</div>
+	<div id="pjax-target">
+	     <div id="pjax-inner-wrapper" class="pjax-inner-wrapper">
+	         <section class="page-content-container">
+	            <div ng-view autoscroll="true"></div>
+	         </section>	         
+	     </div>
+	 </div>
+	
+	
+	<footer class="footer">
+	    <div class="footer-content-container" ng-bind-html="footer"></div>
+	</footer>
+	
+	<sound-manager></sound-manager>
+	<!-- Player  -->
+	<section class="player-container player-section artwork-zoom" id="player-container" ng-class="{'zero-state': playlist.length < 1}">
+  	
+	  <div class="player-current-track-container ec-item" id="player-current-track-container">
+	  	<div class="player-current-track" id="player-current-track">
+	      <a ng-href="/track/{{currentPlaying.id}}" class="track-artwork-link">
+	        <img class="track-artwork" ng-src="{{currentPlaying.cover}}">
+	      </a>
+	      <div class="track-artwork-toggle-parent" id="track-artwork-toggle-parent"  onclick="toggleArtwork()">
+	        <svg viewBox="0 0 200 200" class="track-artwork-toggle">
+	          <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/static/images/defs.svg#icon-chevron-down"/>
+	        </svg>
+	      </div>
+	      <div class="player-track-name-artist player-track-name-artist-standard">
+	        <span class="track-title">
+	          <a ng-href="/track/{{currentPlaying.id}}">
+	            <span class="primary-title">{{currentPlaying.title}}</span> 
+	          </a>
+	        </span>
+	        <span class="track-artist"><a ng-repeat="artist in currentPlaying.artists" ng-href="/tracks?artists={{artist.id}}" ng-bind="artist.name + ($last ? '' : ', ')"></a></span>
+	      </div>
+	      <div class="player-track-name-artist player-track-name-artist-marquee">
+	        <span class="track-title">
+	          <span class="primary-title">{{currentPlaying.title}}</span>
+	        </span>
+	      </div>
+	    </div>
+	  </div>
+	
+	  <div class="player-waveform-container" id="player-waveform-container">
+	  	<div class="seekBase" seek-track>
+		    <div class="seekLoad" ng-style="{width : ( progress + '%' ) }"></div>
+		</div>
+	    <span class="disabled-message">Player Active</span>
+	  </div>
+	
+	  <div class="player-buttons-container">
+	
+	    <div class="player-buy-button-container ec-item" id="player-buy-button-container"></div>
+	
+	    <div class="launch-keyboard-shortcuts-link-parent">
+	      <a href onclick="toggleShortcuts()" class="launch-keyboard-shortcuts-link"><svg viewBox="0 0 200 200" class="keyboard-icon"><use xlink:href="/static/images/defs.svg#icon-keyboard"></use></svg></a>
+	    </div>
+	
+	    <div class="volume-button-parent">
+	      <a class="volume-button" id="volume-button">
+	        <svg viewBox="0 0 200 200" class="volume-on-icon"><use xlink:href="/static/images/defs.svg#icon-volume-on"></use></svg>
+	        <svg viewBox="0 0 200 200" class="volume-off-icon"><use xlink:href="/static/images/defs.svg#icon-volume-off"></use></svg>
+	      </a>
+	      <div class="volume-drop">
+	        <input volume-slider type="range" orient="vertical" class="volume-drop-range" value="75" />
+	      </div>
+	    </div>
+	
+	    <div class="player-controls">
+	      <a prev-track href="javascript:void(0)" class="prev-button"><svg viewBox="0 0 200 200" class="prev-button-icon"><use xlink:href="/static/images/defs.svg#icon-prev"></use></svg></a>
+	      <a play-pause-toggle hotkey="{space:playPause}" href="javascript:void(0)" class="play-button play">
+	      	<svg viewBox="0 0 200 200" class="play-button-icon"><use xlink:href="/static/images/defs.svg#icon-play"></use></svg>
+	      	<svg viewBox="0 0 200 200" class="pause-button-icon"><use xlink:href="/static/images/defs.svg#icon-pause"></use></svg>
+	      </a>
+	      <a next-track href="javascript:void(0)" class="next-button">
+	        <svg viewBox="0 0 200 200" class="next-button-icon"><use xlink:href="/static/images/defs.svg#icon-next"></use></svg>
+	      </a>
+	    </div>
+	    <div class="menu-queue-buttons-parent">
+	      <a href="javascript:void(0)" onclick="togglePlaylist()" class="player-queue-button">
+	        <svg viewBox="0 0 200 200" class="player-queue-button-img"><use xlink:href="/static/images/defs.svg#icon-queue"></use></svg>
+	      </a>
+	    </div>
+	  
+	  </div>
+	
+	</section>
+	
+	<div class="player-mobile-pop-up player-section artwork-zoom" ng-class="{'zero-state': playlist.length < 1}" id="player-mobile-pop-up">
+	
+	  <div class="queue-top-controls">
+	    <a clear-playlist href class="queue-top-clear-all">Clear Queue</a>
+	    <a href="javascript:void(0)" onclick="togglePlaylist()" class="queue-top-toggle" >
+	      <svg viewBox="0 0 200 200" class="queue-top-toggle-icon">
+	        <use xlink:href="/static/images/defs.svg#icon-chevron-down"></use>
+	      </svg>
+	    </a>
+	  </div>
+	
+	  <div class="queue-resize" id="queue-resize"></div>
+	
+	  <!-- Queue -->
+	  <div class="queue-mobile">
+	    <ul class="mobile-queue">
+	    	<li music-player="play" add-song="track" class="queue-track ec-item" ng-class="{'current-track': currentPlaying.id == track.id}" ng-repeat="track in playlist">
+			    <div class="player-track-artwork">
+			      <span class="icon icon-play"></span>
+			      <img ng-src="{{track.cover}}" class="">
+			    </div>
+			    <div class="player-track-name-artist">
+			      <span class="track-title"><a ng-href="/track/{{track.id}}" class="primary-title">{{track.title}}</a></span>
+			      <span class="track-artist"><a ng-repeat="artist in track.artists" ng-href="/tracks?artists={{artist.id}}" ng-bind="artist.name + ($last ? '' : ', ')"></a></span>
+			    </div>
+			
+			    <div class="player-track-genre">
+			      <span class="track-title">{{track.genre}}</span>
+			      <span class="track-artist">{{track.length}}</span>
+			    </div>
+			    			
+			    <div class="player-track-label">
+			      <span class="track-title">{{track.label}}</span>
+			      <span class="track-artist">{{track.release}}</span>
+			    </div>
+			
+			    <div class="track-button-container">		
+			      <a href="javascript:void(0)" remove-from-playlist="track" data-index="{{$index}}" class="delete-track playlist-item-remove">
+			        <svg viewBox="0 0 200 200" class="delete-track-icon">
+			          <use xlink:href="/static/images/defs.svg#icon-x"/>
+			        </svg>
+			      </a>
+			    </div>
+			</li>
+	    </ul>
+	  </div>
+	  <!-- End Queue -->
+	
+	  <!-- Queue Info -->
+	  <div class="info-mobile ec-item" id="player-info-container">
+
+	    <div class="info-list-container">
+	      <a href="/track/{{currentPlaying.id}}" class="track-artwork-link">
+	        <img ng-src="{{currentPlaying.cover}}" class="info-album-slide track-artwork-mobile">
+	      </a>
+	      <ul class="info">
+	        <li><span class="category">Artists</span><span class="value"><a href="" ng-repeat="artist in currentPlaying.artists">{{artist.name}}</a></span> </li>
+	        <li><span class="category">Genres</span><span class="value"><a href="">{{currentPlaying.genre}}</a></span> </li>
+	        <li><span class="category">Label</span><span class="value"><a href="">{{currentPlaying.label}}</a></span> </li>
+	        <li><span class="category">Released</span><span class="value">{{currentPlaying.release}}</span> </li>
+	        <li><span class="category">Length</span><span class="value">{{currentPlaying.length}}</span> </li>
+	      </ul>
+	      <img ng-src="{{currentPlaying.cover}}" class="info-album-blur track-artwork-mobile">
+	      
+	    </div>
+	
+	</div>
+	  <!-- End Queue Info-->
+	
+	  <!-- Waveform Mobile -->
+	  <div class="waveform-mobile">
+			<div class="seekBase" seek-track>
+		    	<div class="seekLoad" ng-style="{width : ( progress + '%' ) }"></div>
+			</div>
+	  </div>
+	  <!-- End Waveform Mobile-->
+	
+	</div>
+	<!-- End Player Mobile Pop Up -->
+	
+	<div id="keyboard-shortcuts" class="modal hidden">
+	  <div class="modal-body">
+	    <div class="modal-title-bar">
+	      <h1>Keyboard Shortcuts</h1>
+	      <a href onclick="toggleShortcuts()" class="close-modal-link icon icon-delete"></a>
+	    </div>
+	    <div class="modal-main-content modal-keyboard-shortcuts-content">
+	      <ul>
+	        <li><span class="keyboard-shortcut-label">toggle play/pause</span><span class="keyboard-shortcut-value"><em>p</em> <span class="keyboard-shortcut-or">or</span> <em>space</em></span></li>
+	        <li><span class="keyboard-shortcut-label">previous track in queue</span><span class="keyboard-shortcut-value"> <em>[</em></span></li>
+	        <li><span class="keyboard-shortcut-label">next track in queue</span><span class="keyboard-shortcut-value"> <em>]</em></span></li>
+	        <li><span class="keyboard-shortcut-label">toggle open playlist</span><span class="keyboard-shortcut-value"><em>o</em> <span class="keyboard-shortcut-or">or</span> <em>i</em></span></li>
+	        <li><span class="keyboard-shortcut-label">toggle shortcuts</span><span class="keyboard-shortcut-value"><em>?</em></span></li>
+	      </ul>
+	    </div>
+	  </div>
+	</div>
+	
+	<!-- Vendors -->
+    <script type="text/javascript" src="/js/vendor/markdown.js"></script>
+
+    <!-- Load Js libs -->
+    <script type="text/javascript" src="/js/vendor/jquery.js"></script>
+    <script type="text/javascript" src="/js/vendor/bootstrap.js"></script>
+    <script type="text/javascript" src="/js/vendor/angular.js"></script>
+    <script type="text/javascript" src="/js/vendor/angular-route.js"></script>
+    <script type="text/javascript" src="/js/vendor/angular-resource.js"></script>
+    <script type="text/javascript" src="/js/vendor/angular-cookies.js"></script>
+    <script type="text/javascript" src="/js/vendor/angular-sanitize.js"></script>
+    <script type="text/javascript" src="/js/vendor/md5.js"></script>
+    <script type="text/javascript" src="/js/vendor/angular-soundmanager2.js"></script>
+	<script type="text/javascript" src="/js/vendor/ui-bootstrap-custom-2.5.0.js"></script>
+	<script type="text/javascript" src="/js/vendor/angular-socialshare.min.js"></script>
+	<script type="text/javascript" src="/js/vendor/angular-datepicker.js"></script>
+	<script type="text/javascript" src="/js/vendor/angular-recaptcha.min.js"></script>
+	<script type="text/javascript" src="/js/vendor/ngMeta.min.js"></script>
+	<script type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.9.0/loading-bar.min.js'></script>
+    
+	<script type="text/javascript" src="/js/app.js"></script>
+	<script type="text/javascript" src="/js/routes.js"></script>
+	
+    <!-- Services -->
+	<!-- <script type="text/javascript" src="/js/services/session.js"></script>
+    <script type="text/javascript" src="/js/services/player-tracks.js"></script>
+	-->
+    <!-- Resources -->
+	<!-- <script type="text/javascript" src="/js/resources/track.js"></script> -->
+	
+    <!-- Directives -->
+	<script type="text/javascript" src="/js/directives/track-item.js"></script>
+	<script type="text/javascript" src="/js/directives/filter-type.js"></script>
+	<script type="text/javascript" src="/js/directives/filter-artist.js"></script>
+	<script type="text/javascript" src="/js/directives/filter-genre.js"></script>
+	<script type="text/javascript" src="/js/directives/filter-label.js"></script>
+	<script type="text/javascript" src="/js/directives/filter-date.js"></script>
+	<script type="text/javascript" src="/js/directives/pagination-tracks.js"></script>
+	<script type="text/javascript" src="/js/directives/download-button.js"></script>
+	<script type="text/javascript" src="/js/directives/search.js"></script>
+    
+    <!-- Controllers -->
+    <script type="text/javascript" src="/js/controllers/tracks-index-controller.js"></script>
+    <script type="text/javascript" src="/js/controllers/track-view-controller.js"></script>
+    <script type="text/javascript" src="/js/controllers/album-index-controller.js"></script>
+    <script type="text/javascript" src="/js/controllers/user-login-controller.js"></script>
+    <script type="text/javascript" src="/js/controllers/page-view-controller.js"></script>
+    <script type="text/javascript" src="/js/controllers/my-downloads-controller.js"></script>
+    <script type="text/javascript" src="/js/controllers/my-favorites-controller.js"></script>
+    <script type="text/javascript" src="/js/controllers/top-100-controller.js"></script>
+    
+    <script type="text/javascript">
+    angular.element(document).ready(function() {
+        $('#overflow').addClass('hidden');     
+     });
+    	function togglePlaylist()
+    	{
+    		$('#player-container, .player-queue-button, #player-mobile-pop-up').toggleClass('open');
+    	}
+    	function toggleArtwork()
+    	{
+    		$('#player-container, #player-mobile-pop-up').toggleClass('artwork-zoom');
+    	}
+    	function toggleShortcuts()
+    	{
+    		$('#keyboard-shortcuts').toggleClass('hidden');
+    	}
+    	function toggleSearch()
+    	{
+    		$('.mobile-search-parent').toggleClass('mobile-search-parent-appear');	
+    		$('.head-search-parent').toggleClass('head-search-parent-appear');	
+    	}
+    	$('.head-account-parent').hover(function(){
+    		$(this).addClass('head-hover-on');
+    	},function(){
+    		$(this).removeClass('head-hover-on');});
+    	
+    	function doc_keyUp(e) {
+    		if ($(e.target).closest("input")[0]) {
+    	        return;
+    	    }
+    		
+    	    if (e.keyCode == 79 || e.keyCode == 73) {
+    	    	togglePlaylist();
+    	    }else if(e.keyCode == 191){
+    	    	toggleShortcuts();
+    	    }
+    	}
+    	document.addEventListener('keyup', doc_keyUp, false);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+angular.module("WhoPlayMusic", ['ngRoute', 'ngSanitize','ngResource','ngCookies','angularSoundManager','ui.bootstrap','720kb.socialshare','720kb.datepicker','vcRecaptcha','ngMeta','angular-loading-bar']);

@@ -1,0 +1,27 @@
+<div class="pagination-container pagination-top-container">
+  <div class="pag-num-list-container">   
+      <a href class="pag-prev" rel="prev"><span class="icon icon-scroll-left"></span></a>
+      <div class="pag-numbers">
+          <a href class="pag-number">1</a>
+          <span class="pag-number-ellipsis">...</span>
+          <a href class="pag-number">22</a>
+          <strong class="pag-number pag-number-current">23</strong>
+          <a href class="pag-number">24</a>
+          <span class="pag-number-ellipsis">...</span>
+          <a href class="pag-number">117</a>
+      </div>
+      <a href class="pag-next" rel="next"><span class="icon icon-scroll-right"></span></a>
+  </div>  
+  <div class="pag-jump-to-container">
+    <h3>Jump to page</h3>
+    <input class="pag-jump-to-input" ng-model="currentPage" placeholder="{{currentPage}}" type="text">
+  </div> 
+
+  <div class="pag-results-per-container">    
+    <h3>Results per page</h3>
+    <a href ng-click="setItemsPerPage(25)" ng-class="{'results-per-link-active': itemsPerPage == 25}" class="pag-results-per-link">25</a>
+    <a href ng-click="setItemsPerPage(50)" ng-class="{'results-per-link-active': itemsPerPage == 50}" class="pag-results-per-link">50</a>
+    <a href ng-click="setItemsPerPage(100)" ng-class="{'results-per-link-active': itemsPerPage == 100}" class="pag-results-per-link">100</a>
+    <a href ng-click="setItemsPerPage(150)" ng-class="{'results-per-link-active': itemsPerPage == 150}" class="pag-results-per-link ">150</a> 
+  </div>
+</div>

@@ -1,0 +1,59 @@
+<main class="interior">
+	<div class="interior-top">
+	    <div class="interior-title"><h1>My favorites</h1></div>
+	    <div class="play-queue-all-buttons" ng-show="totalItems > 0">
+	        <button play-all="tracks" class="playable-play-all button-play" >
+	          <svg viewBox="0 0 200 200" class="button-play-icon"><use xlink:href="/static/images/defs.svg#icon-play"/></svg>
+	        </button>
+	        <button play-all="tracks" data-play="false" class="playable-queue-all button-queue" >
+	          <svg viewBox="0 0 200 200" class="button-queue-icon"><use xlink:href="/static/images/defs.svg#icon-add-queue"/></svg>
+	        </button>
+	        <a style="margin-left:10px;" href="javascript:void(0)" ng-click="removeAll()" class="gray-button cart-holdbin-action cart-remove-action">Remove all</a>
+	  	</div>
+	</div>
+	<div class="full-col" ng-show="totalItems > 0">
+		<div class="filter-page-top">
+	        <div class="filter-page-sort-menu-parent">
+	            <span>Sort by:</span>
+	            <select class="filter-page-sort-menu" ng-model="sortBy">
+	              <option value="release-desc">Newest to Oldest</option>
+	              <option value="release-asc">Oldest to Newest</option>
+	              <option value="title-asc">Title A-Z</option>
+	              <option value="title-desc">Title Z-A</option>
+	              <option value="label-asc">Label A-Z</option>
+	              <option value="label-desc">Label Z-A</option>    
+	              <option value="genre-asc">Genre A-Z</option>
+	              <option value="genre-desc">Genre Z-A</option>
+	            </select>
+	        </div>
+	        <div class="filters">
+	        	<filter-type types="types" active-type='activeType'></filter-type>
+	        	<filter-date apply-dates="applyDates" released-last="releasedLast" start-date='startDate' end-date='endDate'></filter-date>
+	        	<filter-genre genres="genres" active-genre='activeGenre'></filter-genre>
+	        	<filter-artist artists="artists" selected-artists="selectedArtists"></filter-artist>
+	        	<filter-label labels="labels" active-label='activeLabel'></filter-label>
+	            <a ng-click="resetAll()" href="javascript:void(0)" class="filter-reset-all-link">Reset all</a>
+	        </div>
+	    </div>
+		<div class="bucket tracks standard-interior-tracks">
+			<pagination-tracks only-wav="onlyWav" pages="pages" total-pages="totalPages" items-per-page="itemsPerPage" total-items="totalItems" current-page="currentPage"></pagination-tracks>
+			<div class="bucket-track-header">
+	            <div class="bucket-track-header-meta">    
+	                <p class="buk-track-title bucket-track-header-col"><a href ng-class="{'track-sorted-end': sortBy == 'title-asc','track-sorted-start': sortBy == 'title-desc'}" ng-click="order('title', reverse)" class="track-sortable">Title</a></p>
+	                <p class="buk-track-artists bucket-track-header-col">Artists</p>
+	                <p class="buk-track-labels bucket-track-header-col"><a href ng-class="{'track-sorted-end': sortBy == 'label-asc','track-sorted-start': sortBy == 'label-desc'}" ng-click="order('label', reverse)" class="track-sortable">Label</a></p>
+	                <p class="buk-track-genre bucket-track-header-col"><a href ng-class="{'track-sorted-end': sortBy == 'genre-asc','track-sorted-start': sortBy == 'genre-desc'}" ng-click="order('genre', reverse)" class="track-sortable">Genre</a></p>  
+	                <p class="buk-track-released bucket-track-header-col"><a href ng-class="{'track-sorted-end': sortBy == 'release-asc','track-sorted-start': sortBy == 'release-desc'}" ng-click="order('release', reverse)" class="track-sortable">Released</a></p>
+	                <p class="buk-track-key bucket-track-header-col">Type</p>
+	            </div>
+	        </div>
+	        <ul class="bucket-items ec-bucket">
+		      	<li track-item class="bucket-item ec-item track" ng-class="{'active-playable': isCurrentPlaying(track.id), 'already-played': playedList(track.id)}" ng-show="track.isFavorite" track="track" id="track-{{track.id}}" ng-repeat="track in tracks"></li>
+	        </ul>
+	        <pagination-tracks only-wav="onlyWav" pages="pages" total-pages="totalPages" items-per-page="itemsPerPage" total-items="totalItems" current-page="currentPage"></pagination-tracks>
+		</div>
+	</div>
+	<div class="full-col" ng-show="totalItems == 0">
+		<p class="p">Favorites list is empty.</p>
+	</div>
+</main>

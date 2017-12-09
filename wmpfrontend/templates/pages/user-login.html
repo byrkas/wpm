@@ -1,0 +1,28 @@
+<main class="interior misc-account login-page">
+	<div class="small-mid-col">
+      <h1>Log In</h1>      
+      <div class="misc-account-content">
+        <form name="form" role="form" ng-submit="login()" class="login-page-form" >
+          <input class="login-page-form-username" id="username" ng-model="username" name="username" placeholder="USERNAME" type="text" required>
+          <input autocomplete="off" class="login-page-form-password" id="password" ng-model="password" name="password" placeholder="PASSWORD" required type="password">
+          <div class="login-error-wrapper">
+            <p ng-show="form.username.$dirty && form.username.$error.required" class="login-username-error-message"><span class="icon icon-dead-robot-head"></span>Username is required.</p>
+            <p ng-show="form.password.$dirty && form.password.$error.required" class="login-password-error-message"><span class="icon icon-dead-robot-head"></span>Password is required.</p>
+            <p ng-show="error" class="login-password-error-message"><span class="icon icon-dead-robot-head"></span>{{error}}</p>
+          </div>
+
+          <a ng-href="/account/forgot-password" class="login-page-form-forgot-password">Forget Something?</a>
+          <button ng-disabled="form.$invalid || dataLoading" type="submit" value="Log In" class="login-page-form-button">Log In</button>
+		  <img ng-if="dataLoading" src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA=="/>
+          
+          <div class="login-page-form-remember">
+            <input id="remember-me" ng-model="remember" name="remember_me" class="login-page-form-remember-checkbox" type="checkbox">
+            <label for="remember-me" class="login-page-form-remember-label">Remember me</label>
+          </div>
+        </form>
+        <div class="misc-account-content-other-links">
+          Don't have an account yet? <a ng-href="/account/signup">Create one!</a>
+        </div>
+      </div>
+    </div>
+</main>

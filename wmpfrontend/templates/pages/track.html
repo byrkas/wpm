@@ -1,0 +1,110 @@
+<main class="interior">
+	<div class="interior-top interior-top-track">
+		<h3 class="interior-type">Track</h3>
+	    <div class="interior-title"><h1>{{track.title}}</h1></div>
+	    <div class="interior-track-actions ec-item">
+	    	<div class="play-queue-all-buttons">
+	    		<button music-player="play" add-song="track" class="playable-play-all button-play" >
+		          <svg viewBox="0 0 200 200" class="button-play-icon"><use xlink:href="/static/images/defs.svg#icon-play"/></svg>
+		        </button>
+		        <button music-player add-song="track" class="playable-queue-all button-queue" >
+		          <svg viewBox="0 0 200 200" class="button-queue-icon"><use xlink:href="/static/images/defs.svg#icon-add-queue"/></svg>
+		        </button>
+	    	</div>
+	    	<div ng-show="isLogged()" class="in-cart" track="track" download-button></div>
+	        <div class="share-buttons">
+	          <a href socialshare socialshare-provider="twitter" socialshare-hashtags="whoplaymusic" socialshare-url="{{url}}" class="share-button share-twitter-button"><span class="icon icon-twitter"></span></a>
+	          <a href socialshare socialshare-provider="facebook" socialshare-hashtags="whoplaymusic" socialshare-url="{{url}}" class="share-button share-facebook-button"><span class="icon icon-facebook"></span></a>
+	          <div class="share-embed-parent">
+	            <a href class="share-button share-embed-button"><span class="icon icon-hyperlink"></span></a>
+	            <div class="share-embed-drop">
+	              <a href class="icon icon-delete share-embed-drop-close"></a>
+	              <h3>Link:</h3>
+	              <input class="share-embed-drop-copy-text" value="{{url}}" onfocus="this.select();" onmouseup="return false;" type="text">
+	            </div>
+	          </div>
+	        </div>
+	  	</div>
+	</div>
+	<div class="interior-track-content">
+		<div class="interior-track-title-parent">
+			<div class="interior-track-artists">
+				<span class="category">Artists</span>
+				<span class="value"><a ng-href="/tracks?artists={{artist.id}}" ng-repeat="artist in track.artists" ng-bind="artist.name + ($last ? '' : ', ')"></a></span>
+			</div>
+			<div class="interior-track-waveform"></div>
+			<ul class="interior-track-releases">
+				<span class="category">Release</span>
+				<li class="interior-track-releases-artwork-container ec-item">
+					<a class="interior-track-release-artwork-link"><img ng-src="{{track.cover}}" class="interior-track-release-artwork"/></a>
+					<div class="interior-track-release-actions-parent">
+						<div class="interior-track-release-actions">
+							<div class="interior-track-release-play-queue">              
+			                  <button music-player="play" add-song="track" class="playable-play interior-track-release-play">		              
+			                    <svg viewBox="0 0 200 200" class="interior-track-release-play-icon">
+			                      <use xlink:href="/static/images/defs.svg#icon-play"></use>
+			                    </svg>
+			                  </button>		              
+			                  <button music-player add-song="track" class="playable-queue interior-track-release-queue">		              
+			                    <svg viewBox="0 0 200 200" class="interior-track-release-queue-icon">
+			                      <use xlink:href="/static/images/defs.svg#icon-add-queue"></use>
+			                    </svg>
+			                  </button>
+			                </div>
+						</div>
+						<a href class="icon icon-ellipsis interior-track-release-ellipsis mobile-action"></a>
+					</div>
+				</li>
+			</ul>
+			<ul class="interior-track-content-list">
+				<li class="interior-track-content-item interior-track-length">
+		          <span class="category">Length</span>
+		          <span class="value">{{track.length}}</span>
+		        </li>
+				<li class="interior-track-content-item interior-track-released">
+		          <span class="category">Released</span>
+		          <span class="value">{{track.release}}</span>
+		        </li>
+				<li ng-if="track.album" class="interior-track-content-item interior-track-bpm">
+		          <span class="category">Album</span>
+		          <span class="value"><a ng-href="/album/{{track.albumId}}">{{track.album}}</a></span>
+		        </li>
+				<li class="interior-track-content-item interior-track-genre">
+		          <span class="category">Genre</span>
+		          <span class="value">{{track.genre}}</span>
+		        </li>
+				<li class="interior-track-content-item interior-track-labels">
+		          <span class="category">Label</span>
+		          <span class="value">{{track.label}}</span>
+		        </li>
+			</ul>
+		</div>
+	</div>
+</main>
+<div class="full-col" ng-show="track.recommends.length > 0">
+	<div class="interior-title">
+        <h2>Recommended Tracks</h2>
+        <div class="play-queue-all-buttons">
+		     <button play-all="track.recommends" class="playable-play-all button-play" >
+	          <svg viewBox="0 0 200 200" class="button-play-icon"><use xlink:href="/static/images/defs.svg#icon-play"/></svg>
+	        </button>
+	        <button play-all="track.recommends" data-play="false" class="playable-queue-all button-queue" >
+	          <svg viewBox="0 0 200 200" class="button-queue-icon"><use xlink:href="/static/images/defs.svg#icon-add-queue"/></svg>
+	        </button>
+		  </div>
+      </div>
+      <div class="bucket tracks standard-interior-tracks">
+      	<div class="bucket-track-header">
+		    <div class="bucket-track-header-meta">		    
+		      <p class="buk-track-title bucket-track-header-col">Title</p>
+		      <p class="buk-track-artists bucket-track-header-col">Artists</p>
+		      <p class="buk-track-labels bucket-track-header-col">Label</p>
+		      <p class="buk-track-genre bucket-track-header-col">Genre</p>
+		      <p class="buk-track-released bucket-track-header-col">Released</p>		    
+		    </div>
+		</div>
+        <ul class="bucket-items ec-bucket">
+	      	<li track-item class="bucket-item ec-item track" ng-class="{'active-playable': isCurrentPlaying(track.id), 'already-played': playedList(track.id)}" track="track" id="track-{{track.id}}" ng-repeat="track in track.recommends"></li>
+        </ul>
+      </div>
+</div>

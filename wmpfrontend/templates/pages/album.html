@@ -1,0 +1,85 @@
+<main class="interior interior-release-chart interior-release">
+	<div class="interior-stems-artwork-parent">
+	      <img ng-src="{{album.cover}}" class="interior-release-chart-artwork">
+	</div>
+	<div class="interior-release-chart-content">
+		<h3 class="interior-type">Album</h3>
+		<h1>{{album.name}}</h1>
+		<ul class="interior-release-chart-content-list">
+			<li class="interior-release-chart-content-item">
+				<span class="category">Artists</span>
+				<span class="value"><span ng-repeat="artist in album.artists" ng-bind="artist.name + ($last ? '' : ', ')"></span></span>
+			</li>
+			<li class="interior-release-chart-content-item">
+				<span class="category">Release Date</span>
+				<span class="value">{{album.release}}</span>
+			</li>
+			<li class="interior-release-chart-content-item">
+				<span class="category">Labels</span>
+				<a class="value" ng-href="/tracks?label={{album.labelId}}">{{album.label}}</a>
+			</li>
+			<li class="interior-release-chart-content-item interior-release-chart-actions ec-item">
+				<div class="play-queue-all-buttons">
+				    <button play-all="tracks" class="playable-play-all button-play" data-stems="5115">
+				      <svg viewBox="0 0 200 200" class="button-play-icon"><use xlink:href="/static/images/defs.svg#icon-play"/></svg>
+				    </button>
+				    <button play-all="tracks" data-play="false"  class="playable-queue-all button-queue" data-stems="5115">
+				      <svg viewBox="0 0 200 200" class="button-queue-icon"><use xlink:href="/static/images/defs.svg#icon-add-queue"/></svg>
+				    </button>
+				 </div>
+				 <div class="share-buttons">
+		            <a href socialshare socialshare-provider="twitter" socialshare-hashtags="whoplaymusic" socialshare-url="{{url}}" class="share-button share-twitter-button"><span class="icon icon-twitter"></span></a>
+		            <a href socialshare socialshare-provider="facebook" socialshare-hashtags="whoplaymusic" socialshare-url="{{url}}" class="share-button share-facebook-button"><span class="icon icon-facebook"></span></a>
+		          </div>
+			</li>
+		</ul>
+	</div>
+	<div class="full-col">
+		<div class="bucket tracks interior-release-tracks">
+			<h2>Total {{tracks.length}}</h2>
+			<div class="bucket-track-header">
+				<div class="bucket-track-header-meta">    
+			      <p class="buk-track-title bucket-track-header-col">Title</p>
+			      <p class="buk-track-artists bucket-track-header-col">Artists</p>		      
+			      <p class="buk-track-genre bucket-track-header-col">Genre</p>
+			      <p class="buk-track-length bucket-track-header-col">Length</p>
+			    </div>
+			</div>
+			<ul class="bucket-items ec-bucket ">
+				<li ng-repeat="track in tracks" class="bucket-item ec-item track" ng-class="{'active-playable': isCurrentPlaying(track.id), 'already-played': playedList(track.id)}">
+					<div class="buk-track-num">{{$index+1}}</div>
+					<div class="buk-track-meta-parent">
+			          <p class="buk-track-title">
+			            <a ng-href="/track/{{track.id}}">
+			                <span class="buk-track-primary-title" title="{{track.title}}">{{track.title}}</span>
+			            </a>
+			          </p>
+			          <p class="buk-track-artists">		
+			    		<a ng-href="/tracks?artists={{artist.id}}" ng-repeat="artist in track.artists" ng-bind="artist.name + ($last ? '' : ', ')"></a>
+			    	  </p>
+			          <p class="buk-track-genre">	
+			    		<a ng-href="/tracks?genre={{track.genreId}}">{{track.genre}}</a>
+			          </p>
+			          <p class="buk-track-length">{{track.length}}</p>
+			        </div>
+			        <div class="track-actions-parent">
+			          <div class="track-actions">
+			            <div class="track-play-queue">
+			              <button music-player="play" add-song="track" class="playable-play track-play">
+			                <svg viewBox="0 0 200 200" class="play-icon"><use xlink:href="/static/images/defs.svg#icon-play"/></svg>
+			                <svg viewBox="0 0 100 100" class="replay-icon"><use xlink:href="/static/images/defs.svg#icon-replay"/></svg>
+			              </button>
+			              <button music-player add-song="track" class="playable-queue track-queue">
+			                <svg viewBox="0 0 200 200" class="queue-icon"><use xlink:href="/static/images/defs.svg#icon-add-queue"/></svg>
+			              </button>
+			              <div class="equalizer-container"></div>			              
+			            </div>
+			            <div ng-show="isLogged()" track="track" track-buy-button="1" download-button></div>
+			          </div>			
+			          <a href class="icon icon-ellipsis track-ellipsis mobile-action"></a>			
+			        </div>
+				</li>
+			</ul>
+		</div>
+	</div>
+</main>
