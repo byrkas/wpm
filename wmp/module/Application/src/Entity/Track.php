@@ -536,6 +536,23 @@ class Track
     {
         $this->isPublished = $isPublished;
     }
+    
+    public function getNameDownload()
+    {
+        $name = '';
+        $artists = $this->getArtists();
+        $artsitsArr = [];
+        foreach ($artists as $artist){
+            $artsitsArr[] = $artist->getName();
+        }
+
+        $label = $this->getLabel();
+        $name .= implode(', ', $artsitsArr).' - '.$this->title;
+        if($label){
+            $name .= ' ['.$label->getName().']';
+        }
+        return $name;
+    }
 
     public function __toString()
     {

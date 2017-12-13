@@ -720,6 +720,7 @@ class IndexController extends AbstractActionController
         $filter = new \Zend\Filter\Word\SeparatorToDash();
         $id = (int) $this->params()->fromRoute('id', 0);
         $request = $this->getRequest();
+        $remoteAddr = $request->getServer('REMOTE_ADDR');
         $userId = 1;
         $this->checkAuthorization($request);
         if (! empty($this->tokenPayload)) {
@@ -729,7 +730,7 @@ class IndexController extends AbstractActionController
                 $user = $this->em->find('Application\Entity\User', $userId);
                 if ($track && $user) {
                     $filePath = $track->getFileDestination();
-                    $fileName = $filter->filter($track->getTitle()) . '.' . pathinfo($filePath, PATHINFO_EXTENSION);
+                    $fileName = $track->getNameDownload() . '.' . pathinfo($filePath, PATHINFO_EXTENSION);
                     
                     $fileContent = file_get_contents($filePath);
                     if ($fileContent != false) {
@@ -758,12 +759,12 @@ class IndexController extends AbstractActionController
                         'Track' => $track
                     ]);
                     if (! $downloaded) {
-                        $download = new Download($track, $user);
-                        $this->em->persist($download);
-                        $user->subQuote($track->getTrackType()
-                            ->getName());
-                        $this->em->flush();
+                        $user->subQuote($track->getTrackType()->getName());
                     }
+                    $download = new Download($track, $user);
+                    $download->setIp($remoteAddr);
+                    $this->em->persist($download);
+                    $this->em->flush();
                     
                     // Return Response to avoid default view rendering
                     return $response;
@@ -827,6 +828,7 @@ class IndexController extends AbstractActionController
     {
         $nameFilter = new \Zend\Filter\Word\SeparatorToDash();
         $request = $this->getRequest();
+        $remoteAddr = $request->getServer('REMOTE_ADDR');
         $userId = null;
         $maxSize = 4;
         $maxSizeLimited = false;
@@ -836,6 +838,7 @@ class IndexController extends AbstractActionController
             $userId = $this->tokenPayload->id;
             
             if ($userId) {
+                $User = $this->em->getReference('Application\Entity\User',$userId);
                 $filter = [
                     'user' => $userId
                 ];
@@ -888,10 +891,16 @@ class IndexController extends AbstractActionController
                         $maxSizeLimited = true;
                         break;
                     }
-                    $fileName = $nameFilter->filter($track['title']) . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $fileName = $track['artists'].' - '.$track['title'].(($track['label'])?' ['.$track['label'].']':'') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
                     $filePath = str_replace('public/', '/', $track['fileDestination']);
                     $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
                     $contentArr[] = "$crc32 $size $filePath $fileName";
+                    
+                    $Track = $this->em->getReference('Application\Entity\Track',$track['id']); 
+                    $download = new Download($Track, $User);
+                    $download->setIp($remoteAddr);
+                    $this->em->persist($download);
+                    $this->em->flush($download);
                 }
                 $content = implode("\r\n", $contentArr) . "\r\n";
                 
@@ -1148,6 +1157,68 @@ class IndexController extends AbstractActionController
         if(!empty($tracks)){
             $result['tracks'] = $tracks;
         }
+        
+        return new JsonModel($result);
+    }
+    
+    public function searchResultsAction()
+    {
+        $result = [];
+        $search = $this->params()->fromRoute('query');
+        if($search == ''){
+            return new JsonModel($result);
+        }
+         
+        $filter = ['search' => $search];
+        $sort = $this->params()->fromQuery('sort', 'release-desc');
+        $limit = (int) $this->params()->fromQuery('limit', 100);
+        $page = (int) $this->params()->fromQuery('page', 1);
+        $filter['showPromo'] = $this->params()->fromQuery('showPromo', true);
+        $sortArr = explode('-', $sort);
+        if (! in_array($sortArr[0], $this->sortList)) {
+            $sortArr = [
+                'release',
+                'desc'
+            ];
+        }
+        if (! in_array($sortArr[1], [
+            'asc',
+            'desc'
+        ])) {
+            $sortArr[1] = 'desc';
+        }        
+        
+        $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracks($filter);
+        
+        $start = $this->start($page, $limit);
+        while ($start > $total) {
+            $start = $this->start(-- $page, $limit);
+        }
+        
+        $tracks = $this->em->getRepository('Application\Entity\Track')->getTracks($limit, $start, $filter, $sortArr);
+        $result['total'] = (int) $total;
+        $result['page'] = $page;
+        $result['limit'] = $limit;
+        $artists = $this->em->getRepository('Application\Entity\Track')->getArtists($filter);
+        if (! empty($artists)) {
+            foreach ($artists as $key => $artist) {
+                $artists[$key]['checked'] = (isset($filter['artists']) && in_array($artist['id'], $filter['artists'])) ? 1 : 0;
+            }
+        }
+        
+        if (! empty($tracks)) {
+            foreach ($tracks as $key => $track) {
+                $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
+                $tracks[$key]['sample'] = $this->static . $track['sample'];
+                $tracks[$key]['url'] = $this->static . $track['sample'];
+                if (! $track['cover'])
+                    $track['cover'] = '/img/music.png';
+                $tracks[$key]['cover'] = $this->static . $track['cover'];
+                $tracks[$key]['wave'] = $this->static . $track['wave'];
+                $tracks[$key]['release'] = $track['release']->format('Y-m-d');
+            }
+            $result['tracks'] = $tracks;
+        }        
         
         return new JsonModel($result);
     }

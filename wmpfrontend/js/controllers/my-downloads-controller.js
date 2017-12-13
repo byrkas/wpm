@@ -86,7 +86,7 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 	  var search = $location.search();
 		 if(page===undefined){
 			 page = $scope.currentPage;
-			 if(page > 1){
+			 if(page > 0){
 				 search.page = page;
 			 }
 	     }

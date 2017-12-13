@@ -39,6 +39,7 @@ if(isset($title)) $this->headTitle($title);
                           <td style="width:100px;" class="no-sort text-left">Wave</td>
                           <td class="text-left">Type</td>
                           <td class="no-sort text-left">Published</td>
+                          <td class="no-sort text-left">Downloaded</td>
                         </tr>
                       </thead>
                     <tbody>                        
@@ -52,6 +53,7 @@ if(isset($title)) $this->headTitle($title);
 <?php 
 $urlUpdate= $this->url('backend/default',['action' => 'update-wave']);
 $urlData= $this->url('backend/default',['action' => 'get-tracks']);
+$urlDownloads= $this->url('backend/downloads');
 $this->inlineScript()->captureStart();
 echo <<<JS
 function updateWave(linkId, obj){
@@ -85,20 +87,29 @@ $(function() {
                 { "data": "wave" },
                 { "data": "type" },
                 { "data": "isPublished" },
+                { "data": "downloaded" },
             ],
           "columnDefs": [{
             "targets": -1,
             "render": function ( data, type, row ) {
+                    if(data > 0)
+                        return '<a target="_blank" href="$urlDownloads'+row.id+'">'+data+'</a>';
+                    else
+                        return '-';
+             }
+            },{
+            "targets": -2,
+            "render": function ( data, type, row ) {
                     return '<i class="fa '+(data?'fa-check-square-o':'fa-square-o')+'"></i>';
              }
             },{
-            "targets": -3,
+            "targets": -4,
             "render": function ( data, type, row ) {
                     return '<img style="max-width:150px;" id="wave'+row.id+'" alt="" src="'+row.wave+'">'+
                         '<button onclick="updateWave('+row.id+',this)" type="button" class="btn btn-primary btn-sm update-result" data-loading-text="&lt;i class=\'fa fa-spinner fa-spin \'&gt;&lt;/i&gt; Result Updating">Update wave</button>';
              }
             },{
-            "targets": -4,
+            "targets": -5,
             "render": function ( data, type, row ) {
                     return '<img style="max-width:150px;" alt="" src="'+row.cover+'">';
              }

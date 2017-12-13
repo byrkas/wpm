@@ -399,11 +399,18 @@
     <script type="text/javascript" src="/js/controllers/my-downloads-controller.js"></script>
     <script type="text/javascript" src="/js/controllers/my-favorites-controller.js"></script>
     <script type="text/javascript" src="/js/controllers/top-100-controller.js"></script>
+    <script type="text/javascript" src="/js/controllers/search-results-controller.js"></script>
     
     <script type="text/javascript">
     angular.element(document).ready(function() {
         $('#overflow').addClass('hidden');     
      });
+    	function toggleOpened(object)
+    	{
+    		console.log('tt');
+    		$(object).parents('.bucket-item').toggleClass("opened-actions");
+    	}
+    	
     	function togglePlaylist()
     	{
     		$('#player-container, .player-queue-button, #player-mobile-pop-up').toggleClass('open');
@@ -426,7 +433,7 @@
     	},function(){
     		$(this).removeClass('head-hover-on');});
     	
-    	function doc_keyUp(e) {
+    	function doc_keyUp(e) {    		
     		if ($(e.target).closest("input")[0]) {
     	        return;
     	    }

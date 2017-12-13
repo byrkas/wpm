@@ -60,6 +60,19 @@ class BackendController extends AbstractActionController
         ]);
     }    
     
+    public function testAction()
+    {
+        echo "<pre>";
+        $path = $this->importManager->getImportFolder().'/2017/11-November/28-Exclusive/House/Dj Pierre - Love And Happiness 2017 (Original Mix) [Get Physical Music].wav';
+        //$path = $this->importManager->getImportFolder().'/2017/11-November/28-Exclusive/Stems/Alberto Costas - Bass and Furious (Bob Ray Remix) [Elektrobeats Records].stem.mp4';
+        
+        $info = $this->importManager->getAudioInfo($path);
+        
+        var_dump($info);
+        
+        exit;
+    }
+    
     public function importAction()
     {
         set_time_limit(0);
@@ -226,9 +239,59 @@ class BackendController extends AbstractActionController
         ]);
     }
     
+    public function downloadsAction()
+    {
+        $id = (int) $this->params()->fromRoute('id', 0);        
+        
+        $this->layout()->contentFluid = true;
+        $track = $this->em->find('Application\Entity\Track',$id);
+        
+        return new ViewModel([
+            'title'     =>  'Downloads',
+            'id'    =>  $id,
+            'track' =>  $track
+        ]);
+    }
+    
+    public function getDownloadsAction()
+    {
+        $id = (int) $this->params()->fromRoute('id', 0);   
+        $columns = ['user','ip','date'];
+        $request = $this->getRequest();
+        $result = ['data' => []];
+        
+        if ($request->isPost()) {
+            $data = $request->getPost();
+            
+            $sortOrder = (isset($data['order']))?$data['order'][0]['dir']:'asc';
+            $sortBy = (isset($data['order']))?$columns[$data['order'][0]['column']]:'';
+            $search = (isset($data['search']))?$data['search']['value']:'';            
+            $total = $this->em->getRepository('Application\Entity\Track')->getDownloadsTotal($id, $search);
+            
+            $start = $data['start'];
+            $limit = $data['length'];
+            
+            $result = [
+                'draw' => $data['draw'],
+                'recordsFiltered' =>  $total,
+                'recordsTotal' =>  $total,
+            ];
+            $tracks = $this->em->getRepository('Application\Entity\Track')->getDownloadsList($id, $start, $limit, $sortBy, $sortOrder, $search);
+            foreach ($tracks as $key => $track)
+            {
+                $tracks[$key]['date'] = $track['date']->format('Y-m-d');
+            }
+            
+            $result['data'] = $tracks;
+        }
+        
+        return new JsonModel($result);
+    }
+    
+    
     public function getTracksAction()
     {
-        $columns = ['id','title','fileType','artists','label','genre','album','publishDate','cover','wave','type'];
+        $columns = ['id','title','fileType','artists','label','genre','album','publishDate','cover','wave','type','isPublished','downloaded'];
         $request = $this->getRequest();
         $result = ['data' => []];
         
@@ -253,6 +316,7 @@ class BackendController extends AbstractActionController
             {
                 $tracks[$key]['publishDate'] = $track['publishDate']->format('Y-m-d');
                 $tracks[$key]['title'] = $track['title'].'<br/>('.$track['playtimeString'].')';
+               // $tracks[$key]['downloaded'] = ($track['downloaded'] > 0 && $track['artCnt'] > 1)?$track['downloaded']/$track['artCnt']:$track['downloaded'];
             }
             
             $result['data'] = $tracks;

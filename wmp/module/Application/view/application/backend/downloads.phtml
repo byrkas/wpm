@@ -1,0 +1,57 @@
+<?php $this->headScript()->appendFile($this->basePath('plugins/DataTables/datatables.min.js'));
+$this->headlink()->appendStylesheet($this->basePath('plugins/DataTables/datatables.min.css'))?>
+<?php 
+if(isset($title)) $this->headTitle($title);
+?>
+<div class="page-header">
+    <div class="container-fluid">     
+      <h1><?= $track->getTitle()?></h1>
+    </div>
+</div>
+<div class="container-fluid">
+    <?= $this->showMessages()?>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-list"></i> Downloads List</h3>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table id="table-data" class="table table-bordered table-hover" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                          <td class="text-left">User</td>
+                          <td class="text-left">IP</td>
+                          <td class="text-left">Date</td>
+                        </tr>
+                      </thead>
+                    <tbody>                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<?php 
+$urlData= $this->url('backend/default',['action' => 'get-downloads','id' => $id]);
+$this->inlineScript()->captureStart();
+echo <<<JS
+$(function() {
+    $('#table-data').DataTable( {
+          "processing": true,
+          "serverSide": true,
+          "order": [[ 2, "desc" ]],
+          "ajax": {"url": "$urlData","type": "POST"},
+            "columns": [
+                { "data": "user" },
+                { "data": "ip" },
+                { "data": "date" },
+            ],
+          "columnDefs": [{
+            },
+        ],
+        "lengthMenu": [[100, 50, 25, -1], [100, 50, 25, "All"]]
+    } );
+});
+JS;
+$this->inlineScript()->captureEnd();
+?>

@@ -62,9 +62,10 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
   
   $scope.getTracks = function(page, limit){
 	 var search = $location.search();
+	 
 	 if(page===undefined){
 		 page = $scope.currentPage;
-		 if(page > 1){
+		 if(page > 0){
 			 search.page = page;
 		 }
      }

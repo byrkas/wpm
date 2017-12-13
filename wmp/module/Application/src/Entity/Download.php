@@ -34,6 +34,11 @@ class Download
      */
     private $User;
 
+    /**
+     * @ORM\Column(type="string", length=20, nullable=true)
+     */
+    private $ip;
+
     public function __construct($Track, $User)
     {
         $this->Track = $Track;
@@ -83,6 +88,24 @@ class Download
     public function setUser($User)
     {
         $this->User = $User;
+    }
+
+    /**
+     *
+     * @return the $ip
+     */
+    public function getIp()
+    {
+        return $this->ip;
+    }
+
+    /**
+     *
+     * @param field_type $ip            
+     */
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
     }
 
     public function __toString()

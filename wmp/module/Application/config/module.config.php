@@ -104,6 +104,18 @@ return [
                             ],
                         ],
                     ],
+                    'downloads' => [
+                        'type'    => Segment::class,
+                        'options' => [
+                            'route'    => 'downloads[/:id][/]',
+                            'constraints' => [
+                            ],
+                            'defaults' => [
+                                'controller' => Controller\BackendController::class,
+                                'action'     => 'downloads',
+                            ],
+                        ],
+                    ],
                     'ban_ip' => [
                         'type'    => Segment::class,
                         'options' => [
@@ -187,6 +199,19 @@ return [
                             'defaults' => [
                                 'controller' => Controller\IndexController::class,
                                 'action'     => 'tracks',
+                            ],
+                        ],
+                    ],
+                    'search_results' => [
+                        'type'    => Segment::class,
+                        'options' => [
+                            'route'    => '/search-results[/:query][/]',
+                            'constraints' => [
+                                'action'     => '[a-zA-Z][a-zA-Z0-9_-]*',
+                            ],
+                            'defaults' => [
+                                'controller' => Controller\IndexController::class,
+                                'action'     => 'search-results',
                             ],
                         ],
                     ],

@@ -37,6 +37,9 @@ angular.module('WhoPlayMusic').config(
 					}).when('/album/:id', {
 						templateUrl : 'templates/pages/album.html',
 						controller : 'AlbumIndexController'
+					}).when('/search/:query', {
+						templateUrl : 'templates/pages/search-results.html',
+						controller : 'SearchResultsController'
 					}).when('/account/login', {
 						templateUrl : 'templates/pages/user-login.html',
 						controller : 'UserLoginController',
@@ -121,7 +124,7 @@ angular.module('WhoPlayMusic').config(
 							$rootScope.keyboardModalShow = false;
 							$rootScope.mobileMenu = false;
 							$rootScope.cursorStyle = {};
-							$rootScope.footer = '';
+							$rootScope.footer = $cookieStore.get('footer') || '';
 							$rootScope.isLoading = false;
 							$rootScope.globals = $cookieStore.get('globals') || {};
 							

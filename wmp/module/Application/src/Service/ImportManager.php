@@ -34,13 +34,22 @@ class ImportManager
         $this->saveSample = $this->config['media']['save']['sample'];  
     }    
     
+    public function getImportFolder()
+    {
+        return $this->importFolder;
+    }
+    
     public function getAudioInfo($filePath)
     {
         $getId3 = new GetId3(); 
-        $getId3->option_md5_data        = true;
+       /*  $getId3->option_md5_data        = true;
         $getId3->option_md5_data_source = true;
-        $getId3->encoding               = 'UTF-8';
-        $audio = $getId3->analyze($filePath);
+        $getId3->encoding               = 'UTF-8'; */
+        $audio = $getId3
+            ->setOptionMD5Data(true)
+            ->setOptionMD5DataSource(true)
+            ->setEncoding('UTF-8')
+            ->analyze($filePath);
            
        /*  unset($audio['comments']['picture']);
         echo "<pre>";
@@ -294,8 +303,7 @@ class ImportManager
         if(!empty($otherTracks)){
             foreach ($otherTracks as $key => $oTEntry){
                 $otherTrack = $oTEntry['track'];
-                if($track['title'] == $otherTrack['title'] && $track['label'] == $otherTrack['label'] && 
-                    $track['artists_string'] == $otherTrack['artists_string']){
+                if($track['title'] == $otherTrack['title'] && $track['label'] == $otherTrack['label'] && $track['artists_string'] == $otherTrack['artists_string']){
                     $errors['trackExist'] = 'Track is the same as track #'.($key+1).' !';
                 }
             }

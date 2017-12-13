@@ -1,4 +1,5 @@
 .overflow{position:fixed;width:100%;height:100%;background: #262626;z-index:999;}
+.tt-dropdown-menu .tt-dataset-default .tt-suggestion.selected{background-color: #2e2e2e}
 .hidden{display:none;}
 .seekBase {
     border: 1px solid #cccccc;
