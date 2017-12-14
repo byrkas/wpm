@@ -9,8 +9,8 @@
   </p>
   <p class="buk-track-artists"><a ng-repeat="artist in track.artists" ng-href="/tracks?artists={{artist.id}}" ng-bind="artist.name + ($last ? '' : ', ')"></a></p>
   <p class="buk-track-labels"><a ng-href="/tracks?label={{track.labelId}}">{{track.label}}</a></p>
-  <p class="buk-track-genre"><a ng-href="/tracks?genre={{track.genreId}}">{{track.genre}}</a></p>                            
-  <p class="buk-track-released">{{track.release}}</p>                          
+  <p class="buk-track-genre"><a ng-href="/tracks?genre={{track.genreId}}">{{track.genre}}</a></p>
+  <p class="buk-track-released">{{track.release}}</p>
   <p class="buk-track-key">{{track.type}}</p>
 </div>
 
@@ -26,7 +26,7 @@
       </button>
       <div class="equalizer-container"></div>
     </div>
-    <div ng-show="isLogged()" track="track" track-buy-button="1" download-button></div>
+    <div style="display:flex" is-logged="isLogged()" track="track" track-buy-button="1" download-buttons></div>
   </div>
   <a href class="icon icon-ellipsis track-ellipsis mobile-action"></a>
 </div>

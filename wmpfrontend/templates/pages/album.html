@@ -18,6 +18,9 @@
 				<span class="category">Labels</span>
 				<a class="value" ng-href="/tracks?label={{album.labelId}}">{{album.label}}</a>
 			</li>
+            <li class="interior-release-chart-content-item">
+               <a ng-click="downloadArchive()" href="javascript:void(0)" class="value">Download archive</a>
+            </li>
 			<li class="interior-release-chart-content-item interior-release-chart-actions ec-item">
 				<div class="play-queue-all-buttons">
 				    <button play-all="tracks" class="playable-play-all button-play" data-stems="5115">
@@ -38,9 +41,9 @@
 		<div class="bucket tracks interior-release-tracks">
 			<h2>Total {{tracks.length}}</h2>
 			<div class="bucket-track-header">
-				<div class="bucket-track-header-meta">    
+				<div class="bucket-track-header-meta">
 			      <p class="buk-track-title bucket-track-header-col">Title</p>
-			      <p class="buk-track-artists bucket-track-header-col">Artists</p>		      
+			      <p class="buk-track-artists bucket-track-header-col">Artists</p>
 			      <p class="buk-track-genre bucket-track-header-col">Genre</p>
 			      <p class="buk-track-length bucket-track-header-col">Length</p>
 			    </div>
@@ -54,10 +57,10 @@
 			                <span class="buk-track-primary-title" title="{{track.title}}">{{track.title}}</span>
 			            </a>
 			          </p>
-			          <p class="buk-track-artists">		
+			          <p class="buk-track-artists">
 			    		<a ng-href="/tracks?artists={{artist.id}}" ng-repeat="artist in track.artists" ng-bind="artist.name + ($last ? '' : ', ')"></a>
 			    	  </p>
-			          <p class="buk-track-genre">	
+			          <p class="buk-track-genre">
 			    		<a ng-href="/tracks?genre={{track.genreId}}">{{track.genre}}</a>
 			          </p>
 			          <p class="buk-track-length">{{track.length}}</p>
@@ -72,11 +75,11 @@
 			              <button music-player add-song="track" class="playable-queue track-queue">
 			                <svg viewBox="0 0 200 200" class="queue-icon"><use xlink:href="/static/images/defs.svg#icon-add-queue"/></svg>
 			              </button>
-			              <div class="equalizer-container"></div>			              
+			              <div class="equalizer-container"></div>
 			            </div>
-			            <div ng-show="isLogged()" track="track" track-buy-button="1" download-button></div>
-			          </div>			
-			          <a href class="icon icon-ellipsis track-ellipsis mobile-action" onclick="toggleOpened(this)"></a>			
+			            <div style="display:flex" is-logged="isLogged()" track="track" track-buy-button="1" download-buttons></div>
+			          </div>
+			          <a href class="icon icon-ellipsis track-ellipsis mobile-action" onclick="toggleOpened(this)"></a>
 			        </div>
 				</li>
 			</ul>

@@ -11,7 +11,7 @@
 		          <svg viewBox="0 0 200 200" class="button-queue-icon"><use xlink:href="/static/images/defs.svg#icon-add-queue"/></svg>
 		        </button>
 	    	</div>
-	    	<div ng-show="isLogged()" class="in-cart" track="track" download-button></div>
+	    	<div style="display:flex" is-logged="isLogged()" track="track" download-buttons></div>
 	        <div class="share-buttons">
 	          <a href socialshare socialshare-provider="twitter" socialshare-hashtags="whoplaymusic" socialshare-url="{{url}}" class="share-button share-twitter-button"><span class="icon icon-twitter"></span></a>
 	          <a href socialshare socialshare-provider="facebook" socialshare-hashtags="whoplaymusic" socialshare-url="{{url}}" class="share-button share-facebook-button"><span class="icon icon-facebook"></span></a>

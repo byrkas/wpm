@@ -239,6 +239,21 @@ class BackendController extends AbstractActionController
         ]);
     }
     
+    public function trackInfoAction()
+    {
+        $id = (int) $this->params()->fromRoute('id', 0);
+        $track = $this->em->find('Application\Entity\Track',$id);
+        
+        if($track){
+            $info = $this->importManager->getAudioInfo($track->getFileDestination());
+            
+            echo "<pre>";
+            var_dump($info);
+        }
+        
+        exit;
+    }
+    
     public function downloadsAction()
     {
         $id = (int) $this->params()->fromRoute('id', 0);        

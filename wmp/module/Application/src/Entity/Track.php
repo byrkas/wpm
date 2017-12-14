@@ -79,6 +79,11 @@ class Track
     private $fileDestination;
 
     /**
+     * @ORM\Column(name="file_destination_mp3",type="string", length=255, nullable=false)
+     */
+    private $fileDestinationMp3;
+
+    /**
      * @ORM\Column(name="sample_destination",type="string", length=255, nullable=true)
      */
     private $sampleDestination;
@@ -146,6 +151,8 @@ class Track
             @unlink(realpath($this->getCover()));
         if ($this->getWave())
             @unlink(realpath($this->getWave()));
+        if ($this->getFileDestinationMp3())
+            @unlink(realpath($this->getFileDestinationMp3()));
     }
 
     /**
@@ -536,20 +543,38 @@ class Track
     {
         $this->isPublished = $isPublished;
     }
-    
+
+    /**
+     *
+     * @return the $fileDestinationMp3
+     */
+    public function getFileDestinationMp3()
+    {
+        return $this->fileDestinationMp3;
+    }
+
+    /**
+     *
+     * @param field_type $fileDestinationMp3            
+     */
+    public function setFileDestinationMp3($fileDestinationMp3)
+    {
+        $this->fileDestinationMp3 = $fileDestinationMp3;
+    }
+
     public function getNameDownload()
     {
         $name = '';
         $artists = $this->getArtists();
         $artsitsArr = [];
-        foreach ($artists as $artist){
+        foreach ($artists as $artist) {
             $artsitsArr[] = $artist->getName();
         }
-
+        
         $label = $this->getLabel();
-        $name .= implode(', ', $artsitsArr).' - '.$this->title;
-        if($label){
-            $name .= ' ['.$label->getName().']';
+        $name .= implode(', ', $artsitsArr) . ' - ' . $this->title;
+        if ($label) {
+            $name .= ' [' . $label->getName() . ']';
         }
         return $name;
     }

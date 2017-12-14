@@ -48,7 +48,8 @@ class ImportManager
         $audio = $getId3
             ->setOptionMD5Data(true)
             ->setOptionMD5DataSource(true)
-            ->setEncoding('UTF-8')
+            //->setEncoding('UTF-8')
+            ->setEncoding('ISO-8859-1')
             ->analyze($filePath);
            
        /*  unset($audio['comments']['picture']);
@@ -436,6 +437,23 @@ class ImportManager
         $audio->save($format,$filePath);
         
         return $filePath;
+    }
+    
+    static public function convertMp3($filePath)
+    {
+        $convertedPath = str_replace('.wav', '.mp3', $filePath);
+        
+        $ffmpeg = FFMpeg::create([
+            'ffmpeg.binaries'  => '/usr/bin/ffmpeg',
+            'ffprobe.binaries' => '/usr/bin/ffprobe',
+            'timeout'          => 3600, // The timeout for the underlying process
+            'ffmpeg.threads'   => 12,   // The number of threads that FFMpeg should use
+        ]);
+        $format = new \FFMpeg\Format\Audio\Mp3();
+        $audio = $ffmpeg->open($filePath);
+        $audio->save($format,$convertedPath);
+        
+        return $convertedPath;
     }
         
 }

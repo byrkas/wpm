@@ -5,7 +5,7 @@ angular.module('WhoPlayMusic').factory( 'Downloads', function($resource, $rootSc
 				headers : {
 					'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
 					}
-		  }		
+		  }
 		});
 });
 
@@ -17,11 +17,11 @@ angular.module('WhoPlayMusic').factory( 'DownloadArchive', function($resource, $
 					headers : {
 						'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
 						}
-			  }		
+			  }
 			});
 	});
 
-angular.module('WhoPlayMusic').controller('MyDownloadsController', function($scope, $http, $filter, Downloads, DownloadArchive, $routeParams, $rootScope, $location) { 	
+angular.module('WhoPlayMusic').controller('MyDownloadsController', function($scope, $http, $filter, Downloads, DownloadArchive, $routeParams, $rootScope, $location) {
   $scope.itemsPerPage = 50;
   $scope.currentPage = 1;
   $scope.maxSize = 3;
@@ -33,8 +33,8 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
   var orderBy = $filter('orderBy');
   var body = angular.element(document).find('body');
   $scope.pages = [];
-  $scope.totalPages = 0;  
-  $scope.activeType = 0;  
+  $scope.totalPages = 0;
+  $scope.activeType = 0;
   $scope.activeGenre = 0;
   $scope.activeLabel = 0;
   $scope.selectedArtists = [];
@@ -42,16 +42,16 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
   $scope.artists = [];
   $scope.types = [];
   $scope.labels = [];
-  $scope.genres = [];  
+  $scope.genres = [];
   $scope.startDate = '';
   $scope.endDate = '';
   $scope.releasedLast = '';
   $scope.onlyWav = 'off';
   $scope.applyDates = false;
-  
+
   if($routeParams.artists !== undefined){
 	  $scope.selectedArtists = $routeParams.artists.split(',');
-  }  
+  }
   if($routeParams.label !== undefined){
 	  $scope.activeLabel = parseInt($routeParams.label);
   }
@@ -81,7 +81,7 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
   if($routeParams.wav !== undefined){
 	  $scope.onlyWav = $routeParams.wav;
   }
-    
+
   $scope.query = function(page, limit){
 	  var search = $location.search();
 		 if(page===undefined){
@@ -148,10 +148,10 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 			 query.showPromo = $rootScope.globals.currentUser.quotes.showPromo;
 		 }
 		 $location.search(search);
-	 
+
 	  return query;
   }
-  
+
   $scope.getTracks = function(page, limit){
 	 var query = $scope.query(page, limit);
 	 body.addClass('waiting');
@@ -170,19 +170,19 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 			 if(page > $scope.totalPages){
 				 page = $scope.totalPages;
 			 }
-			 if (page > 0 && page <= $scope.totalPages) {				 
+			 if (page > 0 && page <= $scope.totalPages) {
 				  $scope.pages = getPages(page, $scope.totalPages, $scope.maxSize);
 			 }
 			 body.removeClass('waiting');
 			 $rootScope.isLoading = false;
-		})			
-  }  
-  
-  $scope.downloadArchive = function(predicate, reverse) {
+		})
+  }
+
+  $scope.downloadArchive = function() {
 		 $rootScope.isLoading = true;
 		 body.addClass('waiting');
 		 var query = $scope.query();
-		 
+
 	  $http.get('http://api.wpm.zeit.style/download-archive-stream/', {
 		  	params : query,
 			withCredentials: true,
@@ -193,27 +193,27 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 			}).then(function(response){
 				$rootScope.isLoading = false;
 				body.removeClass('waiting');
-				
+
 				var message = response.headers('X-CustomHeader');
  				if(message !== ''){
  					$rootScope.hasNotification = true;
 	        		$rootScope.notifMessage = message;
 	        		$rootScope.notifType = 'failure';
-	        		 
+
  				}
 				if(response.status == 200){
 					var data = response.data;
 	 				var filename = response.headers('X-filename');
-	 				
-	 		        var contentType = response.headers('content-type');	 		       
+
+	 		        var contentType = response.headers('content-type');
 	 		        var linkElement = document.createElement('a');
 	 		        try {
 	 		            var blob = new Blob([data], { type: contentType });
 	 		            var url = window.URL.createObjectURL(blob);
-	 		 
+
 	 		            linkElement.setAttribute('href', url);
 	 		            linkElement.setAttribute("download", filename);
-	 		 
+
 	 		            var clickEvent = new MouseEvent("click", {
 	 		                "view": window,
 	 		                "bubbles": true,
@@ -226,10 +226,9 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 				}else{
 					console.log(response);
 				}
-				 	
 			});
   };
-  
+
   $scope.order = function(predicate, reverse) {
 		$scope.predicate = predicate;
 		if($scope.predicate == predicate){
@@ -237,33 +236,33 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 		}else{
 			$scope.reverse = false;
 		}
-		
+
 		$scope.sortBy = predicate+'-'+($scope.reverse?'desc':'asc');
   };
-  
+
   $scope.resetAll = function(){
-	  $scope.activeType = 0;  
+	  $scope.activeType = 0;
 	  $scope.activeGenre = 0;
-	  $scope.activeLabel = 0;   
+	  $scope.activeLabel = 0;
 	  $scope.selectedArtists = [];
-  } 
-  
+  }
+
   //init
   $scope.getTracks();
   //end init
-  
+
   var listenerFilterHandler = function (newValue, oldValue, scope) {
     if (newValue === oldValue) { return;};
     $scope.getTracks();
   };
-  
+
   $scope.$watchGroup(['activeGenre','activeType','activeLabel','selectedArtists','sortBy','currentPage','itemsPerPage', 'applyDates','releasedLast','onlyWav'], listenerFilterHandler);
- 
-  function calculateTotalPages(){	  
+
+  function calculateTotalPages(){
       var totalPages = $scope.itemsPerPage < 1 ? 1 : Math.ceil($scope.totalItems / $scope.itemsPerPage);
       return Math.max(totalPages || 0, 1);
   };
-  
+
   function makePage(number, text, isActive) {
     return {
       number: number,
@@ -271,17 +270,17 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
       active: isActive
     };
   }
-  
+
   function getPages(currentPage, totalPages, maxSize) {
 	    var pages = [];
 	    var boundaryLinkNumbers = true;
-	    
+
 	    // Default page limits
 	    var startPage = 1, endPage = totalPages;
 	    var isMaxSized = maxSize < totalPages;
 
 	    // recompute if maxSize
-	    if (isMaxSized) {	      
+	    if (isMaxSized) {
 	        // Visible pages are paginated with maxSize
 	        startPage = (Math.ceil(currentPage / maxSize) - 1) * maxSize + 1;
 

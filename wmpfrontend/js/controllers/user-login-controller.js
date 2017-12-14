@@ -24,6 +24,7 @@ angular.module('WhoPlayMusic').factory('AuthenticationService',
                     quotes: quotes
                 }
             };
+            $rootScope.quotes = quotes;
 
             //$http.defaults.headers.common.Authorization = 'Basic ' + authdata; // jshint ignore:line
             $cookieStore.put('globals', $rootScope.globals);

@@ -30,18 +30,28 @@ class Album
      */
     private $date;
 
-    public function __construct($name, $date){
+    public function __construct($name, $date)
+    {
         $this->name = $name;
         $this->date = $date;
     }
 
     /**
      *
-     * @param field_type $name            
+     * @param field_type $name
      */
     public function setName($name)
     {
         $this->name = $name;
+    }
+
+    /**
+     *
+     * @return the $name
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
     /**
@@ -55,7 +65,7 @@ class Album
 
     /**
      *
-     * @param field_type $date            
+     * @param field_type $date
      */
     public function setDate($date)
     {

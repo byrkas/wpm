@@ -15,11 +15,11 @@ class TrackRepository extends EntityRepository
             ->leftJoin('t.Label', 'l')
             ->leftJoin('t.Album', 'r')
             ->leftJoin('t.Genre', 'g');
-        
+
         if (! empty($search)) {
             $query->andWhere('t.title like :search OR l.name like :search OR r.name like :search OR g.title like :search OR a.name like :search')->setParameter('search', '%' . $search . '%');
         }
-        
+
         return $query->getQuery()->getSingleScalarResult();
     }
 
@@ -39,14 +39,14 @@ class TrackRepository extends EntityRepository
             ->groupBy('t.id')
             ->setFirstResult($start)
             ->setMaxResults($limit);
-        
+
         if (! empty($order) && ! empty($orderBy)) {
             $query->addOrderBy($orderBy, $order);
         }
         if (! empty($search)) {
             $query->andWhere('t.title like :search OR l.name like :search OR r.name like :search OR g.title like :search OR a.name like :search')->setParameter('search', '%' . $search . '%');
         }
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -58,7 +58,7 @@ class TrackRepository extends EntityRepository
             ->setParameter('ids', $ids)
             ->getQuery()
             ->execute();
-        
+
         return $res;
     }
 
@@ -70,14 +70,14 @@ class TrackRepository extends EntityRepository
         ->leftJoin('d.User', 'u')
         ->where('d.Track = :track')
         ->setParameter('track',$trackId);
-    
+
         if (! empty($search)) {
              $query->andWhere('u.email like :search OR d.ip like :search')->setParameter('search', '%' . $search . '%');
         }
-    
+
         return $query->getQuery()->getSingleScalarResult();
     }
-    
+
     public function getDownloadsList($trackId, $start, $limit, $orderBy, $order, $search = '')
     {
         $query = $this->getEntityManager()->createQueryBuilder();
@@ -88,14 +88,14 @@ class TrackRepository extends EntityRepository
         ->setParameter('track',$trackId)
         ->setFirstResult($start)
         ->setMaxResults($limit);
-    
+
         if (! empty($order) && ! empty($orderBy)) {
             $query->addOrderBy($orderBy, $order);
         }
         if (! empty($search)) {
             $query->andWhere('u.email like :search OR d.ip like :search')->setParameter('search', '%' . $search . '%');
         }
-    
+
         return $query->getQuery()->getArrayResult();
     }
     public function publishAll()
@@ -106,7 +106,7 @@ class TrackRepository extends EntityRepository
             ->where('t.isPublished != 1')
             ->getQuery()
             ->execute();
-        
+
         return $res;
     }
 
@@ -117,21 +117,25 @@ class TrackRepository extends EntityRepository
             ->from('Application\Entity\Setting', 's')
             ->where('s.code = :code')
             ->setParameter('code', $code);
-        
+
         return $query->getQuery()->getSingleScalarResult();
     }
 
     public function checkTrackExist($title, $Label, $Artists)
     {
+        $titleSimple = str_replace('(Original Mix)', '', $title);
+        $titleSimple = str_replace('Original Mix', '', $titleSimple);
+
         $query = $this->getEntityManager()->createQueryBuilder();
         $query->select('t')
             ->from('Application\Entity\Track', 't')
-            ->where('t.title = :title')
+            ->where('t.title = :title OR t.title = :titleSimple')
             ->andWhere('t.Label = :label')
             ->setParameter('title', $title)
+            ->setParameter('titleSimple', $titleSimple)
             ->setParameter('label', $Label)
             ->setMaxResults(1);
-        
+
         $track = $query->getQuery()->getOneOrNullResult();
         if ($track) {
             $count = count($Artists);
@@ -141,7 +145,7 @@ class TrackRepository extends EntityRepository
             }
             return ($count == 0) ? $track : null;
         }
-        
+
         return null;
     }
 
@@ -151,7 +155,7 @@ class TrackRepository extends EntityRepository
         if (! $result) {
             $result = $this->searchLabelFunc($search, true);
         }
-        
+
         return $result;
     }
 
@@ -171,14 +175,14 @@ class TrackRepository extends EntityRepository
             }
             $search = $searchSimple;
         }
-        
+
         $query = $this->getEntityManager()->createQueryBuilder();
         $query->select('l')
             ->from('Application\Entity\Label', 'l')
             ->where('l.name like :search')
             ->setParameter('search', '%' . $search . '%')
             ->setMaxResults(1);
-        
+
         return $query->getQuery()->getOneOrNullResult();
     }
 
@@ -191,13 +195,13 @@ class TrackRepository extends EntityRepository
         foreach ($templateExploded as $tE) {
             $searchArr[] = $searchSimple . ' ' . ucfirst($tE);
         }
-        
+
         $query = $this->getEntityManager()->createQueryBuilder();
         $query->select('l')
             ->from('Application\Entity\Label', 'l')
             ->where('l.name in (:search)')
             ->setParameter('search', $searchArr);
-        
+
         return $query->getQuery()->getOneOrNullResult();
     }
 
@@ -211,7 +215,7 @@ class TrackRepository extends EntityRepository
             ->setParameter('now', date('Y-m-d H:i:s'))
             ->groupBy('tt.id')
             ->orderBy('cnt', 'DESC');
-        
+
         if (isset($filter['trackIds'])) {
             $query->andWhere('t.id IN (:tracks)')->setParameter('tracks', $filter['trackIds']);
         }
@@ -243,7 +247,7 @@ class TrackRepository extends EntityRepository
                     ->setParameter('user', $filter['user']);
             }
         }
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -258,7 +262,7 @@ class TrackRepository extends EntityRepository
             ->groupBy('g.id')
             ->orderBy('cnt', 'DESC')
             ->setMaxResults(50);
-        
+
         if (isset($filter['trackIds'])) {
             $query->andWhere('t.id IN (:tracks)')->setParameter('tracks', $filter['trackIds']);
         }
@@ -287,7 +291,7 @@ class TrackRepository extends EntityRepository
                     ->setParameter('user', $filter['user']);
             }
         }
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -302,7 +306,7 @@ class TrackRepository extends EntityRepository
             ->groupBy('l.id')
             ->orderBy('cnt', 'DESC')
             ->setMaxResults(50);
-        
+
         if (isset($filter['trackIds'])) {
             $query->andWhere('t.id IN (:tracks)')->setParameter('tracks', $filter['trackIds']);
         }
@@ -334,7 +338,7 @@ class TrackRepository extends EntityRepository
                     ->setParameter('user', $filter['user']);
             }
         }
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -349,7 +353,7 @@ class TrackRepository extends EntityRepository
             ->groupBy('a.id')
             ->orderBy('cnt', 'DESC')
             ->setMaxResults(50);
-        
+
         if (isset($filter['trackIds'])) {
             $query->andWhere('t.id IN (:tracks)')->setParameter('tracks', $filter['trackIds']);
         }
@@ -378,16 +382,16 @@ class TrackRepository extends EntityRepository
                     ->setParameter('user', $filter['user']);
             }
         }
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
     public function getTracks($limit, $start, $filter = [], $sortBy = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('t.id', 't.title as title', 't.publishDate as release', 'GROUP_CONCAT(a.name) as artists', 
+        $query->select('t.id', 't.title as title', 't.publishDate as release', 'GROUP_CONCAT(a.name) as artists',
             't.playtimeString as length', "REPLACE(t.wave, 'public/','/') as wave", 't.fileFormat',
-            "REPLACE(t.sampleDestination, 'public/','/') as sample", "REPLACE(t.cover, 'public/','/') as cover", 'l.name as label', 'l.id as labelId', 
+            "REPLACE(t.sampleDestination, 'public/','/') as sample", "REPLACE(t.cover, 'public/','/') as cover", 'l.name as label', 'l.id as labelId',
             'r.name as album', 'r.id as albumId', 'g.title as genre', 'g.id as genreId', 'tt.name as type', 'tt.id as typeId')
             ->from('Application\Entity\Track', 't')
             ->leftJoin('t.Artists', 'a')
@@ -403,7 +407,7 @@ class TrackRepository extends EntityRepository
         if (! empty($sortBy)) {
             $query->orderBy($sortBy[0], $sortBy[1]);
         }
-        
+
         if(isset($filter['search'])){
             $query
             ->andWhere('t.title like :search OR l.name like :search OR r.name like :search')
@@ -441,7 +445,7 @@ class TrackRepository extends EntityRepository
             $yesterday = new \DateTime('yesterday');
             $week = new \DateTime('7 days ago');
             $month = new \DateTime('7 days ago');
-            
+
             switch ($filter['last']) {
                 case '0d':
                     $query->andWhere('DATE(t.publishDate) = :today')->setParameter('today', $today->format('Y-m-d'));
@@ -463,7 +467,7 @@ class TrackRepository extends EntityRepository
                     break;
             }
         }
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -475,7 +479,7 @@ class TrackRepository extends EntityRepository
             ->where('t.publishDate <= :now AND t.isPublished = 1')
             ->setParameter('now', date('Y-m-d H:i:s'))
             ->setMaxResults(1);
-        
+
         if(isset($filter['search'])){
             $query->leftJoin('t.Artists', 'a')
             ->leftJoin('t.Label','l')
@@ -483,7 +487,7 @@ class TrackRepository extends EntityRepository
             ->andWhere('t.title like :search OR l.name like :search OR al.name like :search')
             ->setParameter('search','%'.$filter['search'].'%');
         }
-        
+
         if (isset($filter['type'])) {
             $query->andWhere('t.TrackType = :type')->setParameter('type', $filter['type']);
         }
@@ -518,7 +522,7 @@ class TrackRepository extends EntityRepository
             $yesterday = new \DateTime('yesterday');
             $week = new \DateTime('7 days ago');
             $month = new \DateTime('7 days ago');
-            
+
             switch ($filter['last']) {
                 case '0d':
                     $query->andWhere('DATE(t.publishDate) = :today')->setParameter('today', $today->format('Y-m-d'));
@@ -540,7 +544,7 @@ class TrackRepository extends EntityRepository
                     break;
             }
         }
-        
+
         return $query->getQuery()->getSingleScalarResult();
     }
 
@@ -560,13 +564,13 @@ class TrackRepository extends EntityRepository
             ->groupBy('t.id')
             ->setMaxResults($limit)
             ->setFirstResult($start);
-        
+
         if (! empty($sortBy)) {
             if ($sortBy[0] == 'created')
                 $sortBy[0] = 'd.created';
             $query->orderBy($sortBy[0], $sortBy[1]);
         }
-        
+
         if (isset($filter['type'])) {
             $query->andWhere('tt.id = :type')->setParameter('type', $filter['type']);
         }
@@ -590,7 +594,7 @@ class TrackRepository extends EntityRepository
             $yesterday = new \DateTime('yesterday');
             $week = new \DateTime('7 days ago');
             $month = new \DateTime('7 days ago');
-            
+
             switch ($filter['last']) {
                 case '0d':
                     $query->andWhere('DATE(t.publishDate) = :today')->setParameter('today', $today->format('Y-m-d'));
@@ -612,7 +616,7 @@ class TrackRepository extends EntityRepository
                     break;
             }
         }
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -624,7 +628,7 @@ class TrackRepository extends EntityRepository
             ->leftJoin('d.Track', 't')
             ->where('d.User = :user')
             ->setParameter('user', $user);
-        
+
         if (isset($filter['type'])) {
             $query->andWhere('t.TrackType = :type')->setParameter('type', $filter['type']);
         }
@@ -647,7 +651,7 @@ class TrackRepository extends EntityRepository
             $yesterday = new \DateTime('yesterday');
             $week = new \DateTime('7 days ago');
             $month = new \DateTime('7 days ago');
-            
+
             switch ($filter['last']) {
                 case '0d':
                     $query->andWhere('DATE(t.publishDate) = :today')->setParameter('today', $today->format('Y-m-d'));
@@ -669,7 +673,7 @@ class TrackRepository extends EntityRepository
                     break;
             }
         }
-        
+
         return $query->getQuery()->getSingleScalarResult();
     }
 
@@ -686,13 +690,13 @@ class TrackRepository extends EntityRepository
             ->groupBy('t.id')
             ->setMaxResults($limit)
             ->setFirstResult($start);
-        
+
         if (! empty($sortBy)) {
             if ($sortBy[0] == 'created')
                 $sortBy[0] = 'd.created';
             $query->orderBy($sortBy[0], $sortBy[1]);
         }
-        
+
         if (isset($filter['type'])) {
             $query->andWhere('t.TrackType = :type')->setParameter('type', $filter['type']);
         }
@@ -718,7 +722,29 @@ class TrackRepository extends EntityRepository
         if (isset($filter['wav'])) {
             $query->andWhere("t.fileType = 'audio/x-wave'");
         }
-        
+
+        return $query->getQuery()->getArrayResult();
+    }
+
+    public function getTracksForArchive($limit, $start, $filter = [], $sortBy = [])
+    {
+        $query = $this->getEntityManager()->createQueryBuilder();
+        $query->select('t.id', 't.fileDestination', 't.title', 't.fileSize', 't.crc32',
+            'l.name as label', "GROUP_CONCAT(a.name SEPARATOR ', ') as artists",'tt.name as type')
+        ->from('Application\Entity\Track', 't')
+        ->leftJoin('t.Artists', 'a')
+        ->leftJoin('t.Label', 'l')
+        ->leftJoin('t.TrackType','tt')
+        ->groupBy('t.id')
+        ->setMaxResults($limit)
+        ->setFirstResult($start);
+
+        if (isset($filter['album'])) {
+            $query->leftJoin('t.Album', 'r')
+            ->andWhere('r.id = :album')
+            ->setParameter('album', $filter['album']);
+        }
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -738,13 +764,13 @@ class TrackRepository extends EntityRepository
             ->groupBy('t.id')
             ->setMaxResults($limit)
             ->setFirstResult($start);
-        
+
         if (! empty($sortBy)) {
             if ($sortBy[0] == 'created')
                 $sortBy[0] = 'f.created';
             $query->orderBy($sortBy[0], $sortBy[1]);
         }
-        
+
         if (isset($filter['type'])) {
             $query->andWhere('tt.id = :type')->setParameter('type', $filter['type']);
         }
@@ -768,7 +794,7 @@ class TrackRepository extends EntityRepository
             $yesterday = new \DateTime('yesterday');
             $week = new \DateTime('7 days ago');
             $month = new \DateTime('7 days ago');
-            
+
             switch ($filter['last']) {
                 case '0d':
                     $query->andWhere('DATE(t.publishDate) = :today')->setParameter('today', $today->format('Y-m-d'));
@@ -790,7 +816,7 @@ class TrackRepository extends EntityRepository
                     break;
             }
         }
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -802,7 +828,7 @@ class TrackRepository extends EntityRepository
             ->leftJoin('f.Track', 't')
             ->where('f.User = :user')
             ->setParameter('user', $user);
-        
+
         if (isset($filter['type'])) {
             $query->andWhere('t.TrackType = :type')->setParameter('type', $filter['type']);
         }
@@ -825,7 +851,7 @@ class TrackRepository extends EntityRepository
             $yesterday = new \DateTime('yesterday');
             $week = new \DateTime('7 days ago');
             $month = new \DateTime('7 days ago');
-            
+
             switch ($filter['last']) {
                 case '0d':
                     $query->andWhere('DATE(t.publishDate) = :today')->setParameter('today', $today->format('Y-m-d'));
@@ -847,7 +873,7 @@ class TrackRepository extends EntityRepository
                     break;
             }
         }
-        
+
         return $query->getQuery()->getSingleScalarResult();
     }
 
@@ -868,11 +894,11 @@ class TrackRepository extends EntityRepository
             ->setMaxResults($limit)
             ->orderBy('cnt', 'DESC')
             ->having('cnt > 0');
-        
+
         if (! empty($sortBy)) {
             $query->addOrderBy($sortBy[0], $sortBy[1]);
         }
-        
+
         if (isset($filter['type'])) {
             $query->andWhere('tt.id = :type')->setParameter('type', $filter['type']);
         }
@@ -891,7 +917,7 @@ class TrackRepository extends EntityRepository
         if (isset($filter['showPromo']) && (!$filter['showPromo'] || $filter['showPromo'] == 'false')) {
             $query->andWhere('t.TrackType != 2');
         }
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -903,7 +929,7 @@ class TrackRepository extends EntityRepository
             ->leftJoin('t.Artists', 'a')
             ->where('t.id = :track')
             ->setParameter('track', $trackId);
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -916,7 +942,7 @@ class TrackRepository extends EntityRepository
             ->where('t.Album = :album')
             ->setParameter('album', $albumId)
             ->groupBy('a.id');
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -928,7 +954,7 @@ class TrackRepository extends EntityRepository
             ->where('t.id = :id')
             ->setParameter('id', $id)
             ->setMaxResults(1);
-        
+
         return $query->getQuery()->getOneOrNullResult();
     }
 
@@ -942,7 +968,7 @@ class TrackRepository extends EntityRepository
             ->setParameter('id', $id)
             ->groupBy('t.id')
             ->setMaxResults(1);
-        
+
         return $query->getQuery()->getOneOrNullResult();
     }
 
@@ -956,7 +982,7 @@ class TrackRepository extends EntityRepository
             ->where('a.id = :id')
             ->setParameter('id', $id)
             ->setMaxResults(1);
-        
+
         return $query->getQuery()->getOneOrNullResult();
     }
 
@@ -974,7 +1000,7 @@ class TrackRepository extends EntityRepository
             ->setParameter('id', $id)
             ->groupBy('t.id')
             ->setMaxResults(1);
-        
+
         return $query->getQuery()->getOneOrNullResult();
     }
 
@@ -988,7 +1014,7 @@ class TrackRepository extends EntityRepository
             ->where('a.id = :id')
             ->setParameter('id', $id)
             ->setMaxResults(1);
-        
+
         return $query->getQuery()->getOneOrNullResult();
     }
 
@@ -1000,7 +1026,7 @@ class TrackRepository extends EntityRepository
             ->where('a.name like :search')
             ->setParameter('search', '%' . $search . '%')
             ->setMaxResults($limit);
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -1012,7 +1038,7 @@ class TrackRepository extends EntityRepository
             ->where('a.name like :search')
             ->setParameter('search', '%' . $search . '%')
             ->setMaxResults($limit);
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -1024,7 +1050,7 @@ class TrackRepository extends EntityRepository
             ->where('a.name like :search')
             ->setParameter('search', '%' . $search . '%')
             ->setMaxResults($limit);
-        
+
         return $query->getQuery()->getArrayResult();
     }
 
@@ -1036,7 +1062,7 @@ class TrackRepository extends EntityRepository
             ->where('a.title like :search')
             ->setParameter('search', '%' . $search . '%')
             ->setMaxResults($limit);
-        
+
         return $query->getQuery()->getArrayResult();
     }
-}   
+}

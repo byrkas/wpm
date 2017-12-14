@@ -1,0 +1,19 @@
+<div class="buy-button" ng-class="{'track-buy-button': trackBuyButton,'loading':downloading, 'in-cart': isDownloaded(track.id), 'opened':lunch}" ng-show="track.fileFormat == 'riff'">
+    <button class="add-to-default" ng-click="download()">WAV</button>
+</div>
+<div class="buy-button pre-order" ng-class="{'track-buy-button': trackBuyButton,'loading':downloading, 'in-cart': isDownloaded(track.id), 'opened':lunch}" ng-show="track.fileFormat == 'mp3' || track.fileFormat == 'mp4'">
+    <button class="add-to-default" ng-click="download()">MP3</button>
+</div>
+<div class="buy-button pre-order" ng-class="{'track-buy-button': trackBuyButton,'loading':downloading, 'in-cart': isDownloaded(track.id), 'opened':lunch}" ng-show="track.fileFormat == 'riff'">
+    <button class="add-to-default" ng-click="download('mp3')">MP3</button>
+</div>
+<div class="fav-button" ng-show="isLogged">
+    <button ng-show="!track.isFavorite" class="add-new-cart" ng-click="addFavorite()">
+        <svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"/></svg>
+            Add to favorites
+    </button>
+    <button ng-show="track.isFavorite" class="add-new-cart" ng-click="removeFavorite()">
+        <svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"/></svg>
+            Remove from favorites
+    </button>
+</div>

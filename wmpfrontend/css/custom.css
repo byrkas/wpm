@@ -57,3 +57,12 @@ footer {
 .filter-drop {
     max-height: 430px;
 }
+.fav-button .add-new-cart{color:#fff;font-size:11px;margin:10px 0;}
+.fav-button .cart-menu-default-icon {
+    fill: #ff53a0;
+    width: 13px;
+    height: 13px;
+    position: relative;
+    top: 1px;
+    margin-right: 2px;
+}

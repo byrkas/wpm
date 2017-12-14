@@ -127,6 +127,7 @@ angular.module('WhoPlayMusic').config(
 							$rootScope.footer = $cookieStore.get('footer') || '';
 							$rootScope.isLoading = false;
 							$rootScope.globals = $cookieStore.get('globals') || {};
+							$rootScope.quotes = $rootScope.globals.currentUser.quotes || {};
 							
 							$rootScope.$on("$routeChangeStart", function (event, next, current) {
 								$http.get('http://api.wpm.zeit.style/is-maintain/').then(function(response){
@@ -183,6 +184,11 @@ angular.module('WhoPlayMusic').config(
 							$rootScope.isCurrentPlaying = function(id)
 							{
 								return ($cookieStore.get('currentPlaying') == id);
+							}
+							$rootScope.isDownloaded = function(id)
+							{
+								var downloaded = $cookieStore.get('downloaded') || [];
+								return (downloaded.indexOf(id) > -1 );
 							}
 							
 							$rootScope.playedList = function(id)
