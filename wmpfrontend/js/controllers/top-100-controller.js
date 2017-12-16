@@ -2,14 +2,14 @@ angular.module('WhoPlayMusic').factory( 'Top', function($resource, $rootScope){
   return $resource('http://api.wpm.zeit.style/top');
 });
 
-angular.module('WhoPlayMusic').controller('TopController', function($scope, $http, $filter, Top, $routeParams, $rootScope, $location) {   
+angular.module('WhoPlayMusic').controller('TopController', function($scope, $http, $filter, Top, $routeParams, $rootScope, $location, $window, $httpParamSerializer) {
   $scope.predicate = '';
   $scope.reverse = true;
   $scope.sortBy = 'release-desc';
   $scope.tracks = [];
   var orderBy = $filter('orderBy');
   var body = angular.element(document).find('body');
-  $scope.activeType = 0;  
+  $scope.activeType = 0;
   $scope.activeGenre = 0;
   $scope.activeLabel = 0;
   $scope.selectedArtists = [];
@@ -18,10 +18,11 @@ angular.module('WhoPlayMusic').controller('TopController', function($scope, $htt
   $scope.types = [];
   $scope.labels = [];
   $scope.genres = [];
-  
+  $scope.queryParams = {};
+
   if($routeParams.artists !== undefined){
 	  $scope.selectedArtists = $routeParams.artists.split(',');
-  }  
+  }
   if($routeParams.label !== undefined){
 	  $scope.activeLabel = parseInt($routeParams.label);
   }
@@ -43,13 +44,13 @@ angular.module('WhoPlayMusic').controller('TopController', function($scope, $htt
   if($routeParams.type !== undefined){
 	  $scope.activeType = $routeParams.type;
   }
-    
-  $scope.getTracks = function(){
+
+  $scope.query = function(){
 	 var search = $location.search();
 	 if($scope.sortBy != 'release-desc'){
 		 search.sort = $scope.sortBy;
 	 }
-	 
+
 	 var query = {sort: $scope.sortBy};
 	 if($scope.activeType > 0){
 		 query.type = $scope.activeType;
@@ -91,20 +92,49 @@ angular.module('WhoPlayMusic').controller('TopController', function($scope, $htt
 	 if($rootScope.globals.currentUser){
 		 query.showPromo = $rootScope.globals.currentUser.quotes.showPromo;
 	 }
+
 	 $location.search(search);
-	 
+	 $scope.queryParams = query;
+
+	 return query;
+  }
+
+  $scope.getTracks = function(){
+	 var query = $scope.query();
+
 	 body.addClass('waiting');
 	 Top.get(query, function(response){
 			 $scope.tracks = response.tracks;
 			 $scope.artists = response.artists;
 			 $scope.types = response.types;
 			 $scope.labels = response.labels;
-			 $scope.genres = response.genres;			 
+			 $scope.genres = response.genres;
 			 body.removeClass('waiting');
 		})
-			
-  }  
-  
+  }
+
+  $scope.downloadArchive = function() {
+		$rootScope.isLoading = true;
+		$http.get('http://api.wpm.zeit.style/download-top/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams)).then(function(response){
+	    		$rootScope.isLoading = false;
+				if(!response.data.success){
+					$location.path('/payment-page');
+				}else{
+					$scope.quoteSub = response.data.quoteSub;
+					$scope.quote = response.data.quote;
+					$window.location = 'http://api.wpm.zeit.style/download-top-stream/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams);
+					$scope.downloaded = true;
+  				if($scope.quoteSub && $scope.quote.length > 0){
+  					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;
+  					$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.quoteExclusive;
+
+  					$cookieStore.put('globals', $rootScope.globals);
+  					$rootScope.quotes = $scope.quote;
+  				}
+				}
+			})
+	};
+
   $scope.order = function(predicate, reverse) {
 		$scope.predicate = predicate;
 		if($scope.predicate == predicate){
@@ -112,26 +142,26 @@ angular.module('WhoPlayMusic').controller('TopController', function($scope, $htt
 		}else{
 			$scope.reverse = false;
 		}
-		
+
 		$scope.sortBy = predicate+'-'+($scope.reverse?'desc':'asc');
   };
-  
+
   $scope.resetAll = function(){
-	  $scope.activeType = 0;  
+	  $scope.activeType = 0;
 	  $scope.activeGenre = 0;
-	  $scope.activeLabel = 0;   
+	  $scope.activeLabel = 0;
 	  $scope.selectedArtists = [];
-  } 
-  
+  }
+
   //init
   $scope.getTracks();
   //end init
-  
+
   var listenerFilterHandler = function (newValue, oldValue, scope) {
     if (newValue === oldValue) { return;};
     $scope.getTracks();
   };
-  
+
   $scope.$watchGroup(['activeGenre','activeType','activeLabel','selectedArtists','sortBy'], listenerFilterHandler);
- 
+
 });

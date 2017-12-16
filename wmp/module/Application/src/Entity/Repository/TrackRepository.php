@@ -471,6 +471,96 @@ class TrackRepository extends EntityRepository
         return $query->getQuery()->getArrayResult();
     }
 
+    public function getTrackIds($limit, $start, $filter = [], $sortBy = [])
+    {
+        $query = $this->getEntityManager()->createQueryBuilder();
+        $query->select('t.id', 't.title as title', 't.publishDate as release', 'GROUP_CONCAT(a.name) as artists',
+            't.fileFormat', 'l.name as label', 'l.id as labelId',
+            'r.name as album', 'r.id as albumId', 'g.title as genre', 'g.id as genreId', 'tt.name as type', 'tt.id as typeId')
+            ->from('Application\Entity\Track', 't')
+            ->leftJoin('t.Artists', 'a')
+            ->leftJoin('t.Label', 'l')
+            ->leftJoin('t.Album', 'r')
+            ->leftJoin('t.Genre', 'g')
+            ->leftJoin('t.TrackType', 'tt')
+            ->where('t.publishDate <= :now AND t.isPublished = 1')
+            ->setParameter('now', date('Y-m-d H:i:s'))
+            ->groupBy('t.id')
+            ->setMaxResults($limit)
+            ->setFirstResult($start);
+            if (! empty($sortBy)) {
+                $query->orderBy($sortBy[0], $sortBy[1]);
+            }
+
+            if(isset($filter['search'])){
+                $query
+                ->andWhere('t.title like :search OR l.name like :search OR r.name like :search')
+                ->setParameter('search','%'.$filter['search'].'%');
+            }
+            if (isset($filter['type'])) {
+                $query->andWhere('tt.id = :type')->setParameter('type', $filter['type']);
+            }
+            if (isset($filter['artists'])) {
+                $query->andWhere('a.id IN (:artists)')->setParameter('artists', $filter['artists']);
+            }
+            if (isset($filter['label'])) {
+                $query->andWhere('l.id = :label')->setParameter('label', $filter['label']);
+            }
+            if (isset($filter['genre'])) {
+                $query->andWhere('g.id = :genre')->setParameter('genre', $filter['genre']);
+            }
+            if (isset($filter['album'])) {
+                $query->andWhere('r.id = :album')->setParameter('album', $filter['album']);
+            }
+            if (isset($filter['start'])) {
+                $query->andWhere('t.publishDate >= :start')->setParameter('start', $filter['start'] . ' 00:00');
+            }
+            if (isset($filter['end'])) {
+                $query->andWhere('t.publishDate <= :end')->setParameter('end', $filter['end'] . ' 23:59');
+            }
+            if (isset($filter['wav'])) {
+                $query->andWhere("t.fileType = 'audio/x-wave'");
+            }
+            if (isset($filter['showPromo']) && (!$filter['showPromo'] || $filter['showPromo'] == 'false')) {
+                $query->andWhere('t.TrackType != 2');
+            }
+            if (isset($filter['last'])) {
+                $today = new \DateTime();
+                $yesterday = new \DateTime('yesterday');
+                $week = new \DateTime('7 days ago');
+                $month = new \DateTime('7 days ago');
+
+                switch ($filter['last']) {
+                    case '0d':
+                        $query->andWhere('DATE(t.publishDate) = :today')->setParameter('today', $today->format('Y-m-d'));
+                        break;
+                    case '1d':
+                        $query->andWhere('t.publishDate BETWEEN :startB AND :endB')
+                        ->setParameter('startB', $yesterday->format('Y-m-d') . ' 00:00')
+                        ->setParameter('endB', $yesterday->format('Y-m-d') . ' 23:59');
+                        break;
+                    case '7d':
+                        $query->andWhere('t.publishDate BETWEEN :startB AND :endB')
+                        ->setParameter('startB', $week->format('Y-m-d') . ' 00:00')
+                        ->setParameter('endB', $today->format('Y-m-d') . ' 23:59');
+                        break;
+                    case '30d':
+                        $query->andWhere('t.publishDate BETWEEN :startB AND :endB')
+                        ->setParameter('startB', $month->format('Y-m-d') . ' 00:00')
+                        ->setParameter('endB', $today->format('Y-m-d') . ' 23:59');
+                        break;
+                }
+            }
+
+        $result = $query->getQuery()->getArrayResult();
+        $ids = [];
+
+        foreach ($result as $entry){
+            $ids[] = $entry['id'];
+        }
+        return $ids;
+    }
+
     public function getTotalTracks($filter = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
@@ -733,16 +823,35 @@ class TrackRepository extends EntityRepository
             'l.name as label', "GROUP_CONCAT(a.name SEPARATOR ', ') as artists",'tt.name as type')
         ->from('Application\Entity\Track', 't')
         ->leftJoin('t.Artists', 'a')
-        ->leftJoin('t.Label', 'l')
         ->leftJoin('t.TrackType','tt')
+        ->leftJoin('t.Label','l')
         ->groupBy('t.id')
         ->setMaxResults($limit)
         ->setFirstResult($start);
 
-        if (isset($filter['album'])) {
-            $query->leftJoin('t.Album', 'r')
-            ->andWhere('r.id = :album')
-            ->setParameter('album', $filter['album']);
+        if(isset($filter['trackIds']) && !empty($filter['trackIds'])){
+            $query->andWhere('t.id IN (:ids)')->setParameter('ids',$filter['trackIds']);
+        }else{
+            if (isset($filter['album'])) {
+                $query->andWhere('t.Album = :album')->setParameter('album', $filter['album']);
+            }
+            if (isset($filter['type'])) {
+                $query->andWhere('tt.id = :type')->setParameter('type', $filter['type']);
+            }
+            if (isset($filter['artists'])) {
+                $query
+                ->leftJoin('t.Artists', 'a')
+                ->andWhere('a.id IN (:artists)')->setParameter('artists', $filter['artists']);
+            }
+            if (isset($filter['label'])) {
+                $query->andWhere('t.Label = :label')->setParameter('label', $filter['label']);
+            }
+            if (isset($filter['genre'])) {
+                $query->andWhere('t.Genre = :genre')->setParameter('genre', $filter['genre']);
+            }
+            if (isset($filter['showPromo']) && (!$filter['showPromo'] || $filter['showPromo'] == 'false')) {
+                $query->andWhere('t.TrackType != 2');
+            }
         }
 
         return $query->getQuery()->getArrayResult();

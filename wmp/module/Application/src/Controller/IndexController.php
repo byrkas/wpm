@@ -732,6 +732,429 @@ class IndexController extends AbstractActionController
         return new JsonModel($result);
     }
 
+    public function downloadTopAction()
+    {
+        $now = new \DateTime(date('Y-m-d') . ' 23:59:59');
+        $result = [];
+        $success = false;
+        $messages = [];
+        $quote = [];
+        $quoteSub = false;
+        $request = $this->getRequest();
+        $userId = null;
+        $this->checkAuthorization($request);
+        if (! empty($this->tokenPayload)) {
+            $userId = $this->tokenPayload->id;
+            if ($userId) {
+                $user = $this->em->find('Application\Entity\User', $userId);
+                $expireDate = $user->getExpireDate();
+                $quotePromo = $user->getQuotePromo();
+                $quoteExclusive = $user->getQuoteExclusive();
+
+                if($expireDate >= $now){
+                    $filter = [
+                        'trackIds' => []
+                    ];
+                    $filter['showPromo'] = $this->params()->fromQuery('showPromo', true);
+                    $limit = (int) $this->params()->fromQuery('limit', 100);
+
+                    if ($this->params()->fromQuery('artists')) {
+                        $filter['artists'] = explode(',', $this->params()->fromQuery('artists'));
+                    }
+                    if ($this->params()->fromQuery('genre')) {
+                        $filter['genre'] = (int) $this->params()->fromQuery('genre');
+                    }
+                    if ($this->params()->fromQuery('label')) {
+                        $filter['label'] = (int) $this->params()->fromQuery('label');
+                    }
+                    if ($this->params()->fromQuery('type')) {
+                        $filter['type'] = (int) $this->params()->fromQuery('type');
+                    }
+
+                    $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksTop($limit, $filter);
+                    $trackIds = [];
+                    foreach ($tracks as $trEntry){
+                        $trackIds[] = $trEntry['id'];
+                    }
+                    $filter['trackIds'] = $trackIds;
+                    $tracks = $this->em->getRepository('Application\Entity\Track')->findBy(['id' => $filter['trackIds']]);
+                    foreach ($tracks as $track){
+                        $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
+                            'User' => $user,
+                            'Track' => $track
+                        ]);
+                        if ($downloaded) {
+                            $success = true;
+                        } else {
+                            $quoteType = 'quote' . $track->getTrackType()->getName();
+
+                            if (($quoteType == 'quotePromo' && $quotePromo > 0) || ($quoteType == 'quoteExclusive' && $quoteExclusive > 0)) {
+                                $success = true;
+                                $quoteSub = true;
+                                if($quoteType == 'quotePromo')
+                                    $quotePromo--;
+                                    else
+                                        $quoteExclusive--;
+                            } else {
+                                $messages[] = 'Quote was expired';
+                                break;
+                            }
+                        }
+                    }
+                    if($quoteSub){
+                        $quote = [
+                            'quotePromo'    =>  $quotePromo,
+                            'quoteExclusive'    =>  $quoteExclusive,
+                        ];
+                    }
+                } else {
+                    $messages[] = 'Quote was expired '.$expireDate->format('Y-m-d H:i').' '.$now->format('Y-m-d H:i');
+                }
+            }
+        } else {
+            $messages[] = 'User is not authorized!';
+        }
+        $result['success'] = $success;
+        $result['messages'] = implode(' ', $messages);
+        $result['quoteSub'] = $quoteSub;
+        $result['quote'] = $quote;
+
+        return new JsonModel($result);
+    }
+
+    public function downloadTopStreamAction()
+    {
+        $nameFilter = new \Zend\Filter\Word\SeparatorToDash();
+        $request = $this->getRequest();
+        $remoteAddr = $request->getServer('REMOTE_ADDR');
+        $userId = null;
+        $maxSize = 4;
+        $maxSizeLimited = false;
+
+        $this->checkAuthorization($request);
+        if (! empty($this->tokenPayload)) {
+            $userId = $this->tokenPayload->id;
+
+            if ($userId) {
+                $User = $this->em->getReference('Application\Entity\User',$userId);
+                $filter = [
+                    'trackIds' => []
+                ];
+                $filter['showPromo'] = $this->params()->fromQuery('showPromo', true);
+                $limit = (int) $this->params()->fromQuery('limit', 100);
+
+                if ($this->params()->fromQuery('artists')) {
+                    $filter['artists'] = explode(',', $this->params()->fromQuery('artists'));
+                }
+                if ($this->params()->fromQuery('genre')) {
+                    $filter['genre'] = (int) $this->params()->fromQuery('genre');
+                }
+                if ($this->params()->fromQuery('label')) {
+                    $filter['label'] = (int) $this->params()->fromQuery('label');
+                }
+                if ($this->params()->fromQuery('type')) {
+                    $filter['type'] = (int) $this->params()->fromQuery('type');
+                }
+
+                $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksTop($limit, $filter);
+                $trackIds = [];
+                foreach ($tracks as $trEntry){
+                    $trackIds[] = $trEntry['id'];
+                }
+                $filter['trackIds'] = $trackIds;
+
+                $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksForArchive($limit, 0, $filter);
+
+                $zipName = date('d_m_Y').'_top_'.count($tracks).'.zip';
+                $contentArr = [];
+                $bytes = 0;
+
+                foreach ($tracks as $track) {
+                    $size = $track['fileSize'];
+                    $bytes += $size;
+                    if ($this->formatSizeGb($bytes) > $maxSize) {
+                        $maxSizeLimited = true;
+                        break;
+                    }
+                    $fileName = $track['artists'].' - '.$track['title'].(($track['label'])?' ['.$track['label'].']':'') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $filePath = str_replace('public/', '/', $track['fileDestination']);
+                    $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
+                    $contentArr[] = "$crc32 $size $filePath $fileName";
+
+                    $Track = $this->em->getReference('Application\Entity\Track',$track['id']);
+
+                    $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
+                        'User' => $User,
+                        'Track' => $track
+                    ]);
+                    if (! $downloaded) {
+                        $User->subQuote($track['type']);
+                    }
+                    $download = new Download($Track, $User);
+                    $download->setIp($remoteAddr);
+                    $this->em->persist($download);
+                    $this->em->flush();
+                }
+                $content = implode("\r\n", $contentArr) . "\r\n";
+
+                $response = $this->getResponse();
+                $headers = $response->getHeaders();
+                $headers->addHeaderLine("Content-Disposition: attachment; filename=\"" . $zipName . "\"");
+                $headers->addHeaderLine("X-filename: " . $zipName);
+                $headers->addHeaderLine("X-Archive-Files: zip");
+                $headers->addHeaderLine("Cache-control: private");
+                $headers->addHeaderLine("Content-encoding: none");
+                $headers->addHeaderLine("Accept-Encoding: ''");
+                if ($maxSizeLimited) {
+                    $headers->addHeaderLine('X-CustomHeader: Archive has reached maximum allowed limit 4Gb, please filter results!');
+                } else {
+                    $headers->addHeaderLine('X-CustomHeader: ');
+                }
+                $response->setContent($content);
+                return $this->getResponse();
+            }
+        }
+
+        exit();
+    }
+
+    public function downloadTracksAction()
+    {
+        $now = new \DateTime(date('Y-m-d') . ' 23:59:59');
+        $result = [];
+        $success = false;
+        $messages = [];
+        $quote = [];
+        $quoteSub = false;
+        $request = $this->getRequest();
+        $userId = null;
+        $this->checkAuthorization($request);
+        if (! empty($this->tokenPayload)) {
+            $userId = $this->tokenPayload->id;
+            if ($userId) {
+                $user = $this->em->find('Application\Entity\User', $userId);
+                $expireDate = $user->getExpireDate();
+                $quotePromo = $user->getQuotePromo();
+                $quoteExclusive = $user->getQuoteExclusive();
+
+                if($expireDate >= $now){
+                    $filter = [];
+                    $sort = $this->params()->fromQuery('sort', 'release-desc');
+                    $limit = (int) $this->params()->fromQuery('limit', 100);
+                    $page = (int) $this->params()->fromQuery('page', 1);
+                    $filter['showPromo'] = $this->params()->fromQuery('showPromo', true);
+                    $sortArr = explode('-', $sort);
+                    if (! in_array($sortArr[0], $this->sortList)) {
+                        $sortArr = [
+                            'release',
+                            'desc'
+                        ];
+                    }
+                    if (! in_array($sortArr[1], [
+                        'asc',
+                        'desc'
+                    ])) {
+                        $sortArr[1] = 'desc';
+                    }
+                    if ($this->params()->fromQuery('artists')) {
+                        $filter['artists'] = explode(',', $this->params()->fromQuery('artists'));
+                    }
+                    if ($this->params()->fromQuery('genre')) {
+                        $filter['genre'] = (int) $this->params()->fromQuery('genre');
+                    }
+                    if ($this->params()->fromQuery('label')) {
+                        $filter['label'] = (int) $this->params()->fromQuery('label');
+                    }
+                    if ($this->params()->fromQuery('last')) {
+                        $filter['last'] = $this->params()->fromQuery('last');
+                    }
+                    if ($this->params()->fromQuery('start')) {
+                        $filter['start'] = $this->params()->fromQuery('start');
+                    }
+                    if ($this->params()->fromQuery('end')) {
+                        $filter['end'] = $this->params()->fromQuery('end');
+                    }
+                    if ($this->params()->fromQuery('type')) {
+                        $filter['type'] = (int) $this->params()->fromQuery('type');
+                    }
+                    if ($this->params()->fromQuery('wav')) {
+                        $filter['wav'] = (int) $this->params()->fromQuery('wav');
+                    }
+                    $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracks($filter);
+
+                    $start = $this->start($page, $limit);
+                    while ($start > $total) {
+                        $start = $this->start(-- $page, $limit);
+                    }
+
+                    $tracksIds = $this->em->getRepository('Application\Entity\Track')->getTrackIds($limit, $start, $filter, $sortArr);
+
+                    $tracks = $this->em->getRepository('Application\Entity\Track')->findBy(['id' => $tracksIds]);
+                    foreach ($tracks as $track){
+                        $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
+                            'User' => $user,
+                            'Track' => $track
+                        ]);
+                        if ($downloaded) {
+                            $success = true;
+                        } else {
+                            $quoteType = 'quote' . $track->getTrackType()->getName();
+
+                            if (($quoteType == 'quotePromo' && $quotePromo > 0) || ($quoteType == 'quoteExclusive' && $quoteExclusive > 0)) {
+                                $success = true;
+                                $quoteSub = true;
+                                if($quoteType == 'quotePromo')
+                                    $quotePromo--;
+                                    else
+                                        $quoteExclusive--;
+                            } else {
+                                $messages[] = 'Quote was expired';
+                                break;
+                            }
+                        }
+                    }
+                    if($quoteSub){
+                        $quote = [
+                            'quotePromo'    =>  $quotePromo,
+                            'quoteExclusive'    =>  $quoteExclusive,
+                        ];
+                    }
+                } else {
+                    $messages[] = 'Quote was expired '.$expireDate->format('Y-m-d H:i').' '.$now->format('Y-m-d H:i');
+                }
+            }
+        } else {
+            $messages[] = 'User is not authorized!';
+        }
+        $result['success'] = $success;
+        $result['messages'] = implode(' ', $messages);
+        $result['quoteSub'] = $quoteSub;
+        $result['quote'] = $quote;
+
+        return new JsonModel($result);
+    }
+
+    public function downloadTracksStreamAction()
+    {
+        $nameFilter = new \Zend\Filter\Word\SeparatorToDash();
+        $request = $this->getRequest();
+        $remoteAddr = $request->getServer('REMOTE_ADDR');
+        $userId = null;
+        $maxSize = 4;
+        $maxSizeLimited = false;
+
+        $this->checkAuthorization($request);
+        if (! empty($this->tokenPayload)) {
+            $userId = $this->tokenPayload->id;
+
+            if ($userId) {
+                $User = $this->em->getReference('Application\Entity\User',$userId);
+                $filter = [];
+                $sort = $this->params()->fromQuery('sort', 'release-desc');
+                $limit = (int) $this->params()->fromQuery('limit', 100);
+                $page = (int) $this->params()->fromQuery('page', 1);
+                $filter['showPromo'] = $this->params()->fromQuery('showPromo', true);
+                $sortArr = explode('-', $sort);
+                if (! in_array($sortArr[0], $this->sortList)) {
+                    $sortArr = [
+                        'release',
+                        'desc'
+                    ];
+                }
+                if (! in_array($sortArr[1], [
+                    'asc',
+                    'desc'
+                ])) {
+                    $sortArr[1] = 'desc';
+                }
+                if ($this->params()->fromQuery('artists')) {
+                    $filter['artists'] = explode(',', $this->params()->fromQuery('artists'));
+                }
+                if ($this->params()->fromQuery('genre')) {
+                    $filter['genre'] = (int) $this->params()->fromQuery('genre');
+                }
+                if ($this->params()->fromQuery('label')) {
+                    $filter['label'] = (int) $this->params()->fromQuery('label');
+                }
+                if ($this->params()->fromQuery('last')) {
+                    $filter['last'] = $this->params()->fromQuery('last');
+                }
+                if ($this->params()->fromQuery('start')) {
+                    $filter['start'] = $this->params()->fromQuery('start');
+                }
+                if ($this->params()->fromQuery('end')) {
+                    $filter['end'] = $this->params()->fromQuery('end');
+                }
+                if ($this->params()->fromQuery('type')) {
+                    $filter['type'] = (int) $this->params()->fromQuery('type');
+                }
+                if ($this->params()->fromQuery('wav')) {
+                    $filter['wav'] = (int) $this->params()->fromQuery('wav');
+                }
+                $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracks($filter);
+
+                $start = $this->start($page, $limit);
+                while ($start > $total) {
+                    $start = $this->start(-- $page, $limit);
+                }
+
+                $tracksIds = $this->em->getRepository('Application\Entity\Track')->getTrackIds($limit, $start, $filter, $sortArr);
+                $filter['trackIds'] = $tracksIds;
+
+                $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksForArchive($limit, 0, $filter);
+
+                $zipName = date('d_m_Y').'_archive_'.count($tracks).'.zip';
+                $contentArr = [];
+                $bytes = 0;
+
+                foreach ($tracks as $track) {
+                    $size = $track['fileSize'];
+                    $bytes += $size;
+                    if ($this->formatSizeGb($bytes) > $maxSize) {
+                        $maxSizeLimited = true;
+                        break;
+                    }
+                    $fileName = $track['artists'].' - '.$track['title'].(($track['label'])?' ['.$track['label'].']':'') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $filePath = str_replace('public/', '/', $track['fileDestination']);
+                    $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
+                    $contentArr[] = "$crc32 $size $filePath $fileName";
+
+                    $Track = $this->em->getReference('Application\Entity\Track',$track['id']);
+
+                    $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
+                        'User' => $User,
+                        'Track' => $track
+                    ]);
+                    if (! $downloaded) {
+                        $User->subQuote($track['type']);
+                    }
+                    $download = new Download($Track, $User);
+                    $download->setIp($remoteAddr);
+                    $this->em->persist($download);
+                    $this->em->flush();
+                }
+                $content = implode("\r\n", $contentArr) . "\r\n";
+
+                $response = $this->getResponse();
+                $headers = $response->getHeaders();
+                $headers->addHeaderLine("Content-Disposition: attachment; filename=\"" . $zipName . "\"");
+                $headers->addHeaderLine("X-filename: " . $zipName);
+                $headers->addHeaderLine("X-Archive-Files: zip");
+                $headers->addHeaderLine("Cache-control: private");
+                $headers->addHeaderLine("Content-encoding: none");
+                $headers->addHeaderLine("Accept-Encoding: ''");
+                if ($maxSizeLimited) {
+                    $headers->addHeaderLine('X-CustomHeader: Archive has reached maximum allowed limit 4Gb, please filter results!');
+                } else {
+                    $headers->addHeaderLine('X-CustomHeader: ');
+                }
+                $response->setContent($content);
+                return $this->getResponse();
+            }
+        }
+
+        exit();
+    }
     public function downloadFileAction()
     {
         $filter = new \Zend\Filter\Word\SeparatorToDash();
@@ -801,7 +1224,7 @@ class IndexController extends AbstractActionController
                 $track = $this->em->find('Application\Entity\Track', $id);
                 $user = $this->em->find('Application\Entity\User', $userId);
                 if ($track && $user) {
-                    $filePath = $track->getFileDestination();                        
+                    $filePath = $track->getFileDestination();
                     $fileContent = file_get_contents($filePath);
                     $contentType = $track->getFileType();
                     $contentLength = $track->getFileSize();
@@ -812,7 +1235,7 @@ class IndexController extends AbstractActionController
                            if($mp3Path == null){
                                $mp3Path = ImportManager::convertMp3($filePath);
                                $track->setFileDestinationMp3($mp3Path);
-                               $this->em->flush($track);                               
+                               $this->em->flush($track);
                            }
                            $filePath = $mp3Path;
                            $contentType = mime_content_type($filePath);

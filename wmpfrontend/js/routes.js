@@ -3,12 +3,12 @@ angular.module('WhoPlayMusic').config(
 				function($routeProvider, $locationProvider, $httpProvider, $rootScopeProvider, vcRecaptchaServiceProvider, ngMetaProvider) {
 					$locationProvider.html5Mode(true);
 					$rootScopeProvider.isMaintain = false;
-					
+
 					ngMetaProvider.useTitleSuffix(true);
 				    ngMetaProvider.setDefaultTitle('Who Play Music');
 				    ngMetaProvider.setDefaultTitleSuffix(' | Who Play Music');
 				    ngMetaProvider.setDefaultTag('description', 'Download and listen to new, exclusive, electronic dance music and house tracks. Available on mp3 and wav at the world’s largest store for DJs.');
-				    
+
 					vcRecaptchaServiceProvider.setDefaults({
 					    key: '6LdC0jIUAAAAABX9nREg28dzpXF902M8DfqtXtoP',
 					    theme: 'dark',
@@ -24,7 +24,7 @@ angular.module('WhoPlayMusic').config(
 						redirectTo : '/tracks'
 					}).when('/tracks', {
 						templateUrl : 'templates/pages/tracks.html',
-						controller : 'TracksIndexController', 
+						controller : 'TracksIndexController',
 						//reloadOnSearch: false,
 					    data: {
 					        meta: {
@@ -127,8 +127,8 @@ angular.module('WhoPlayMusic').config(
 							$rootScope.footer = $cookieStore.get('footer') || '';
 							$rootScope.isLoading = false;
 							$rootScope.globals = $cookieStore.get('globals') || {};
-							$rootScope.quotes = $rootScope.globals.currentUser.quotes || {};
-							
+							$rootScope.quotes = ($rootScope.globals.currentUser !== undefined)?$rootScope.globals.currentUser.quotes || {}:{};
+
 							$rootScope.$on("$routeChangeStart", function (event, next, current) {
 								$http.get('http://api.wpm.zeit.style/is-maintain/').then(function(response){
 									if(response.data.isMaintain === 1){
@@ -137,7 +137,7 @@ angular.module('WhoPlayMusic').config(
 									}
 									$rootScope.siteMode = response.data.siteMode;
 									$rootScope.footer = $sce.trustAsHtml(response.data.footer);
-									
+
 									if ($rootScope.globals.currentUser) {
 									}else{
 										var routesToRedirect = ['/account/downloads','/account/favorite','/account/profile'];
@@ -146,18 +146,18 @@ angular.module('WhoPlayMusic').config(
 											routesToRedirect.push('/track/:id');
 										}
 										var route = next.$$route.originalPath;
-										if(routesToRedirect.indexOf(route) !== -1) {								
+										if(routesToRedirect.indexOf(route) !== -1) {
 											$location.path('/account/login');
 										}
-									}									
+									}
 								})
-							});									
-							
-							$injector.get("$http").defaults.transformRequest =	 function(data, headersGetter) { 
+							});
+
+							$injector.get("$http").defaults.transformRequest =	 function(data, headersGetter) {
 								 if($rootScope.globals.currentUser) {
-									 headersGetter()['Authorization'] = 'Bearer ' + $rootScope.globals.currentUser.authdata; } 
-								 if(data) { return angular.toJson(data); } 
-							};							 
+									 headersGetter()['Authorization'] = 'Bearer ' + $rootScope.globals.currentUser.authdata; }
+								 if(data) { return angular.toJson(data); }
+							};
 
 							$rootScope.logout = function() {
 								$rootScope.globals = {};
@@ -180,7 +180,7 @@ angular.module('WhoPlayMusic').config(
 							$rootScope.setKeyboardModalShow = function(param){
 								$rootScope.keyboardModalShow = param;
 							}
-							
+
 							$rootScope.isCurrentPlaying = function(id)
 							{
 								return ($cookieStore.get('currentPlaying') == id);
@@ -190,13 +190,13 @@ angular.module('WhoPlayMusic').config(
 								var downloaded = $cookieStore.get('downloaded') || [];
 								return (downloaded.indexOf(id) > -1 );
 							}
-							
+
 							$rootScope.playedList = function(id)
 							{
 								var played = $cookieStore.get('played') || [];
 								return (played.indexOf(id) > -1 );
 							}
-							
+
 							$rootScope.$on('rootScope:toggleKeyboardModal', function (event, data) {
 								$rootScope.toggleKeyboardModal();
 							});

@@ -1,8 +1,8 @@
-angular.module('WhoPlayMusic').factory( 'Tracks', function($resource){  
+angular.module('WhoPlayMusic').factory( 'Tracks', function($resource){
   return $resource('http://api.wpm.zeit.style/tracks');
 });
 
-angular.module('WhoPlayMusic').controller('TracksIndexController', function($scope, $http, Tracks, $filter, $routeParams, $location, $rootScope, $cookieStore) { 
+angular.module('WhoPlayMusic').controller('TracksIndexController', function($scope, $http, Tracks, $filter, $routeParams, $location, $rootScope, $cookieStore, $window, $httpParamSerializer) {
   $scope.itemsPerPage = 50;
   $scope.currentPage = 1;
   $scope.maxSize = 3;
@@ -14,8 +14,8 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
   var orderBy = $filter('orderBy');
   var body = angular.element(document).find('body');
   $scope.pages = [];
-  $scope.totalPages = 0;  
-  $scope.activeType = 0;  
+  $scope.totalPages = 0;
+  $scope.activeType = 0;
   $scope.activeGenre = 0;
   $scope.activeLabel = 0;
   $scope.selectedArtists = [];
@@ -29,10 +29,11 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
   $scope.releasedLast = '';
   $scope.onlyWav = 'off';
   $scope.applyDates = false;
-  
+  $scope.queryParams = {};
+
   if($routeParams.artists !== undefined){
 	  $scope.selectedArtists = $routeParams.artists.split(',');
-  }  
+  }
   if($routeParams.label !== undefined){
 	  $scope.activeLabel = parseInt($routeParams.label);
   }
@@ -59,76 +60,81 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
   if($routeParams.type !== undefined){
 	  $scope.activeType = $routeParams.type;
   }
-  
-  $scope.getTracks = function(page, limit){
-	 var search = $location.search();
-	 
-	 if(page===undefined){
-		 page = $scope.currentPage;
-		 if(page > 0){
-			 search.page = page;
-		 }
-     }
-	 if(limit===undefined){
-		 limit = $scope.itemsPerPage;
-		 search.limit = limit;
-	 }
-	 if($scope.sortBy != 'release-desc'){
-		 search.sort = $scope.sortBy;
-	 }
-	 var query = {page: page, limit: limit, sort: $scope.sortBy};
-	 if($scope.activeType > 0){
-		 query.type = $scope.activeType;
-		 if(!search.type) search.type = $scope.activeType;
-	 }else{
-		 if(search.type) delete search.type;
-	 }
-	 if($scope.activeGenre > 0){
-		 query.genre = $scope.activeGenre;
-		 if(!search.genre) search.genre = $scope.activeGenre;
-	 }else{
-		 if(search.genre) delete search.genre;
-	 }
-	 if($scope.selectedArtists.length > 0){
-		 query.artists = $scope.selectedArtists.join(',');
-		 search.artists = query.artists;
-	 }else{
-		 if(search.artists) delete search.artists;
-	 }
-	 if($scope.activeLabel > 0){
-		 query.label = $scope.activeLabel;
-		 if(!search.label) search.label = $scope.activeLabel;
-	 }else{
-		 if(search.label) delete search.label;
-	 }
-	 	 
-	 if($scope.releasedLast !== ''){
-		 query.last = $scope.releasedLast;
-		 if(!search.last || search.last != query.last) search.last = $scope.releasedLast;
-	 }else{
-		 delete search.last;
-	 }
-	 if($scope.applyDates == true){
-		 query.start = $scope.startDate;
-		 query.end = $scope.endDate;
-		 search.start = query.start;
-		 search.end = query.end;
-	 }else{
-		 delete search.start;
-		 delete search.end;
-	 }
 
-	 if($scope.onlyWav == 'on'){
-		 query.wav = 1;
-	 }
-	 if($rootScope.globals.currentUser){
-		 query.showPromo = $rootScope.globals.currentUser.quotes.showPromo;
-	 }
-  
-	 $location.search(search);
-	 
+  $scope.query = function(page, limit){
+	  var search = $location.search();
+
+		 if(page===undefined){
+			 page = $scope.currentPage;
+			 if(page > 0){
+				 search.page = page;
+			 }
+	     }
+		 if(limit===undefined){
+			 limit = $scope.itemsPerPage;
+			 search.limit = limit;
+		 }
+		 if($scope.sortBy != 'release-desc'){
+			 search.sort = $scope.sortBy;
+		 }
+		 var query = {page: page, limit: limit, sort: $scope.sortBy};
+		 if($scope.activeType > 0){
+			 query.type = $scope.activeType;
+			 if(!search.type) search.type = $scope.activeType;
+		 }else{
+			 if(search.type) delete search.type;
+		 }
+		 if($scope.activeGenre > 0){
+			 query.genre = $scope.activeGenre;
+			 if(!search.genre) search.genre = $scope.activeGenre;
+		 }else{
+			 if(search.genre) delete search.genre;
+		 }
+		 if($scope.selectedArtists.length > 0){
+			 query.artists = $scope.selectedArtists.join(',');
+			 search.artists = query.artists;
+		 }else{
+			 if(search.artists) delete search.artists;
+		 }
+		 if($scope.activeLabel > 0){
+			 query.label = $scope.activeLabel;
+			 if(!search.label) search.label = $scope.activeLabel;
+		 }else{
+			 if(search.label) delete search.label;
+		 }
+
+		 if($scope.releasedLast !== ''){
+			 query.last = $scope.releasedLast;
+			 if(!search.last || search.last != query.last) search.last = $scope.releasedLast;
+		 }else{
+			 delete search.last;
+		 }
+		 if($scope.applyDates == true){
+			 query.start = $scope.startDate;
+			 query.end = $scope.endDate;
+			 search.start = query.start;
+			 search.end = query.end;
+		 }else{
+			 delete search.start;
+			 delete search.end;
+		 }
+
+		 if($scope.onlyWav == 'on'){
+			 query.wav = 1;
+		 }
+		 if($rootScope.globals.currentUser){
+			 query.showPromo = $rootScope.globals.currentUser.quotes.showPromo;
+		 }
+
+		 $location.search(search);
+		 return query;
+  }
+
+  $scope.getTracks = function(page, limit){
+	 $scope.queryParams = $scope.query(page, limit);
+
 	 body.addClass('waiting');
-	 Tracks.get(query, function(response){
+	 Tracks.get($scope.queryParams, function(response){
 		 $scope.tracks = response.tracks;
 		 $scope.totalItems = response.total;
 		 $scope.currentPage = response.page;
@@ -146,8 +152,30 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 		 }
 		 body.removeClass('waiting');
 	 })
-  }  
-  
+  }
+
+  $scope.downloadArchive = function() {
+		$rootScope.isLoading = true;
+		$http.get('http://api.wpm.zeit.style/download-tracks/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams)).then(function(response){
+	    		$rootScope.isLoading = false;
+				if(!response.data.success){
+					$location.path('/payment-page');
+				}else{
+					$scope.quoteSub = response.data.quoteSub;
+					$scope.quote = response.data.quote;
+					$window.location = 'http://api.wpm.zeit.style/download-tracks-stream/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams);
+					$scope.downloaded = true;
+				if($scope.quoteSub && $scope.quote.length > 0){
+					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;
+					$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.quoteExclusive;
+
+					$cookieStore.put('globals', $rootScope.globals);
+					$rootScope.quotes = $scope.quote;
+				}
+				}
+			})
+	};
+
   $scope.order = function(predicate, reverse) {
 		$scope.predicate = predicate;
 		if($scope.predicate == predicate){
@@ -155,40 +183,40 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 		}else{
 			$scope.reverse = false;
 		}
-		
+
 		$scope.sortBy = predicate+'-'+($scope.reverse?'desc':'asc');
   };
-  
+
   $scope.resetAll = function(){
-	  $scope.activeType = 0;  
+	  $scope.activeType = 0;
 	  $scope.activeGenre = 0;
-	  $scope.activeLabel = 0;   
+	  $scope.activeLabel = 0;
 	  $scope.selectedArtists = [];
 	  $scope.startDate = '';
 	  $scope.endDate = '';
 	  $scope.releasedLast = '';
 	  $scope.applyDates = false;
 	  $location.search('');
-  } 
-  
+  }
+
 //init
   $scope.getTracks();
   if($rootScope.siteModeShow())
 	  $scope.getTracks();
   //end init
-  
+
   var listenerFilterHandler = function (newValue, oldValue, scope) {
     if (newValue === oldValue) { return;};
     $scope.getTracks();
   };
-  
+
   $scope.$watchGroup(['activeGenre','activeType','activeLabel','selectedArtists','sortBy','currentPage','itemsPerPage', 'applyDates','releasedLast','onlyWav'], listenerFilterHandler);
- 
+
   function calculateTotalPages(){
       var totalPages = $scope.itemsPerPage < 1 ? 1 : Math.ceil($scope.totalItems / $scope.itemsPerPage);
       return Math.max(totalPages || 0, 1);
   };
-  
+
   function makePage(number, text, isActive) {
     return {
       number: number,
@@ -196,17 +224,17 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
       active: isActive
     };
   }
-  
+
   function getPages(currentPage, totalPages, maxSize) {
 	    var pages = [];
 	    var boundaryLinkNumbers = true;
-	    
+
 	    // Default page limits
 	    var startPage = 1, endPage = totalPages;
 	    var isMaxSized = maxSize < totalPages;
 
 	    // recompute if maxSize
-	    if (isMaxSized) {	      
+	    if (isMaxSized) {
 	        // Visible pages are paginated with maxSize
 	        startPage = (Math.ceil(currentPage / maxSize) - 1) * maxSize + 1;
 

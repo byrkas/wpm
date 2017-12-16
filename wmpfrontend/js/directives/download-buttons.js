@@ -8,7 +8,7 @@ angular.module('WhoPlayMusic')
     	isDownloaded: '@',
         track: "=",
     },
-    controller: function($scope, $http, $rootScope, $location, $window, $cookieStore){
+    controller: function($scope, $http, $rootScope, $location, $window, $cookieStore, $httpParamSerializer, $compile){
     	$scope.downloading = false;
     	$scope.downloaded = false;
     	$scope.quoteSub = false;
@@ -17,19 +17,15 @@ angular.module('WhoPlayMusic')
     	$scope.isDownloaded = function(id){
     		return $rootScope.isDownloaded(id);
     	}
-    	
+    	$scope.object = null;
+
     	$scope.download = function(format){
     		if($rootScope.globals.currentUser === undefined){
     			$location.path('/payment-page');
     			return;
     		}
     		$rootScope.isLoading = true;
-    		$http.get('http://api.wpm.zeit.style/download/' + $scope.track.id, {
-    			withCredentials: true,
-    			headers : {
-    				'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
-    				}
-    			}).then(function(response){
+    		$http.get('http://api.wpm.zeit.style/download/' + $scope.track.id+ '?token='+$rootScope.globals.currentUser.token).then(function(response){
     	    		$rootScope.isLoading = false;
     				if(!response.data.success){
     					if(response.data.messages != ''){
@@ -39,11 +35,10 @@ angular.module('WhoPlayMusic')
     		    		}
     					$location.path('/payment-page');
     				}else{
-    					$scope.downloading = true;
     					$scope.quoteSub = response.data.quoteSub;
     					$scope.quote = response.data.quote;
     					$rootScope.quotes = response.data.quote;
-    					var query = {};
+    					var query = {token: $rootScope.globals.currentUser.token};
     					if(format !==undefined){
     						query.format = format;
     					}
@@ -51,77 +46,63 @@ angular.module('WhoPlayMusic')
 	    				$rootScope.hasNotification = true;
 		        		$rootScope.notifMessage = "You are now downloading \"" + $scope.track.title + "\".";
 		        		$rootScope.notifType = 'success';
-		        		
-    					$http.get('http://api.wpm.zeit.style/download-file-stream/' + $scope.track.id, {
-    					  	params : query,
-    						responseType: "arraybuffer",
-    		    			withCredentials: true,
-    		    			headers : {'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token}
-    		    			}).then(function(response){
-    		    				$scope.downloading = false;
-    		    				$scope.downloaded = true;
-    		    				if($scope.quoteSub){
-    		    					if($scope.quote.type == 'quotePromo')
-    		    						$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.value;
-    		    					else
-    		    						$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.value;
 
-    		    					$cookieStore.put('globals', $rootScope.globals);
-    		    				}
-    		    				
-    		    				var tmp = $cookieStore.get('downloaded') || [];
-                            	if(tmp.indexOf($scope.track.id) < 0){
-                            		tmp.push($scope.track.id);
-                            		$cookieStore.put('downloaded', tmp);
-                            	} 
-	    		        		
-    		    				var data = response.data;
-    		    				var filename = response.headers('X-filename');
-    		    		        var contentType = response.headers('content-type');
-    		    		        var linkElement = document.createElement('a');
-    		    		        try {
-    		    		            var blob = new Blob([data], { type: contentType });
-    		    		            var url = window.URL.createObjectURL(blob);
+		        		if($scope.quoteSub){
+	    					if($scope.quote.type == 'quotePromo')
+	    						$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.value;
+	    					else
+	    						$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.value;
 
-    		    		            linkElement.setAttribute('href', url);
-    		    		            linkElement.setAttribute("download", filename);
+	    					$cookieStore.put('globals', $rootScope.globals);
+	    				}
 
-    		    		            var clickEvent = new MouseEvent("click", {
-    		    		                "view": window,
-    		    		                "bubbles": true,
-    		    		                "cancelable": false
-    		    		            });
-    		    		            linkElement.dispatchEvent(clickEvent);
-    		    		        } catch (ex) {
-    		    		            console.log(ex);
-    		    		        }
-
-    		    			},function(error){
-    		    				$scope.downloading = false;
-    		    			})
+	    				var tmp = $cookieStore.get('downloaded') || [];
+                    	if(tmp.indexOf($scope.track.id) < 0){
+                    		tmp.push($scope.track.id);
+                    		$cookieStore.put('downloaded', tmp);
+                    	}
+                    	$window.location = 'http://api.wpm.zeit.style/download-file-stream/' + $scope.track.id +'?'+ $httpParamSerializer(query);
     				}
     			})
     	}
     	$scope.lunchMenu = function(){
-    		$scope.lunch = !$scope.lunch;
+    		if($cookieStore.get('globals')){
+    			$scope.lunch = !$scope.lunch;
+        		if($scope.lunch == true){
+        			var width = angular.element($window).width();
+        			if(width < 1140){
+        				$scope.object = angular.element('<div id="modal" class="modal">'+
+        				  '<div class="modal-body modal-body-multi-cart">'+
+        				    '<div class="modal-title-bar">'+
+        				      '<h1 class="cart-settings-title"></h1>'+
+        				      '<a ng-click="removeObject()" class="close-modal-link icon icon-delete"></a>'+
+        				    '</div>'+
+        				    '<div class="modal-main-content">'+
+        				    '<div class="buy-button-menu">'+
+        				    '<ul class="cart-list">'+
+        				    '<li ng-click="addFavorite();removeObject();" ng-show="!track.isFavorite"><span class="title"><svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"></use></svg>Add to favorites</span></li>'+
+        				    '<li ng-click="removeFavorite();removeObject();" ng-show="track.isFavorite"><span class="title"><svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"></use></svg>Remove from favorites</span></li>'+
+        				    '</ul></div>'+
+        				    '</div>'+
+        				  '</div>'+
+        				'</div>');
+        				angular.element('footer').append($scope.object);
+        				$compile($scope.object)($scope);
+        			}
+        		}
+    		}
+    	}
+    	$scope.removeObject = function(){
+    		$scope.object = null;
+    		angular.element('#modal').remove();
     	}
     	$scope.addFavorite = function(){
-    		$http.get('http://api.wpm.zeit.style/add-favorite/' + $scope.track.id, {
-    			withCredentials: true,
-    			headers : {
-    				'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
-    				}
-    			}).then(function(response){
+    		$http.get('http://api.wpm.zeit.style/add-favorite/' + $scope.track.id + '?token='+$rootScope.globals.currentUser.token).then(function(response){
     				$scope.track.isFavorite = true;
     			})
     	}
     	$scope.removeFavorite = function(){
-    		$http.get('http://api.wpm.zeit.style/remove-favorite/' + $scope.track.id, {
-    			withCredentials: true,
-    			headers : {
-    				'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
-    				}
-    			}).then(function(response){
+    		$http.get('http://api.wpm.zeit.style/remove-favorite/' + $scope.track.id + '?token='+$rootScope.globals.currentUser.token).then(function(response){
     				$scope.track.isFavorite = false;
     			})
     	}
@@ -140,6 +121,7 @@ angular.module('WhoPlayMusic')
                 scope.lunch = false;
             });
         });
+
     }
   };
 });

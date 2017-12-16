@@ -21,7 +21,7 @@ angular.module('WhoPlayMusic').factory( 'DownloadArchive', function($resource, $
 			});
 	});
 
-angular.module('WhoPlayMusic').controller('MyDownloadsController', function($scope, $http, $filter, Downloads, DownloadArchive, $routeParams, $rootScope, $location) {
+angular.module('WhoPlayMusic').controller('MyDownloadsController', function($scope,$httpParamSerializer, $http, $filter, Downloads, DownloadArchive, $routeParams, $rootScope, $location, $window) {
   $scope.itemsPerPage = 50;
   $scope.currentPage = 1;
   $scope.maxSize = 3;
@@ -179,54 +179,8 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
   }
 
   $scope.downloadArchive = function() {
-		 $rootScope.isLoading = true;
-		 body.addClass('waiting');
 		 var query = $scope.query();
-
-	  $http.get('http://api.wpm.zeit.style/download-archive-stream/', {
-		  	params : query,
-			withCredentials: true,
-			responseType: 'blob',
-			headers : {
-				'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
-				}
-			}).then(function(response){
-				$rootScope.isLoading = false;
-				body.removeClass('waiting');
-
-				var message = response.headers('X-CustomHeader');
- 				if(message !== ''){
- 					$rootScope.hasNotification = true;
-	        		$rootScope.notifMessage = message;
-	        		$rootScope.notifType = 'failure';
-
- 				}
-				if(response.status == 200){
-					var data = response.data;
-	 				var filename = response.headers('X-filename');
-
-	 		        var contentType = response.headers('content-type');
-	 		        var linkElement = document.createElement('a');
-	 		        try {
-	 		            var blob = new Blob([data], { type: contentType });
-	 		            var url = window.URL.createObjectURL(blob);
-
-	 		            linkElement.setAttribute('href', url);
-	 		            linkElement.setAttribute("download", filename);
-
-	 		            var clickEvent = new MouseEvent("click", {
-	 		                "view": window,
-	 		                "bubbles": true,
-	 		                "cancelable": false
-	 		            });
-	 		            linkElement.dispatchEvent(clickEvent);
-	 		        } catch (ex) {
-	 		            console.log(ex);
-	 		        }
-				}else{
-					console.log(response);
-				}
-			});
+		 $window.location = 'http://api.wpm.zeit.style/download-archive-stream/?token=' + $rootScope.globals.currentUser.token +'&'+ $httpParamSerializer(query);
   };
 
   $scope.order = function(predicate, reverse) {

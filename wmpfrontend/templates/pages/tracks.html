@@ -20,7 +20,7 @@
 	              <option value="title-asc">Title A-Z</option>
 	              <option value="title-desc">Title Z-A</option>
 	              <option value="label-asc">Label A-Z</option>
-	              <option value="label-desc">Label Z-A</option>    
+	              <option value="label-desc">Label Z-A</option>
 	              <option value="genre-asc">Genre A-Z</option>
 	              <option value="genre-desc">Genre Z-A</option>
 	            </select>
@@ -32,16 +32,17 @@
 	        	<filter-artist artists="artists" selected-artists="selectedArtists"></filter-artist>
 	        	<filter-label labels="labels" active-label='activeLabel'></filter-label>
 	            <a ng-click="resetAll()" href="javascript:void(0)" class="filter-reset-all-link">Reset all</a>
+                <a ng-click="downloadArchive()" href="javascript:void(0)" class="filter-reset-all-link">Download archive</a>
 	        </div>
 	    </div>
 		<div class="bucket tracks standard-interior-tracks">
 			<pagination-tracks only-wav="onlyWav" pages="pages" ng-class="'pagination-top-container'" total-pages="totalPages" items-per-page="itemsPerPage" total-items="totalItems" current-page="currentPage"></pagination-tracks>
 			<div class="bucket-track-header">
-	            <div class="bucket-track-header-meta">    
+	            <div class="bucket-track-header-meta">
 	                <p class="buk-track-title bucket-track-header-col"><a href ng-class="{'track-sorted-end': sortBy == 'title-asc','track-sorted-start': sortBy == 'title-desc'}" ng-click="order('title', reverse)" class="track-sortable">Title</a></p>
 	                <p class="buk-track-artists bucket-track-header-col">Artists</p>
 	                <p class="buk-track-labels bucket-track-header-col"><a href ng-class="{'track-sorted-end': sortBy == 'label-asc','track-sorted-start': sortBy == 'label-desc'}" ng-click="order('label', reverse)" class="track-sortable">Label</a></p>
-	                <p class="buk-track-genre bucket-track-header-col"><a href ng-class="{'track-sorted-end': sortBy == 'genre-asc','track-sorted-start': sortBy == 'genre-desc'}" ng-click="order('genre', reverse)" class="track-sortable">Genre</a></p>  
+	                <p class="buk-track-genre bucket-track-header-col"><a href ng-class="{'track-sorted-end': sortBy == 'genre-asc','track-sorted-start': sortBy == 'genre-desc'}" ng-click="order('genre', reverse)" class="track-sortable">Genre</a></p>
 	                <p class="buk-track-released bucket-track-header-col"><a href ng-class="{'track-sorted-end': sortBy == 'release-asc','track-sorted-start': sortBy == 'release-desc'}" ng-click="order('release', reverse)" class="track-sortable">Released</a></p>
 	                <p class="buk-track-key bucket-track-header-col">Type</p>
 	            </div>

@@ -23,58 +23,22 @@ angular.module('WhoPlayMusic').controller('AlbumIndexController', function($scop
 
 	 $scope.downloadArchive = function() {
 		$rootScope.isLoading = true;
-		$http.get('http://api.wpm.zeit.style/download-album/' + $routeParams.id, {
-			withCredentials: true,
-			headers : {
-				'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
-				}
-			}).then(function(response){
+		$http.get('http://api.wpm.zeit.style/download-album/' + $routeParams.id + '?token='+$rootScope.globals.currentUser.token).then(function(response){
 	    		$rootScope.isLoading = false;
 				if(!response.data.success){
 					$location.path('/payment-page');
 				}else{
-					$scope.downloading = true;
 					$scope.quoteSub = response.data.quoteSub;
 					$scope.quote = response.data.quote;
-					$http.get('http://api.wpm.zeit.style/download-album-stream/' + $routeParams.id, {
-						responseType: "arraybuffer",
-		    			withCredentials: true,
-		    			headers : {'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token}
-		    			}).then(function(response){
-		    				$scope.downloading = false;
-		    				$scope.downloaded = true;
-		    				if($scope.quoteSub && $scope.quote.length > 0){
-		    					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;
-		    					$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.quoteExclusive;
+					$window.location = 'http://api.wpm.zeit.style/download-album-stream/' + $routeParams.id + '?token='+$rootScope.globals.currentUser.token;
+					$scope.downloaded = true;
+    				if($scope.quoteSub && $scope.quote.length > 0){
+    					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;
+    					$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.quoteExclusive;
 
-		    					$cookieStore.put('globals', $rootScope.globals);
-		    					$rootScope.quotes = $scope.quote;
-		    				}
-		    				var data = response.data;
-			 				var filename = response.headers('X-filename');
-
-			 		        var contentType = response.headers('content-type');
-			 		        var linkElement = document.createElement('a');
-			 		        try {
-			 		            var blob = new Blob([data], { type: contentType });
-			 		            var url = window.URL.createObjectURL(blob);
-
-			 		            linkElement.setAttribute('href', url);
-			 		            linkElement.setAttribute("download", filename);
-
-			 		            var clickEvent = new MouseEvent("click", {
-			 		                "view": $window,
-			 		                "bubbles": true,
-			 		                "cancelable": false
-			 		            });
-			 		            linkElement.dispatchEvent(clickEvent);
-			 		        } catch (ex) {
-			 		            console.log(ex);
-			 		        }
-
-		    			},function(error){
-		    				$scope.downloading = false;
-		    			})
+    					$cookieStore.put('globals', $rootScope.globals);
+    					$rootScope.quotes = $scope.quote;
+    				}
 				}
 			})
 	};

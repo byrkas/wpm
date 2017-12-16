@@ -1,19 +1,27 @@
-<div class="buy-button" ng-class="{'track-buy-button': trackBuyButton,'loading':downloading, 'in-cart': isDownloaded(track.id), 'opened':lunch}" ng-show="track.fileFormat == 'riff'">
-    <button class="add-to-default" ng-click="download()">WAV</button>
-</div>
-<div class="buy-button pre-order" ng-class="{'track-buy-button': trackBuyButton,'loading':downloading, 'in-cart': isDownloaded(track.id), 'opened':lunch}" ng-show="track.fileFormat == 'mp3' || track.fileFormat == 'mp4'">
-    <button class="add-to-default" ng-click="download()">MP3</button>
-</div>
-<div class="buy-button pre-order" ng-class="{'track-buy-button': trackBuyButton,'loading':downloading, 'in-cart': isDownloaded(track.id), 'opened':lunch}" ng-show="track.fileFormat == 'riff'">
-    <button class="add-to-default" ng-click="download('mp3')">MP3</button>
-</div>
-<div class="fav-button" ng-show="isLogged">
-    <button ng-show="!track.isFavorite" class="add-new-cart" ng-click="addFavorite()">
-        <svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"/></svg>
-            Add to favorites
+<div class="buy-button" ng-class="{'track-buy-button': trackBuyButton,'loading':downloading, 'in-cart': isDownloaded(track.id), 'opened':lunch}">
+    <button class="add-to-default wav" ng-click="download()" ng-show="track.fileFormat == 'riff'">WAV</button>
+    <button class="add-to-default stem" ng-click="download()" ng-show="track.fileFormat == 'mp4'">STEM</button>
+    <button class="add-to-default" ng-click="download()" ng-show="track.fileFormat == 'mp3'">MP3</button>
+    <button class="add-to-default" ng-click="download('mp3')" ng-show="track.fileFormat == 'riff'">MP3</button>
+
+    <button class="launch-menu" ng-click="lunchMenu()" ng-show="isLogged">
+        <div class="launch-menu-icon">
+          <svg viewBox="0 0 200 200" class="icon">
+            <use xlink:href="/static/images/defs.svg#icon-chevron-down"/>
+          </svg>
+        </div>
+        <div class="loading-menu-icon">
+          <div class="icon"></div>
+        </div>
     </button>
-    <button ng-show="track.isFavorite" class="add-new-cart" ng-click="removeFavorite()">
-        <svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"/></svg>
-            Remove from favorites
-    </button>
+    <div ng-show="lunch" class="buy-button-menu">
+        <button ng-show="!track.isFavorite" class="add-new-cart" ng-click="addFavorite()">
+            <svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"/></svg>
+                Add to favorites
+        </button>
+        <button ng-show="track.isFavorite" class="add-new-cart" ng-click="removeFavorite()">
+            <svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"/></svg>
+                Remove from favorites
+        </button>
+   </div>
 </div>

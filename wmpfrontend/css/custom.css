@@ -11,6 +11,15 @@
     height: 45px;
     width: 0;
 }
+.buy-button button.add-to-default.wav {
+    background: #ff9800;
+}
+.buy-button button.add-to-default.stem {
+    background: #30bedd;
+}
+.in-cart button.add-to-default.stem, .in-cart button.add-to-default.wav{
+    background: #6c6c6c;
+}
 .pagination.ng-not-empty{display:block;}
 .waiting{cursor:wait;}
 ._720kb-datepicker-calendar-days-header div {
