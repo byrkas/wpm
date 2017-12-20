@@ -6439,6 +6439,24 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log','$cookieStore','$d
                     }else if(e.which == 221){ // ]
                         //e.preventDefault();                        
                     	angularPlayer.nextTrack();                    	
+                    }else if(e.which == 190){
+                    	var sound = soundManager.getSoundById(angularPlayer.getCurrentTrack());
+                    	if(sound){
+                        	var seek = sound.durationEstimate * 0.05;
+                        	var newPosition = seek + sound.position;
+                        	if(newPosition < sound.durationEstimate)
+                        		sound.setPosition(newPosition)
+                    	}                    	
+                    }else if(e.which == 188){
+                    	var sound = soundManager.getSoundById(angularPlayer.getCurrentTrack());
+                    	if(sound){
+                        	var seek = sound.durationEstimate * 0.05;
+                        	var newPosition = sound.position - seek;
+                        	if(newPosition < 0) 
+                        		newPosition = 0;
+                        	if(newPosition >= 0)
+                        		sound.setPosition(newPosition)
+                    	}  
                     }
                     
                   });
