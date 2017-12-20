@@ -49,9 +49,9 @@ if(isset($title)) $this->headTitle($title);
                             <td><?= $key+1?></td>
                             <td><?= isset($track['title'])?$track['title']:''?></td>
                             <td><?= $track['fileFormat']?></td>
-                            <td><?= $track['artists_string']?></td>
-                            <td><?= $track['label']?></td>
-                            <td><?= $track['genre']?></td>
+                            <td><?= (isset($track['artists_string']))?$track['artists_string']:''?></td>
+                            <td><?= (isset($track['label']))?$track['label']:''?></td>
+                            <td><?= (isset($track['genre']))?$track['genre']:''?></td>
                             <td><?= (isset($track['album']))?$track['album']:'';?></td>
                             <td><?= $track['publishDate']->format('Y-m-d')?></td>
                             <td><?= (isset($track['picture']))?'Yes':'No';?></td>

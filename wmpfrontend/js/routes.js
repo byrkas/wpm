@@ -24,7 +24,7 @@ angular.module('WhoPlayMusic').config(
 						redirectTo : '/tracks'
 					}).when('/tracks', {
 						templateUrl : 'templates/pages/tracks.html',
-						controller : 'TracksIndexController',
+						controller : 'TracksIndexController as TI',
 						//reloadOnSearch: false,
 					    data: {
 					        meta: {
@@ -33,16 +33,16 @@ angular.module('WhoPlayMusic').config(
 					      }
 					}).when('/track/:id', {
 						templateUrl : 'templates/pages/track.html',
-						controller : 'TrackViewController'
+						controller : 'TrackViewController as TV'
 					}).when('/album/:id', {
 						templateUrl : 'templates/pages/album.html',
-						controller : 'AlbumIndexController'
+						controller : 'AlbumIndexController as AI'
 					}).when('/search/:query', {
 						templateUrl : 'templates/pages/search-results.html',
-						controller : 'SearchResultsController'
+						controller : 'SearchResultsController as SR'
 					}).when('/account/login', {
 						templateUrl : 'templates/pages/user-login.html',
-						controller : 'UserLoginController',
+						controller : 'UserLoginController as UL',
 					    data: {
 					        meta: {
 					          'title': 'Sign in'
@@ -50,7 +50,7 @@ angular.module('WhoPlayMusic').config(
 					      }
 					}).when('/account/signup', {
 						templateUrl : 'templates/pages/user-signup.html',
-						controller : 'UserSignupController',
+						controller : 'UserSignupController as US',
 					    data: {
 					        meta: {
 					          'title': 'Sign up'
@@ -58,7 +58,7 @@ angular.module('WhoPlayMusic').config(
 					      }
 					}).when('/account/forgot-password', {
 						templateUrl : 'templates/pages/user-forgot-password.html',
-						controller : 'UserForgotController',
+						controller : 'UserForgotController as UF',
 					    data: {
 					        meta: {
 					          'title': 'Forgot password'
@@ -66,7 +66,7 @@ angular.module('WhoPlayMusic').config(
 					      }
 					}).when('/account/profile', {
 						templateUrl : 'templates/pages/user-profile.html',
-						controller : 'UserProfileController',
+						controller : 'UserProfileController as UP',
 					    data: {
 					        meta: {
 					          'title': 'Account Settings'
@@ -79,7 +79,7 @@ angular.module('WhoPlayMusic').config(
 						}
 					}).when('/account/downloads', {
 						templateUrl : 'templates/pages/my-downloads.html',
-						controller : 'MyDownloadsController',
+						controller : 'MyDownloadsController as MD',
 					    data: {
 					        meta: {
 					          'title': 'My Downloads'
@@ -87,7 +87,7 @@ angular.module('WhoPlayMusic').config(
 					      }
 					}).when('/account/favorite', {
 						templateUrl : 'templates/pages/my-favorites.html',
-						controller : 'MyFavoritesController',
+						controller : 'MyFavoritesController as MF',
 					    data: {
 					        meta: {
 					          'title': 'My Favorites'
@@ -95,10 +95,10 @@ angular.module('WhoPlayMusic').config(
 					      }
 					}).when('/payment-page', {
 						templateUrl : 'templates/pages/payment-page.html',
-						controller : 'PaymentPageController'
+						controller : 'PaymentPageController as PP'
 					}).when('/top100', {
 						templateUrl : 'templates/pages/top100.html',
-						controller : 'TopController',
+						controller : 'TopController as T',
 					    data: {
 					        meta: {
 					          'title': 'TOP 100 Tracks'
@@ -108,10 +108,10 @@ angular.module('WhoPlayMusic').config(
 						templateUrl : 'templates/pages/maintain.html',
 					}).when('/page/:slug', {
 						templateUrl : 'templates/pages/page.html',
-						controller : 'PageController'
+						controller : 'PageController as P'
 					}).when('/404', {
 						templateUrl : 'templates/pages/error.html',
-						controller : 'ErrorPageController'
+						controller : 'ErrorPageController as EP'
 					}).otherwise({
 						redirectTo : '/404'
 					});
@@ -124,33 +124,37 @@ angular.module('WhoPlayMusic').config(
 							$rootScope.keyboardModalShow = false;
 							$rootScope.mobileMenu = false;
 							$rootScope.cursorStyle = {};
+							$rootScope.siteMode = 0;
+							$rootScope.parseSiteMode = false;
 							$rootScope.footer = $cookieStore.get('footer') || '';
 							$rootScope.isLoading = false;
 							$rootScope.globals = $cookieStore.get('globals') || {};
 							$rootScope.quotes = ($rootScope.globals.currentUser !== undefined)?$rootScope.globals.currentUser.quotes || {}:{};
 
 							$rootScope.$on("$routeChangeStart", function (event, next, current) {
-								$http.get('http://api.wpm.zeit.style/is-maintain/').then(function(response){
-									if(response.data.isMaintain === 1){
-										$rootScope.isMaintain = 1;
-										$location.path('/maintain');
-									}
-									$rootScope.siteMode = response.data.siteMode;
-									$rootScope.footer = $sce.trustAsHtml(response.data.footer);
-
-									if ($rootScope.globals.currentUser) {
-									}else{
-										var routesToRedirect = ['/account/downloads','/account/favorite','/account/profile'];
-										if($rootScope.siteMode == 0){
-											routesToRedirect.push('/tracks');
-											routesToRedirect.push('/track/:id');
+								//if(current !== undefined && next.templateUrl != current.templateUrl)
+									$http.get('http://api.wpm.zeit.style/is-maintain/').then(function(response){
+										$rootScope.parseSiteMode = true;
+										if(response.data.isMaintain === 1){
+											$rootScope.isMaintain = 1;
+											$location.path('/maintain');
 										}
-										var route = next.$$route.originalPath;
-										if(routesToRedirect.indexOf(route) !== -1) {
-											$location.path('/account/login');
+										$rootScope.siteMode = response.data.siteMode;
+										$rootScope.footer = $sce.trustAsHtml(response.data.footer);
+	
+										if ($rootScope.globals.currentUser) {
+										}else{
+											var routesToRedirect = ['/account/downloads','/account/favorite','/account/profile'];
+											if($rootScope.siteMode == 0){
+												routesToRedirect.push('/tracks');
+												routesToRedirect.push('/track/:id');
+											}
+											var route = next.$$route.originalPath;
+											if(routesToRedirect.indexOf(route) !== -1) {
+												$location.path('/account/login');
+											}
 										}
-									}
-								})
+									})
 							});
 
 							$injector.get("$http").defaults.transformRequest =	 function(data, headersGetter) {

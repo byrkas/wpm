@@ -1154,7 +1154,260 @@ class IndexController extends AbstractActionController
         }
 
         exit();
+    }   
+    
+    public function downloadFavoritesAction()
+    {
+        $now = new \DateTime(date('Y-m-d') . ' 23:59:59');
+        $result = [];
+        $success = false;
+        $messages = [];
+        $quote = [];
+        $quoteSub = false;
+        $request = $this->getRequest();
+        $userId = null;
+        $this->checkAuthorization($request);
+        if (! empty($this->tokenPayload)) {
+            $userId = $this->tokenPayload->id;
+            if ($userId) {
+                $user = $this->em->find('Application\Entity\User', $userId);
+                $expireDate = $user->getExpireDate();
+                $quotePromo = $user->getQuotePromo();
+                $quoteExclusive = $user->getQuoteExclusive();
+                
+                if($expireDate >= $now){
+                    $filter = [
+                        'user' => $userId,
+                        'favorites' => 1
+                    ];
+                    $sort = $this->params()->fromQuery('sort', 'created-desc');
+                    $limit = (int) $this->params()->fromQuery('limit', 100);
+                    $page = (int) $this->params()->fromQuery('page', 1);
+                    $sortArr = explode('-', $sort);
+                    if (! in_array($sortArr[0], $this->sortList)) {
+                        $sortArr = [
+                            'release',
+                            'desc'
+                        ];
+                    }
+                    if (! in_array($sortArr[1], [
+                        'asc',
+                        'desc'
+                    ])) {
+                        $sortArr[1] = 'desc';
+                    }
+                    if ($this->params()->fromQuery('artists')) {
+                        $filter['artists'] = explode(',', $this->params()->fromQuery('artists'));
+                    }
+                    if ($this->params()->fromQuery('genre')) {
+                        $filter['genre'] = (int) $this->params()->fromQuery('genre');
+                    }
+                    if ($this->params()->fromQuery('label')) {
+                        $filter['label'] = (int) $this->params()->fromQuery('label');
+                    }
+                    if ($this->params()->fromQuery('type')) {
+                        $filter['type'] = (int) $this->params()->fromQuery('type');
+                    }
+                    if ($this->params()->fromQuery('wav')) {
+                        $filter['wav'] = (int) $this->params()->fromQuery('wav');
+                    }
+                    if ($this->params()->fromQuery('last')) {
+                        $filter['last'] = $this->params()->fromQuery('last');
+                    }
+                    if ($this->params()->fromQuery('start')) {
+                        $filter['start'] = $this->params()->fromQuery('start');
+                    }
+                    if ($this->params()->fromQuery('end')) {
+                        $filter['end'] = $this->params()->fromQuery('end');
+                    }
+                    $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracksFavorites($userId, $filter);
+                    $start = $this->start($page, $limit);
+                    
+                    while ($start > $total) {
+                        $start = $this->start(-- $page, $limit);
+                    }
+                    
+                    $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksFavorites($userId, $limit, $start, $filter, $sortArr);
+                    
+                    $tracksIds = [];
+                    foreach ($tracks as $trEntry){
+                        $tracksIds[] = $trEntry['id'];
+                    }
+                    
+                    $tracks = $this->em->getRepository('Application\Entity\Track')->findBy(['id' => $tracksIds]);
+                    foreach ($tracks as $track){
+                        $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
+                            'User' => $user,
+                            'Track' => $track
+                        ]);
+                        if ($downloaded) {
+                            $success = true;
+                        } else {
+                            $quoteType = 'quote' . $track->getTrackType()->getName();
+                            
+                            if (($quoteType == 'quotePromo' && $quotePromo > 0) || ($quoteType == 'quoteExclusive' && $quoteExclusive > 0)) {
+                                $success = true;
+                                $quoteSub = true;
+                                if($quoteType == 'quotePromo')
+                                    $quotePromo--;
+                                    else
+                                        $quoteExclusive--;
+                            } else {
+                                $messages[] = 'Quote was expired';
+                                break;
+                            }
+                        }
+                    }
+                    if($quoteSub){
+                        $quote = [
+                            'quotePromo'    =>  $quotePromo,
+                            'quoteExclusive'    =>  $quoteExclusive,
+                        ];
+                    }
+                } else {
+                    $messages[] = 'Quote was expired '.$expireDate->format('Y-m-d H:i').' '.$now->format('Y-m-d H:i');
+                }
+            }
+        } else {
+            $messages[] = 'User is not authorized!';
+        }
+        $result['success'] = $success;
+        $result['messages'] = implode(' ', $messages);
+        $result['quoteSub'] = $quoteSub;
+        $result['quote'] = $quote;
+        
+        return new JsonModel($result);
     }
+    
+    public function downloadFavoritesStreamAction()
+    {
+        $nameFilter = new \Zend\Filter\Word\SeparatorToDash();
+        $request = $this->getRequest();
+        $remoteAddr = $request->getServer('REMOTE_ADDR');
+        $userId = null;
+        $maxSize = 4;
+        $maxSizeLimited = false;
+        
+        $this->checkAuthorization($request);
+        if (! empty($this->tokenPayload)) {
+            $userId = $this->tokenPayload->id;
+            
+            if ($userId) {
+                $User = $this->em->getReference('Application\Entity\User',$userId);
+                $filter = [
+                    'user' => $userId,
+                    'favorites' => 1
+                ];
+                $sort = $this->params()->fromQuery('sort', 'created-desc');
+                $limit = (int) $this->params()->fromQuery('limit', 100);
+                $page = (int) $this->params()->fromQuery('page', 1);
+                $sortArr = explode('-', $sort);
+                if (! in_array($sortArr[0], $this->sortList)) {
+                    $sortArr = [
+                        'release',
+                        'desc'
+                    ];
+                }
+                if (! in_array($sortArr[1], [
+                    'asc',
+                    'desc'
+                ])) {
+                    $sortArr[1] = 'desc';
+                }
+                if ($this->params()->fromQuery('artists')) {
+                    $filter['artists'] = explode(',', $this->params()->fromQuery('artists'));
+                }
+                if ($this->params()->fromQuery('genre')) {
+                    $filter['genre'] = (int) $this->params()->fromQuery('genre');
+                }
+                if ($this->params()->fromQuery('label')) {
+                    $filter['label'] = (int) $this->params()->fromQuery('label');
+                }
+                if ($this->params()->fromQuery('type')) {
+                    $filter['type'] = (int) $this->params()->fromQuery('type');
+                }
+                if ($this->params()->fromQuery('wav')) {
+                    $filter['wav'] = (int) $this->params()->fromQuery('wav');
+                }
+                if ($this->params()->fromQuery('last')) {
+                    $filter['last'] = $this->params()->fromQuery('last');
+                }
+                if ($this->params()->fromQuery('start')) {
+                    $filter['start'] = $this->params()->fromQuery('start');
+                }
+                if ($this->params()->fromQuery('end')) {
+                    $filter['end'] = $this->params()->fromQuery('end');
+                }
+                $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracksFavorites($userId, $filter);
+                $start = $this->start($page, $limit);
+                
+                while ($start > $total) {
+                    $start = $this->start(-- $page, $limit);
+                }
+                
+                $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksFavorites($userId, $limit, $start, $filter, $sortArr);
+                
+                $tracksIds = [];
+                foreach ($tracks as $trEntry){
+                    $tracksIds[] = $trEntry['id'];
+                }
+                $filter['trackIds'] = $tracksIds;
+                
+                $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksForArchive($limit, 0, $filter);
+                
+                $zipName = date('d_m_Y').'_archive_favorites_'.count($tracks).'.zip';
+                $contentArr = [];
+                $bytes = 0;
+                
+                foreach ($tracks as $track) {
+                    $size = $track['fileSize'];
+                    $bytes += $size;
+                    if ($this->formatSizeGb($bytes) > $maxSize) {
+                        $maxSizeLimited = true;
+                        break;
+                    }
+                    $fileName = $track['artists'].' - '.$track['title'].(($track['label'])?' ['.$track['label'].']':'') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $filePath = str_replace('public/', '/', $track['fileDestination']);
+                    $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
+                    $contentArr[] = "$crc32 $size $filePath $fileName";
+                    
+                    $Track = $this->em->getReference('Application\Entity\Track',$track['id']);
+                    
+                    $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
+                        'User' => $User,
+                        'Track' => $track
+                    ]);
+                    if (! $downloaded) {
+                        $User->subQuote($track['type']);
+                    }
+                    $download = new Download($Track, $User);
+                    $download->setIp($remoteAddr);
+                    $this->em->persist($download);
+                    $this->em->flush();
+                }
+                $content = implode("\r\n", $contentArr) . "\r\n";
+                
+                $response = $this->getResponse();
+                $headers = $response->getHeaders();
+                $headers->addHeaderLine("Content-Disposition: attachment; filename=\"" . $zipName . "\"");
+                $headers->addHeaderLine("X-filename: " . $zipName);
+                $headers->addHeaderLine("X-Archive-Files: zip");
+                $headers->addHeaderLine("Cache-control: private");
+                $headers->addHeaderLine("Content-encoding: none");
+                $headers->addHeaderLine("Accept-Encoding: ''");
+                if ($maxSizeLimited) {
+                    $headers->addHeaderLine('X-CustomHeader: Archive has reached maximum allowed limit 4Gb, please filter results!');
+                } else {
+                    $headers->addHeaderLine('X-CustomHeader: ');
+                }
+                $response->setContent($content);
+                return $this->getResponse();
+            }
+        }
+        
+        exit();
+    }
+    
     public function downloadFileAction()
     {
         $filter = new \Zend\Filter\Word\SeparatorToDash();

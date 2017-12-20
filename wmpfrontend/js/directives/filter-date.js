@@ -12,6 +12,11 @@ angular.module('WhoPlayMusic')
     controller: function($scope, $filter) {
     	$scope.visibilityStart = false;
     	$scope.visibilityEnd = false;
+    	$scope.isTouched = false;
+    	$scope.linkClick = function()
+    	{
+    		$scope.isTouched = !$scope.isTouched;
+    	}
     	
     	$scope.isActive = function()
     	{    		
@@ -27,9 +32,24 @@ angular.module('WhoPlayMusic')
     		var date = new Date();
     		return $filter('date')(date, 'yyyy-MM-dd');
     	}
+    	$scope.Delete = function(e) {
+  		  $scope.$destroy();
+  		}
     },
     templateUrl: '/templates/directives/filter-date.html',
     link: function(scope, element, attrs) {
+    	$(document).bind('click', function(event){
+            var isClickedElementChildOfPopup = element
+                .find(event.target)
+                .length > 0;
+
+            if (isClickedElementChildOfPopup)
+                return;
+
+            scope.$apply(function(){
+            	scope.isTouched = false;
+            });
+        });
     	scope.resetDate = function(){
     	  scope.startDate = '';
     	  scope.endDate = '';
@@ -54,6 +74,10 @@ angular.module('WhoPlayMusic')
             	scope.visibilityStart = false;
             	scope.visibilityEnd = false;
             });
+        });
+        scope.$on('$destroy', function () {
+        	element.remove();
+        	scope.Delete();
         });
     }
   };

@@ -49,7 +49,7 @@ class ImportManager
             ->setOptionMD5Data(true)
             ->setOptionMD5DataSource(true)
             //->setEncoding('UTF-8')
-            ->setEncoding('ISO-8859-1')
+           // ->setEncoding('ISO-8859-1')
             ->analyze($filePath);
            
        /*  unset($audio['comments']['picture']);

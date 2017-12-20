@@ -1,0 +1,12 @@
+<div class="filter-parent filter-label-parent filter-standard-parent filter-twocol-parent" ng-class="{'filter-parent-active': isActive()}">
+  <a href="javascript:void(0)" class="filter-link filter-label-link">Labels</a>
+  <div class="filter-drop filter-label-drop">
+    <a ng-click="resetLabel()" href="javascript:void(0)" class="filter-drop-reset-link">Reset</a>
+    <ul class="filter-label-drop-list">
+    	<li class="filter-type-drop-list-item" ng-repeat="label in labels" label="label">
+			<input name="activeLabel" ng-value="{{label.id}}" ng-model="$parent.activeLabel" id="fg-label-{{label.id}}" class="filter-drop-checkbox" type="radio">
+			<label for="fg-label-{{label.id}}" class="filter-drop-checkbox-label">{{label.name}} <span class="filter-item-count">{{label.cnt}}</span></label>
+		</li>
+    </ul>
+  </div>
+</div>

@@ -12,6 +12,9 @@ angular.module('WhoPlayMusic')
       totalPages: '='
     },
     controller: function($scope) {
+    	$scope.Delete = function(e) {
+    		  $scope.$destroy();
+    		}
     },
     templateUrl: '/templates/directives/pagination-tracks.html',
     link: function(scope, element, attrs) {      
@@ -31,6 +34,10 @@ angular.module('WhoPlayMusic')
 			  else
 				  scope.onlyWav = 'on';
 		  }
+	      scope.$on('$destroy', function () {
+	        	element.remove();
+	        	scope.Delete();
+	        });
      }
   };
 });

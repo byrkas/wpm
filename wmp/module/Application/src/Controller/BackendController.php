@@ -64,12 +64,15 @@ class BackendController extends AbstractActionController
     {
         echo "<pre>";
         $path = $this->importManager->getImportFolder().'/2017/11-November/28-Exclusive/House/Dj Pierre - Love And Happiness 2017 (Original Mix) [Get Physical Music].wav';
+        $path = $this->importManager->getImportFolder().'/2017/11-November/28-Exclusive/Techno/Gianni Ruocco, Le Roi Carmoña - Esgarrifança (Original Mix) [Vamos Music].mp3';
         //$path = $this->importManager->getImportFolder().'/2017/11-November/28-Exclusive/Stems/Alberto Costas - Bass and Furious (Bob Ray Remix) [Elektrobeats Records].stem.mp4';
+        $path = $this->importManager->getImportFolder().'/2017/12-December/19-Promo/Electronica/Javier Alemany - Dark Pop (Original Mix) [Frequenza Black Label].wav';
+        $path = $this->importManager->getImportFolder().'/2017/12-December/19-Promo/Tech House/Antonio Rossini - Can You Dig It (Original Mix) [Flashmob Records].wav';
+       // $path = $this->importManager->getImportFolder().'/2017/12-December/19-Promo/Electronica/test.wav';
         
         $info = $this->importManager->getAudioInfo($path);
         
         var_dump($info);
-        
         exit;
     }
     

@@ -1,5 +1,5 @@
-<div class="filter-parent filter-type-parent filter-standard-parent" ng-class="{'filter-parent-active': isActive()}">
-  <a href="javascript:void(0)" class="filter-link filter-type-link">Type</a>
+<div class="filter-parent filter-type-parent filter-standard-parent" ng-class="{'filter-parent-active': isActive(), 'on-touch': isTouched}">
+  <a href="javascript:void(0)" class="filter-link filter-type-link" ng-click="linkClick()">Type</a>
   <div class="filter-drop filter-type-drop">
     <a ng-click="resetType()" href="javascript:void(0)" class="filter-drop-reset-link">Reset</a>
     <ul class="filter-type-drop-list">

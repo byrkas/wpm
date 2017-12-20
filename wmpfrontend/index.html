@@ -53,12 +53,12 @@
 	           </div>
 	           <div class="mobile-menu-body" ng-class="{'mobile-nav-appear':mobileMenu}">
 	              <ul class="navigation">
-				    <li ng-show="siteModeShow()"><a href="/tracks">Tracks</a></li>
-				    <li ng-show="siteModeShow()"><a href="/top100">TOP 100</a></li>
-				    <li><a href="/page/about-us">About us</a></li>
-				    <li><a href="/page/contact-us">Contact us</a></li>
-				    <li><a href="/page/faq-help">FAQ (Help)</a></li>
-				    <li><a href="/page/report-abuse">Report Abuse</a></li>
+				    <li ng-show="siteModeShow()"><a ng-click="mobileMenu = false" href="/tracks">Tracks</a></li>
+				    <li ng-show="siteModeShow()"><a ng-click="mobileMenu = false" href="/top100">TOP 100</a></li>
+				    <li><a href="/page/about-us" ng-click="mobileMenu = false">About us</a></li>
+				    <li><a href="/page/contact-us" ng-click="mobileMenu = false">Contact us</a></li>
+				    <li><a href="/page/faq-help" ng-click="mobileMenu = false">FAQ (Help)</a></li>
+				    <li><a href="/page/report-abuse" ng-click="mobileMenu = false">Report Abuse</a></li>
 				</ul>
 			</div>
 	     </div>
@@ -68,7 +68,6 @@
 	               <use xlink:href="/static/images/defs.svg#logo-headphones"/>
 	               </svg>
 	               <svg viewBox="0 0 200 200" alt="Beatport" class="logo-icon logo-icon-loading">
-	                 <!-- NOTE: Chrome does not currently support animations in externally loaded svgs, so we must define this here -->
 	                  <g>
 	                    <path d="M172.6,99.6 C172.6,59.6 140,27 100,27 C60,27 27.4,59.6 27.4,99.6
 	                      C27.4,118.1 34.4,135.8 47.1,149.3 L47.1,149.3 C48.8,151.1 51.6,151.2
@@ -108,13 +107,13 @@
 	                </svg>
 	              </a>
 	              <div class="nav-links"><ul class="navigation">
-				    <li ng-show="siteModeShow()"><a href="/tracks">Tracks</a></li>
-				    <li ng-show="siteModeShow()"><a href="/top100">TOP 100</a></li>
-				    <li><a href="/page/about-us">About us</a></li>
-				    <li><a href="/page/contact-us">Contact us</a></li>
-				    <li><a href="/page/faq-help">FAQ (Help)</a></li>
-				    <li><a href="/page/report-abuse">Report Abuse</a></li>
-				    <li ng-show="siteModeShow()"><a href="/payment-page">Premium</a></li>
+				    <li ng-show="siteModeShow()"><a ng-href="/tracks">Tracks</a></li>
+				    <li ng-show="siteModeShow()"><a ng-href="/top100">TOP 100</a></li>
+				    <li><a ng-href="/page/about-us">About us</a></li>
+				    <li><a ng-href="/page/contact-us">Contact us</a></li>
+				    <li><a ng-href="/page/faq-help">FAQ (Help)</a></li>
+				    <li><a ng-href="/page/report-abuse">Report Abuse</a></li>
+				    <li ng-show="siteModeShow()"><a ng-href="/payment-page">Premium</a></li>
 				</ul>
 			</div>
 	          <div class="header-icons">
@@ -132,9 +131,9 @@
 				    <div class="head-drop account-drop header-tooltip-menu">
 					    <div ng-show="!isLogged()" class="account-drop-logged-out" style="display: block;">
 					      <h2>Log in to start using My WhoPlayMusic!</h2>
-					      <a ng-href="/account/signup" class="button button--large" style="">Create an Account</a>
+					      <a ng-href="/account/signup" onclick="removeHeadHover()" class="button button--large" style="">Create an Account</a>
 					      <p class="login-link-parent">
-					        Already have an account? <a ng-href="/account/login" class="blue-button head-mybeatport-zero-button" style="">Log In</a>
+					        Already have an account? <a ng-href="/account/login" onclick="removeHeadHover()" class="blue-button head-mybeatport-zero-button" style="">Log In</a>
 					      </p>
 					      <div class="forgot-login-link-parent">
 				              <a ng-href="/account/forgot-password" class="forgot-login-link" style="">Forgot your username or password?</a>
@@ -345,7 +344,13 @@
 	        <li><span class="keyboard-shortcut-label">toggle play/pause</span><span class="keyboard-shortcut-value"><em>p</em> <span class="keyboard-shortcut-or">or</span> <em>space</em></span></li>
 	        <li><span class="keyboard-shortcut-label">previous track in queue</span><span class="keyboard-shortcut-value"> <em>[</em></span></li>
 	        <li><span class="keyboard-shortcut-label">next track in queue</span><span class="keyboard-shortcut-value"> <em>]</em></span></li>
+	        <li><span class="keyboard-shortcut-label">previous track in track grid</span><span class="keyboard-shortcut-value"><em>left arrow</em> <span class="keyboard-shortcut-or">or</span> <em>k</em></span></li>
+	        <li><span class="keyboard-shortcut-label">next track in track grid</span><span class="keyboard-shortcut-value"><em>right arrow</em> <span class="keyboard-shortcut-or">or</span> <em>j</em></span></li>
 	        <li><span class="keyboard-shortcut-label">toggle open playlist</span><span class="keyboard-shortcut-value"><em>o</em> <span class="keyboard-shortcut-or">or</span> <em>i</em></span></li>
+	        <li><span class="keyboard-shortcut-label">download archive</span><span class="keyboard-shortcut-value"><em>a</em></span></li>
+	        <li><span class="keyboard-shortcut-label">download mp3</span><span class="keyboard-shortcut-value"><em>m</em></span></li>
+	        <li><span class="keyboard-shortcut-label">download wav</span><span class="keyboard-shortcut-value"><em>w</em></span></li>
+	        <li><span class="keyboard-shortcut-label">add to favorites</span><span class="keyboard-shortcut-value"><em>f</em></span></li>
 	        <li><span class="keyboard-shortcut-label">toggle shortcuts</span><span class="keyboard-shortcut-value"><em>?</em></span></li>
 	      </ul>
 	    </div>
@@ -363,6 +368,8 @@
     <script type="text/javascript" src="/js/vendor/angular-resource.js"></script>
     <script type="text/javascript" src="/js/vendor/angular-cookies.js"></script>
     <script type="text/javascript" src="/js/vendor/angular-sanitize.js"></script>
+    <script type="text/javascript" src="/js/vendor/angular-touch.js"></script>
+    <script type="text/javascript" src="/js/vendor/angular-ismobile.min.js"></script>
     <script type="text/javascript" src="/js/vendor/md5.js"></script>
     <script type="text/javascript" src="/js/vendor/angular-soundmanager2.js"></script>
 	<script type="text/javascript" src="/js/vendor/ui-bootstrap-custom-2.5.0.js"></script>
@@ -375,13 +382,6 @@
 	<script type="text/javascript" src="/js/app.js"></script>
 	<script type="text/javascript" src="/js/routes.js"></script>
 
-    <!-- Services -->
-	<!-- <script type="text/javascript" src="/js/services/session.js"></script>
-    <script type="text/javascript" src="/js/services/player-tracks.js"></script>
-	-->
-    <!-- Resources -->
-	<!-- <script type="text/javascript" src="/js/resources/track.js"></script> -->
-
     <!-- Directives -->
 	<script type="text/javascript" src="/js/directives/track-item.js"></script>
 	<script type="text/javascript" src="/js/directives/filter-type.js"></script>
@@ -390,7 +390,6 @@
 	<script type="text/javascript" src="/js/directives/filter-label.js"></script>
 	<script type="text/javascript" src="/js/directives/filter-date.js"></script>
 	<script type="text/javascript" src="/js/directives/pagination-tracks.js"></script>
-	<script type="text/javascript" src="/js/directives/download-button.js"></script>
     <script type="text/javascript" src="/js/directives/download-buttons.js"></script>
 	<script type="text/javascript" src="/js/directives/search.js"></script>
 
@@ -405,13 +404,13 @@
     <script type="text/javascript" src="/js/controllers/top-100-controller.js"></script>
     <script type="text/javascript" src="/js/controllers/search-results-controller.js"></script>
 
-    <script type="text/javascript">
+    <script type="text/javascript">	
     angular.element(document).ready(function() {
-        $('#overflow').addClass('hidden');
+        $('#overflow').addClass('hidden');        
      });
+    
     	function toggleOpened(object)
     	{
-    		console.log('tt');
     		$(object).parents('.bucket-item').toggleClass("opened-actions");
     	}
 
@@ -436,16 +435,69 @@
     		$(this).addClass('head-hover-on');
     	},function(){
     		$(this).removeClass('head-hover-on');});
+    	
+    	function removeHeadHover()
+    	{
+    		$('.head-account-parent').removeClass('head-hover-on');
+    	}
 
+    	var grid;
+    	var gridSelected;
     	function doc_keyUp(e) {
     		if ($(e.target).closest("input")[0]) {
     	        return;
     	    }
+    		//190 > 188 <
 
     	    if (e.keyCode == 79 || e.keyCode == 73) {
     	    	togglePlaylist();
     	    }else if(e.keyCode == 191){
     	    	toggleShortcuts();
+    	    }else if(e.keyCode == 65){ //a
+    	    	$('#download-archive').trigger('click');
+    	    }else if(e.keyCode == 77){ //m
+    	    	if(!gridSelected){
+    	    		gridSelected = $('.bucket-item.active-playable');
+    	    	}
+    	    	gridSelected.find('.add-to-default.mp3').trigger('click');
+    	    }else if(e.keyCode == 87){ //w
+    	    	if(!gridSelected){
+    	    		gridSelected = $('.bucket-item.active-playable');
+    	    	}
+    	    	gridSelected.find('.add-to-default.wav').trigger('click');
+    	    }else if(e.keyCode == 70){ //f
+    	    	if(!gridSelected){
+    	    		gridSelected = $('.bucket-item.active-playable');
+    	    	}
+    	    	gridSelected.find('.add-to-fav').trigger('click');
+    	    }else if(e.keyCode == 37 || e.keyCode == 75){ // <- k
+    	    	grid = $('.bucket-item');
+    	    	if(gridSelected){
+    	    		gridSelected.removeClass('active-playable');
+                    next = gridSelected.prev();
+                    if(next.length > 0){
+                    	gridSelected = next.addClass('active-playable');
+                    }else{
+                    	gridSelected = grid.last().addClass('active-playable');
+                    }
+                }else{
+                	gridSelected = grid.last().addClass('active-playable');
+                }    	    
+    	    	gridSelected.find('.track-play').trigger('click');
+    	    }else if(e.keyCode == 39 || e.keyCode == 74){ // -> j
+    	    	grid = $('.bucket-item');
+    	    	if(gridSelected){
+    	    		gridSelected.removeClass('active-playable');
+                    next = gridSelected.next();
+                    if(next.length > 0){
+                    	gridSelected = next.addClass('active-playable');
+                    }else{
+                    	gridSelected = grid.eq(0).addClass('active-playable');
+                    }
+                }else{
+                	gridSelected = grid.eq(0).addClass('active-playable');
+                }
+    	    	gridSelected.find('.track-play').trigger('click');
     	    }
     	}
     	function removeObject(obj){

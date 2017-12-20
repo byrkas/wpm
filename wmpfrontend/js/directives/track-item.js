@@ -9,16 +9,20 @@ angular.module('WhoPlayMusic')
     	$scope.isLogged = function(){
     		return $rootScope.isLogged();
     	}
+    	$scope.Delete = function(e) {
+		  $scope.$destroy();
+		}
     },
     templateUrl: '/templates/directives/track-item.html',
-    link: function(scope, element, attrs, $cookies) {    	
-    	var mobileLink = element.find('.mobile-action');
-    	angular.forEach(mobileLink, function(link){
-            var linkEl = angular.element(link);
-            linkEl.bind("click", function () {
-            	element.toggleClass("opened-actions");
-            });
-        })
+    link: function(scope, element, attrs) {    	    	
+    	/*element.find('.mobile-action').bind("click", function () {
+        	element.toggleClass("opened-actions");
+        });*/
+    	
+        scope.$on('$destroy', function () {
+        	scope.Delete();
+        	element.remove();
+        });
     }
   };
 }]);

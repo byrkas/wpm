@@ -1,15 +1,8 @@
 angular.module('WhoPlayMusic').factory( 'Favorites', function($resource, $rootScope){
-  return $resource('http://api.wpm.zeit.style/favorites',null,{
-		  'get' :{
-			  withCredentials: true,
-				headers : {
-					'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
-					}
-		  }		
-		});
+  return $resource('http://api.wpm.zeit.style/favorites?token='+$rootScope.globals.currentUser.token);
 });
 
-angular.module('WhoPlayMusic').controller('MyFavoritesController', function($scope, $http, $filter, Favorites, $routeParams, $rootScope, $location) { 
+angular.module('WhoPlayMusic').controller('MyFavoritesController', function($scope, $http, $filter, Favorites, $routeParams, $rootScope, $location, $httpParamSerializer, $window) { 
   $scope.itemsPerPage = 50;
   $scope.currentPage = 1;
   $scope.maxSize = 3;
@@ -36,6 +29,7 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
   $scope.releasedLast = '';
   $scope.onlyWav = 'off';
   $scope.applyDates = false;
+  $scope.queryParams = {};
   
   if($routeParams.artists !== undefined){
 	  $scope.selectedArtists = $routeParams.artists.split(',');
@@ -72,85 +66,97 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
   
   $scope.removeAll = function()
   {
-	  $http.get('http://api.wpm.zeit.style/clear-favorites/', {
-			withCredentials: true,
-			headers : {
-				'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
-				}
-			}).then(function(response){
+	  $http.get('http://api.wpm.zeit.style/clear-favorites/?token='+$rootScope.globals.currentUser.token).then(function(response){
 				$scope.getTracks();
 			});
   }
     
-  $scope.getTracks = function(page, limit){
+  $scope.query = function(page, limit){	  
 	  var search = $location.search();
-	 if(page===undefined){
-		 page = $scope.currentPage;
-		 if(page > 1){
-			 search.page = page;
+		 if(page===undefined){
+			 page = $scope.currentPage;
+			 if(page > 1){
+				 search.page = page;
+			 }
+	     }
+		 if(limit===undefined){
+			 limit = $scope.itemsPerPage;
+			 if(limit != 50)
+				 search.limit = limit;
 		 }
-     }
-	 if(limit===undefined){
-		 limit = $scope.itemsPerPage;
-		 if(limit != 50)
-			 search.limit = limit;
-	 }
-	 if($scope.sortBy != 'created-desc'){
-		 search.sort = $scope.sortBy;
-	 }
-	 var query = {page: page, limit: limit, sort: $scope.sortBy};
-	 if($scope.activeType > 0){
-		 query.type = $scope.activeType;
-		 if(!search.type) search.type = $scope.activeType;
-	 }else{
-		 if(search.type) delete search.type;
-	 }
-	 if($scope.activeGenre > 0){
-		 query.genre = $scope.activeGenre;
-		 if(!search.genre) search.genre = $scope.activeGenre;
-	 }else{
-		 if(search.genre) delete search.genre;
-	 }
-	 if($scope.selectedArtists.length > 0){
-		 query.artists = $scope.selectedArtists.join(',');
-		 search.artists = query.artists;
-	 }else{
-		 if(search.artists) delete search.artists;
-	 }
-	 if($scope.activeLabel > 0){
-		 query.label = $scope.activeLabel;
-		 if(!search.label) search.label = $scope.activeLabel;
-	 }else{
-		 if(search.label) delete search.label;
-	 }
-	 if($scope.releasedLast !== ''){
-		 query.last = $scope.releasedLast;
-		 if(!search.last || search.last != query.last) search.last = $scope.releasedLast;
-	 }else{
-		 delete search.last;
-	 }
-	 if($scope.applyDates == true){
-		 query.start = $scope.startDate;
-		 query.end = $scope.endDate;
-		 search.start = query.start;
-		 search.end = query.end;
-	 }else{
-		 delete search.start;
-		 delete search.end;
-	 }
-	 if($scope.onlyWav == 'on'){
-		 query.wav = 1;
-		 if(!search.wav) search.wav = $scope.onlyWav;
-	 }else{
-		 if(search.wav) delete search.wav;
-	 }
-	 if($rootScope.globals.currentUser){
-		 query.showPromo = $rootScope.globals.currentUser.quotes.showPromo;
-	 }
-		 $location.search(search);
+		 if($scope.sortBy != 'created-desc'){
+			 search.sort = $scope.sortBy;
+		 }
+		 var query = {page: page, limit: limit, sort: $scope.sortBy};
+		 if($scope.activeType > 0){
+			 query.type = $scope.activeType;
+			 if(!search.type) search.type = $scope.activeType;
+		 }else{
+			 if(search.type) delete search.type;
+		 }
+		 if($scope.activeGenre > 0){
+			 query.genre = $scope.activeGenre;
+			 if(!search.genre) search.genre = $scope.activeGenre;
+		 }else{
+			 if(search.genre) delete search.genre;
+		 }
+		 if($scope.selectedArtists.length > 0){
+			 query.artists = $scope.selectedArtists.join(',');
+			 search.artists = query.artists;
+		 }else{
+			 if(search.artists) delete search.artists;
+		 }
+		 if($scope.activeLabel > 0){
+			 query.label = $scope.activeLabel;
+			 if(!search.label) search.label = $scope.activeLabel;
+		 }else{
+			 if(search.label) delete search.label;
+		 }
+		 if($scope.releasedLast !== ''){
+			 query.last = $scope.releasedLast;
+			 if(!search.last || search.last != query.last) search.last = $scope.releasedLast;
+		 }else{
+			 delete search.last;
+		 }
+		 if($scope.applyDates == true){
+			 query.start = $scope.startDate;
+			 query.end = $scope.endDate;
+			 search.start = query.start;
+			 search.end = query.end;
+		 }else{
+			 delete search.start;
+			 delete search.end;
+		 }
+		 if($scope.onlyWav == 'on'){
+			 query.wav = 1;
+			 if(!search.wav) search.wav = $scope.onlyWav;
+		 }else{
+			 if(search.wav) delete search.wav;
+		 }
+		 if($rootScope.globals.currentUser){
+			 query.showPromo = $rootScope.globals.currentUser.quotes.showPromo;
+		 }
+			 $location.search(search);
+			 
+	  return query;
+  }
+  
+  $scope.getTracks = function(page, limit){
+	  $scope.queryParams = $scope.query(page, limit);
+	  if(page===undefined){
+			 page = $scope.currentPage;
+			 if(page > 1){
+				 search.page = page;
+			 }
+	     }
+		 if(limit===undefined){
+			 limit = $scope.itemsPerPage;
+			 if(limit != 50)
+				 search.limit = limit;
+		 }
 	 
 	 body.addClass('waiting');
-	 Favorites.get(query, function(response){
+	 Favorites.get($scope.queryParams, function(response){
 			 $scope.tracks = response.tracks;
 			 $scope.totalItems = response.total;
 			 $scope.currentPage = response.page;
@@ -181,6 +187,29 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
 		
 		$scope.sortBy = predicate+'-'+($scope.reverse?'desc':'asc');
   };
+
+  $scope.downloadArchive = function() {
+		$rootScope.isLoading = true;
+		var query = $scope.queryParams;
+		$http.get('http://api.wpm.zeit.style/download-favorites/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer(query)).then(function(response){
+	    		$rootScope.isLoading = false;
+				if(!response.data.success){
+					$location.path('/payment-page');
+				}else{
+					$scope.quoteSub = response.data.quoteSub;
+					$scope.quote = response.data.quote;
+					$window.location = 'http://api.wpm.zeit.style/download-favorites-stream/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer(query);
+					$scope.downloaded = true;
+ 				if($scope.quoteSub && $scope.quote.length > 0){
+ 					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;
+ 					$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.quoteExclusive;
+
+ 					$cookieStore.put('globals', $rootScope.globals);
+ 					$rootScope.quotes = $scope.quote;
+ 				}
+				}
+			})
+	};
   
   $scope.resetAll = function(){
 	  $scope.activeType = 0;  

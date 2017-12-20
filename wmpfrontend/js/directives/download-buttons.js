@@ -19,6 +19,9 @@ angular.module('WhoPlayMusic')
     	}
     	$scope.object = null;
 
+    	$scope.Delete = function(e) {
+		  $scope.$destroy();
+		}
     	$scope.download = function(format){
     		if($rootScope.globals.currentUser === undefined){
     			$location.path('/payment-page');
@@ -109,6 +112,10 @@ angular.module('WhoPlayMusic')
     },
     templateUrl: '/templates/directives/download-buttons.html',
     link: function(scope, element, attrs) {
+        scope.$on('$destroy', function () {
+        	element.remove();
+        	scope.Delete();
+        });
     	$(document).bind('click', function(event){
             var isClickedElementChildOfPopup = element
                 .find(event.target)

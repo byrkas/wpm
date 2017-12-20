@@ -5,10 +5,13 @@ angular.module('WhoPlayMusic').factory( 'Track', function($resource){
 angular.module('WhoPlayMusic').controller('TrackViewController', function($scope, $http, Track, $filter, $routeParams, $window, $rootScope, $location, ngMeta) {
 	$scope.track = {};
 	$scope.url = $window.location.href;
-	
-	if(!$rootScope.siteModeShow()){
-		$location.path('/account/login');
-	}
+		
+	var siteModeListener = function(newValue, oldValue, scope){
+		if(newValue == true && !$rootScope.siteModeShow()){
+			$location.path('/account/login');
+		}
+	  }
+	$rootScope.$watch('parseSiteMode',siteModeListener);
 	
 	var showPromo = true;
 	if($rootScope.globals.currentUser){

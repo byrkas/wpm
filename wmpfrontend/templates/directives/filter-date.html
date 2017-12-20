@@ -1,5 +1,5 @@
-<div class="filter-parent filter-released-parent filter-standard-parent filter-twocol-parent" ng-class="{'filter-parent-active': isActive()}">
-  <a href="javascript:void(0)" class="filter-link filter-released-link">Release date</a>
+<div class="filter-parent filter-released-parent filter-standard-parent filter-twocol-parent" ng-class="{'filter-parent-active': isActive(), 'on-touch': isTouched}">
+  <a href="javascript:void(0)" class="filter-link filter-released-link" ng-click="linkClick()">Release date</a>
   <div class="filter-drop filter-released-drop">
     <a ng-click="resetDate()" href="javascript:void(0)" class="filter-drop-reset-link">Reset</a>
     <div class="filter-released-date-links">

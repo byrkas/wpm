@@ -1,0 +1,23 @@
+<div class="buy-button" ng-class="{'track-buy-button': trackBuyButton,'loading':downloading, 'in-cart':downloaded, 'opened':lunch}">
+	<button class="add-to-default" ng-click="download()">download</button>
+	<button class="launch-menu" ng-click="lunchMenu()">
+		<div class="launch-menu-icon">
+		  <svg viewBox="0 0 200 200" class="icon">
+			<use xlink:href="/static/images/defs.svg#icon-chevron-down"/>
+		  </svg>
+		</div>
+		<div class="loading-menu-icon">
+		  <div class="icon"></div>
+		</div>
+	</button>
+	<div ng-show="lunch" class="buy-button-menu">
+		<button ng-show="!track.isFavorite" class="add-new-cart" ng-click="addFavorite()">
+			<svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"/></svg>
+		        Add to favorites
+		</button>
+		<button ng-show="track.isFavorite" class="add-new-cart" ng-click="removeFavorite()">
+			<svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"/></svg>
+		        Remove from favorites
+		</button>
+   </div>
+</div>

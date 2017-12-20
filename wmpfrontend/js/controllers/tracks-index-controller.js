@@ -66,13 +66,20 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 
 		 if(page===undefined){
 			 page = $scope.currentPage;
-			 if(page > 0){
+			 search.page = page;
+			 /*if(page >= 1){
+			 }else if(page == 1 && $routeParams.page !== undefined && $routeParams.page != 1){
 				 search.page = page;
-			 }
+			 }*/
 	     }
 		 if(limit===undefined){
 			 limit = $scope.itemsPerPage;
 			 search.limit = limit;
+			 /*if(limit != 50){
+				 search.limit = limit;
+			 }else if(limit == 50 && $routeParams.limit !== undefined && $routeParams.limit != 50){
+				 search.limit = limit;
+			 }	*/ 
 		 }
 		 if($scope.sortBy != 'release-desc'){
 			 search.sort = $scope.sortBy;
@@ -130,9 +137,14 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 		 return query;
   }
 
-  $scope.getTracks = function(page, limit){
+  $scope.getTracks = function(page, limit){	 
 	 $scope.queryParams = $scope.query(page, limit);
-
+	 if(page===undefined){
+		 page = $scope.currentPage;
+     }
+	 if(limit===undefined){
+		 limit = $scope.itemsPerPage;
+	 }
 	 body.addClass('waiting');
 	 Tracks.get($scope.queryParams, function(response){
 		 $scope.tracks = response.tracks;
@@ -200,9 +212,9 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
   }
 
 //init
-  $scope.getTracks();
-  if($rootScope.siteModeShow())
+  if($rootScope.siteModeShow()){
 	  $scope.getTracks();
+  }	 
   //end init
 
   var listenerFilterHandler = function (newValue, oldValue, scope) {
@@ -210,6 +222,12 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
     $scope.getTracks();
   };
 
+  var siteModeListener = function(newValue, oldValue, scope){
+	  if($rootScope.siteModeShow()){
+		  $scope.getTracks();
+	  }
+  }
+  $rootScope.$watch('parseSiteMode',siteModeListener);
   $scope.$watchGroup(['activeGenre','activeType','activeLabel','selectedArtists','sortBy','currentPage','itemsPerPage', 'applyDates','releasedLast','onlyWav'], listenerFilterHandler);
 
   function calculateTotalPages(){
@@ -284,4 +302,5 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 	    }
 	    return pages;
 	  }
+  
 });

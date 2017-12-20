@@ -33,6 +33,9 @@ angular.module('WhoPlayMusic')
     	 $scope.startSearch = function(){
     		 $location.path('/search/'+$scope.search);
     	 }
+     	$scope.Delete = function(e) {
+  		  $scope.$destroy();
+  		}
     },
     templateUrl: '/templates/directives/search.html',
     link: function(scope, element, attrs) {
@@ -89,6 +92,10 @@ angular.module('WhoPlayMusic')
                 }
             }
         });
+        scope.$on('$destroy', function () {
+          	element.remove();
+          	scope.Delete();
+          });
     }
   };
 });

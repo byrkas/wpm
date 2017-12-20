@@ -1,0 +1,12 @@
+<div class="filter-parent filter-genre-parent filter-standard-parent filter-twocol-parent" ng-class="{'filter-parent-active': isActive()}">
+  <a href="javascript:void(0)" class="filter-link filter-genre-link">Genre</a>
+  <div class="filter-drop filter-genre-drop">
+    <a ng-click="resetGenre()" href="javascript:void(0)" class="filter-drop-reset-link">Reset</a>
+    <ul class="filter-genre-drop-list">
+    	<li class="filter-type-drop-list-item" ng-repeat="genre in genres" genre="genre">
+			<input type="radio" name="activeGenre" ng-value="{{genre.id}}" ng-model="$parent.activeGenre" id="fg-genre-{{genre.id}}" class="filter-drop-checkbox">
+			<label for="fg-genre-{{genre.id}}" class="filter-drop-checkbox-label">{{genre.name}} <span class="filter-item-count">{{genre.cnt}}</span></label>
+		</li>
+    </ul>
+  </div>
+</div>
