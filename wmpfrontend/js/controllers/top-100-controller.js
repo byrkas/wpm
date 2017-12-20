@@ -113,7 +113,11 @@ angular.module('WhoPlayMusic').controller('TopController', function($scope, $htt
 		})
   }
 
-  $scope.downloadArchive = function() {
+  $scope.downloadArchive = function() {		
+		if($rootScope.globals.currentUser === undefined){
+			$location.path('/payment-page');
+			return;
+		}
 		$rootScope.isLoading = true;
 		$http.get('http://api.wpm.zeit.style/download-top/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams)).then(function(response){
 	    		$rootScope.isLoading = false;

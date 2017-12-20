@@ -22,6 +22,10 @@ angular.module('WhoPlayMusic').controller('AlbumIndexController', function($scop
 	 })
 
 	 $scope.downloadArchive = function() {
+		if($rootScope.globals.currentUser === undefined){
+			$location.path('/payment-page');
+			return;
+		}
 		$rootScope.isLoading = true;
 		$http.get('http://api.wpm.zeit.style/download-album/' + $routeParams.id + '?token='+$rootScope.globals.currentUser.token).then(function(response){
 	    		$rootScope.isLoading = false;
