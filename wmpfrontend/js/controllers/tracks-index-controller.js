@@ -60,6 +60,9 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
   if($routeParams.type !== undefined){
 	  $scope.activeType = $routeParams.type;
   }
+  if($routeParams.wav !== undefined){
+	  $scope.onlyWav = $routeParams.wav;
+  }
 
   $scope.query = function(page, limit){
 	  var search = $location.search();
@@ -128,6 +131,9 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 
 		 if($scope.onlyWav == 'on'){
 			 query.wav = 1;
+			 if(!search.wav) search.wav = $scope.onlyWav;
+		 }else{
+			 if(search.wav) delete search.wav;
 		 }
 		 if($rootScope.globals.currentUser){
 			 query.showPromo = $rootScope.globals.currentUser.quotes.showPromo;

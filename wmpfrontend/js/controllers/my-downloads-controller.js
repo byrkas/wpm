@@ -77,8 +77,7 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 	     }
 		 if(limit===undefined){
 			 limit = $scope.itemsPerPage;
-			 if(limit != 50)
-				 search.limit = limit;
+			 search.limit = limit;
 		 }
 		 if($scope.sortBy != 'created-desc'){
 			 search.sort = $scope.sortBy;
@@ -184,6 +183,11 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 	  $scope.activeGenre = 0;
 	  $scope.activeLabel = 0;
 	  $scope.selectedArtists = [];
+	  $scope.startDate = '';
+	  $scope.endDate = '';
+	  $scope.releasedLast = '';
+	  $scope.applyDates = false;
+	  $location.search('');
   }
 
   //init

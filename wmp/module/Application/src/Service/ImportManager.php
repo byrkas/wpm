@@ -89,7 +89,10 @@ class ImportManager
     
     
     public function getExtension($filePath)
-    {
+    {        
+        if(strpos($filePath, '.stem.mp4')){
+           return 'stem.mp4';
+        }
         return pathinfo($filePath, PATHINFO_EXTENSION);
     }
     

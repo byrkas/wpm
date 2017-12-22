@@ -44,12 +44,123 @@ class BackendController extends AbstractActionController
     {
         return $this->em;
     }
-
+    
+    public function duplicateLabelAction()
+    {
+        echo "<pre>";
+        $query = $this->getEntityManager()->createQueryBuilder();
+        $query->select('l.id','l.name')
+        ->from('Application\Entity\Label', 'l')
+        ->where('l.name not like :search1 AND l.name not like :search2 AND l.name not like :search3 AND l.name not like :search4 AND l.name not like :search5')
+        ->setParameter('search1',  '% records%')
+        ->setParameter('search2',  '% recordings%')
+        ->setParameter('search3',  '% recording%')
+        ->setParameter('search4',  '% rec%')
+        ->setParameter('search5',  '% music%')
+        ->orderBy('l.name')
+        //->setMaxResults(1000)
+        ;
+        
+        $results = $query->getQuery()->getArrayResult();
+        var_dump($results); 
+        exit;
+        
+        foreach ($results as $entry){
+            $search = $entry['name'];
+            $templateValue = strtolower('records; recordings; recording; rec; music;');
+            $templateExploded = explode(';', $templateValue);
+            $re = '/(.*\s)?(' . implode('|', $templateExploded) . ')(\s.*)?/i';
+            preg_match_all($re, $search, $matches, PREG_SET_ORDER, 0);
+            if (count($matches)) {
+                $founded = $matches[0][2];
+                $searchSimple = str_ireplace($founded, '', $search);
+                $searchSimple = str_ireplace('  ', ' ', $searchSimple);
+            } else {
+                $searchSimple = $search;
+            }
+            $search = $searchSimple;
+            
+            $query1 = $this->getEntityManager()->createQueryBuilder();
+            $query1->select('l.id','l.name')
+                ->from('Application\Entity\Label', 'l')
+                ->where('l.name like :search1 OR l.name like :search2 OR l.name like :search3 OR l.name like :search4 OR l.name like :search5')
+                ->setParameter('search1', $search . ' records')
+                ->setParameter('search2', $search . ' recordings')
+                ->setParameter('search3', $search . ' recording')
+                ->setParameter('search4', $search . ' rec')
+                ->setParameter('search5', $search . ' music')
+                ->orderBy('l.name');
+            $results1 = $query1->getQuery()->getArrayResult();  
+            
+            if(count($results1) > 1){
+                var_dump($entry, $results1); 
+                echo "<hr/><br/>";
+            }
+            
+        }
+        
+        //var_dump($results);
+        
+        exit;
+    }
     
     public function addUserAction()
     {
         /* $user = $this->userManager->addUser(['email' => 'imusic@zeit.style','password' => '@I456Mu$1k']);
         echo $user->getId(); */
+        exit;
+    }
+    
+    public function removeUnused()
+    {
+        $query = $this->em->createQueryBuilder();
+        $query->select('l')
+            ->from('Application\Entity\Label', 'l')
+            ->leftJoin('Application\Entity\Track','t','WITH','t.Label = l.id')
+            ->where('t.id IS NULL');
+        
+        $labels = $query->getQuery()->getResult();        
+        $cnt = count($labels);
+        if($cnt){
+            foreach ($labels as $entry){
+                $this->em->remove($entry);
+            }
+            echo 'removed '.$cnt.' labels <br/>';
+        }
+        
+        $query = $this->em->createQueryBuilder();
+        $query->select('a')
+        ->from('Application\Entity\Album', 'a')
+        ->leftJoin('Application\Entity\Track','t','WITH','t.Album = a.id')
+        ->where('t.id IS NULL');
+        
+        $albums = $query->getQuery()->getResult();        
+        $cnt = count($albums);
+        if($cnt){
+            foreach ($albums as $entry){
+                $this->em->remove($entry);
+            }
+            echo 'removed '.$cnt.' albums <br/>';
+        }
+        
+        $query = $this->em->createQueryBuilder();
+        $query->select('a')
+        ->from('Application\Entity\Artist', 'a')
+        ->leftJoin('a.Tracks','t')
+        ->where('t.id IS NULL');
+        
+        $artists = $query->getQuery()->getResult();
+        $cnt = count($artists);
+        if($cnt){
+            foreach ($artists as $entry){
+                $this->em->remove($entry);
+            }
+            echo 'removed '.$cnt.' artists <br/>';
+        }
+        
+        
+        $this->em->flush();
+        
         exit;
     }
     
@@ -70,9 +181,22 @@ class BackendController extends AbstractActionController
         $path = $this->importManager->getImportFolder().'/2017/12-December/19-Promo/Tech House/Antonio Rossini - Can You Dig It (Original Mix) [Flashmob Records].wav';
        // $path = $this->importManager->getImportFolder().'/2017/12-December/19-Promo/Electronica/test.wav';
         
+        $path = $this->importManager->getImportFolder().'/2017/11-November/28-Exclusive/Trance/Stranded-(Infinity-State-Remix).mp3';
+        
         $info = $this->importManager->getAudioInfo($path);
         
         var_dump($info);
+        exit;
+    }
+    
+    public function stemAction()
+    {
+        $path = $this->importManager->getImportFolder().'/2017/11-November/28-Exclusive/Stems/Alberto Costas - Bass and Furious (Bob Ray Remix) [Elektrobeats Records].stem.mp4';
+    
+        $info = $this->importManager->getExtension($path);
+        
+        var_dump($info);
+        
         exit;
     }
     

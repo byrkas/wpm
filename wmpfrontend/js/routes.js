@@ -147,7 +147,10 @@ angular.module('WhoPlayMusic').config(
 											var routesToRedirect = ['/account/downloads','/account/favorite','/account/profile'];
 											if($rootScope.siteMode == 0){
 												routesToRedirect.push('/tracks');
+												routesToRedirect.push('/top100');
+												routesToRedirect.push('/search/:query');
 												routesToRedirect.push('/track/:id');
+												routesToRedirect.push('/album/:id');
 											}
 											var route = next.$$route.originalPath;
 											if(routesToRedirect.indexOf(route) !== -1) {

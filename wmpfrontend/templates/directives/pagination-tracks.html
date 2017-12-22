@@ -8,7 +8,7 @@
   </div>  
   <div class="pag-jump-to-container">
     <h3>Jump to page</h3>
-    <input class="pag-jump-to-input" ng-change="selectPage(currentPage, $event)" ng-model="currentPage" placeholder="{{currentPage}}" type="text">
+    <input class="pag-jump-to-input" ng-model-options="{updateOn : 'change blur'}" ng-change="selectPage(currentPage, $event)" ng-model="currentPage" placeholder="{{currentPage}}" type="text">
   </div> 
 
   <div class="pag-results-per-container">    

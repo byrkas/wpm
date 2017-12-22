@@ -30,7 +30,13 @@
 	<link href="/css/screen.css?v=0.0.0.1" media="screen" rel="stylesheet" type="text/css">
 	<link href="/js/vendor/angular-datepicker.min.css" media="screen" rel="stylesheet" type="text/css">
 	<link href="/css/custom.css?v=0.0.0.3" media="screen" rel="stylesheet" type="text/css">
-	<link href="/img/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=qA3rr85pmj">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=qA3rr85pmj">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=qA3rr85pmj">
+	<link rel="manifest" href="/manifest.json?v=qA3rr85pmj">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg?v=qA3rr85pmj" color="#5bbad5">
+	<link rel="shortcut icon" href="/favicon.ico?v=qA3rr85pmj">
+	<meta name="theme-color" content="#ffffff">
 	<link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.9.0/loading-bar.min.css' type='text/css' media='all' />
     <base href="/" />
 </head>
@@ -59,6 +65,7 @@
 				    <li><a href="/page/contact-us" ng-click="mobileMenu = false">Contact us</a></li>
 				    <li><a href="/page/faq-help" ng-click="mobileMenu = false">FAQ (Help)</a></li>
 				    <li><a href="/page/report-abuse" ng-click="mobileMenu = false">Report Abuse</a></li>
+				    <li><a href="/payment-page" ng-click="mobileMenu = false">Premium</a></li>
 				</ul>
 			</div>
 	     </div>
@@ -113,7 +120,7 @@
 				    <li><a ng-href="/page/contact-us">Contact us</a></li>
 				    <li><a ng-href="/page/faq-help">FAQ (Help)</a></li>
 				    <li><a ng-href="/page/report-abuse">Report Abuse</a></li>
-				    <li ng-show="siteModeShow()"><a ng-href="/payment-page">Premium</a></li>
+				    <li><a ng-href="/payment-page">Premium</a></li>
 				</ul>
 			</div>
 	          <div class="header-icons">
@@ -153,7 +160,7 @@
 				  	</div>
 	             </div>
 	         </div>
-	         <div class="search" search></div>
+	         <div  ng-show="siteModeShow()" class="search" search></div>
 	       </header>
 	    </div>
 	    <div ng-show="hasNotification" ng-class="{'header-notif-success':notifType == 'success','header-notif-failure':notifType == 'failure','header-notif-neutral':notifType == 'neutral'}"

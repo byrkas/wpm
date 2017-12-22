@@ -73,16 +73,15 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
     
   $scope.query = function(page, limit){	  
 	  var search = $location.search();
-		 if(page===undefined){
+	  if(page===undefined){
 			 page = $scope.currentPage;
-			 if(page > 1){
+			 if(page > 0){
 				 search.page = page;
 			 }
 	     }
 		 if(limit===undefined){
 			 limit = $scope.itemsPerPage;
-			 if(limit != 50)
-				 search.limit = limit;
+			 search.limit = limit;
 		 }
 		 if($scope.sortBy != 'created-desc'){
 			 search.sort = $scope.sortBy;
@@ -144,16 +143,11 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
   $scope.getTracks = function(page, limit){
 	  $scope.queryParams = $scope.query(page, limit);
 	  if(page===undefined){
-			 page = $scope.currentPage;
-			 if(page > 1){
-				 search.page = page;
-			 }
-	     }
-		 if(limit===undefined){
-			 limit = $scope.itemsPerPage;
-			 if(limit != 50)
-				 search.limit = limit;
-		 }
+		 page = $scope.currentPage;
+     }
+	 if(limit===undefined){
+		 limit = $scope.itemsPerPage;
+	 }
 	 
 	 body.addClass('waiting');
 	 Favorites.get($scope.queryParams, function(response){
@@ -212,10 +206,15 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
 	};
   
   $scope.resetAll = function(){
-	  $scope.activeType = 0;  
+	  $scope.activeType = 0;
 	  $scope.activeGenre = 0;
-	  $scope.activeLabel = 0;   
+	  $scope.activeLabel = 0;
 	  $scope.selectedArtists = [];
+	  $scope.startDate = '';
+	  $scope.endDate = '';
+	  $scope.releasedLast = '';
+	  $scope.applyDates = false;
+	  $location.search('');
   } 
   
   //init

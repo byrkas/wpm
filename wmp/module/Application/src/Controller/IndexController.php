@@ -1633,6 +1633,15 @@ class IndexController extends AbstractActionController
                 if ($this->params()->fromQuery('wav')) {
                     $filter['wav'] = (int) $this->params()->fromQuery('wav');
                 }
+                if ($this->params()->fromQuery('last')) {
+                    $filter['last'] = $this->params()->fromQuery('last');
+                }
+                if ($this->params()->fromQuery('start')) {
+                    $filter['start'] = $this->params()->fromQuery('start');
+                }
+                if ($this->params()->fromQuery('end')) {
+                    $filter['end'] = $this->params()->fromQuery('end');
+                }
                 $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracksDownloaded($userId, $filter);
                 $start = $this->start($page, $limit);
                 while ($start > $total) {

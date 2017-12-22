@@ -1,7 +1,7 @@
 <main class="interior">
 	<div class="interior-top">
 	    <div class="interior-title"><h1>My favorites</h1></div>
-	    <div class="play-queue-all-buttons" ng-show="totalItems > 0">
+	    <div class="play-queue-all-buttons">
 	        <button play-all="tracks" class="playable-play-all button-play" >
 	          <svg viewBox="0 0 200 200" class="button-play-icon"><use xlink:href="/static/images/defs.svg#icon-play"/></svg>
 	        </button>
@@ -11,7 +11,7 @@
 	        <a style="margin-left:10px;" href="javascript:void(0)" ng-click="removeAll()" class="gray-button cart-holdbin-action cart-remove-action">Remove all</a>
 	  	</div>
 	</div>
-	<div class="full-col" ng-show="totalItems > 0">
+	<div class="full-col">
 		<div class="filter-page-top">
 	        <div class="filter-page-sort-menu-parent">
 	            <span>Sort by:</span>
@@ -53,8 +53,5 @@
 	        </ul>
 	        <pagination-tracks only-wav="onlyWav" pages="pages" ng-class="'pagination-bottom-container'"  total-pages="totalPages" items-per-page="itemsPerPage" total-items="totalItems" current-page="currentPage"></pagination-tracks>
 		</div>
-	</div>
-	<div class="full-col" ng-show="totalItems == 0">
-		<p class="p">Favorites list is empty.</p>
 	</div>
 </main>

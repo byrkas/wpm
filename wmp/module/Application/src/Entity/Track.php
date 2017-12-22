@@ -79,7 +79,7 @@ class Track
     private $fileDestination;
 
     /**
-     * @ORM\Column(name="file_destination_mp3",type="string", length=255, nullable=false)
+     * @ORM\Column(name="file_destination_mp3",type="string", length=255, nullable=true)
      */
     private $fileDestinationMp3;
 

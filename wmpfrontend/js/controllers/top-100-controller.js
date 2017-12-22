@@ -158,9 +158,18 @@ angular.module('WhoPlayMusic').controller('TopController', function($scope, $htt
   }
 
   //init
-  $scope.getTracks();
+  if($rootScope.siteModeShow()){
+	  $scope.getTracks();
+  }	 
   //end init
 
+  var siteModeListener = function(newValue, oldValue, scope){
+	  if($rootScope.siteModeShow()){
+		  $scope.getTracks();
+	  }
+  }
+  $rootScope.$watch('parseSiteMode',siteModeListener);
+  
   var listenerFilterHandler = function (newValue, oldValue, scope) {
     if (newValue === oldValue) { return;};
     $scope.getTracks();
