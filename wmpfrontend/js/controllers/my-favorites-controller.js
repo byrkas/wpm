@@ -2,7 +2,7 @@ angular.module('WhoPlayMusic').factory( 'Favorites', function($resource, $rootSc
   return $resource('http://api.wpm.zeit.style/favorites?token='+$rootScope.globals.currentUser.token);
 });
 
-angular.module('WhoPlayMusic').controller('MyFavoritesController', function($scope, $http, $filter, Favorites, $routeParams, $rootScope, $location, $httpParamSerializer, $window) { 
+angular.module('WhoPlayMusic').controller('MyFavoritesController', function($scope, $http, $filter, Favorites, $routeParams, $rootScope, $location, $httpParamSerializer, $window, $cookies) { 
   $scope.itemsPerPage = 50;
   $scope.currentPage = 1;
   $scope.maxSize = 3;
@@ -28,7 +28,7 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
   $scope.endDate = '';
   $scope.releasedLast = '';
   $scope.onlyWav = 'off';
-  $scope.applyDates = false;
+  $scope.applyDates = 0;
   $scope.queryParams = {};
   
   if($routeParams.artists !== undefined){
@@ -46,7 +46,7 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
   if($routeParams.start !== undefined && $routeParams.end !== undefined){
 	  $scope.startDate = $routeParams.start;
 	  $scope.endDate = $routeParams.end;
-	  $scope.applyDates = true;
+	  $scope.applyDates = 1;
   }
   if($routeParams.limit !== undefined){
 	  $scope.itemsPerPage = ($routeParams.limit > 150)?150:$routeParams.limit;
@@ -117,7 +117,7 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
 		 }else{
 			 delete search.last;
 		 }
-		 if($scope.applyDates == true){
+		 if($scope.applyDates > 0){
 			 query.start = $scope.startDate;
 			 query.end = $scope.endDate;
 			 search.start = query.start;
@@ -198,7 +198,7 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
  					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;
  					$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.quoteExclusive;
 
- 					$cookieStore.put('globals', $rootScope.globals);
+ 					$cookies.putObject('globals', $rootScope.globals);
  					$rootScope.quotes = $scope.quote;
  				}
 				}
@@ -213,7 +213,7 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
 	  $scope.startDate = '';
 	  $scope.endDate = '';
 	  $scope.releasedLast = '';
-	  $scope.applyDates = false;
+	  $scope.applyDates = 0;
 	  $location.search('');
   } 
   

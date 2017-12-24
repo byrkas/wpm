@@ -76,68 +76,66 @@ class IndexController extends AbstractActionController
     {
         $uri = $this->params()->fromQuery('route');
         $args = $this->params()->fromQuery('args');
-
+        
         $data = [
-            'title'     =>  'Who Play Music',
-            'description' =>  'Download and listen to new, exclusive, electronic dance music and house tracks. Available on mp3 and wav at the world’s largest store for DJs.'
+            'title' => 'Who Play Music',
+            'description' => 'Download and listen to new, exclusive, electronic dance music and house tracks. Available on mp3 and wav at the world’s largest store for DJs.'
         ];
-
-        if(strpos($uri, '/track/') !== FALSE){
+        
+        if (strpos($uri, '/track/') !== FALSE) {
             $trackId = intval(str_replace('/track/', '', $uri));
-            if($trackId){
+            if ($trackId) {
                 $track = $this->em->getRepository('Application\Entity\Track')->getTrackForTitle($trackId);
-                if($track){
-                    $data['title'] = $track['title'].' by '.$track['artists'].' |'.$data['title'];
+                if ($track) {
+                    $data['title'] = $track['title'] . ' by ' . $track['artists'] . ' |' . $data['title'];
                     if (! $track['cover'])
                         $track['cover'] = '/img/music.png';
                     $track['cover'] = $this->static . $track['cover'];
                     $data['image'] = $track['cover'];
                 }
             }
-        }elseif(strpos($uri, '/album/')  !== FALSE){
+        } elseif (strpos($uri, '/album/') !== FALSE) {
             $id = intval(str_replace('/album/', '', $uri));
-            if($id){
+            if ($id) {
                 $album = $this->em->getRepository('Application\Entity\Track')->getAlbumForTitle($id);
-                if($album){
-                    $data['title'] = $album['name'].' by '.$album['label'].' |'.$data['title'];
+                if ($album) {
+                    $data['title'] = $album['name'] . ' by ' . $album['label'] . ' |' . $data['title'];
                     if (! $album['cover'])
                         $album['cover'] = '/img/music.png';
                     $album['cover'] = $this->static . $album['cover'];
                     $data['image'] = $album['cover'];
                 }
             }
-        }else{
-            switch ($uri){
+        } else {
+            switch ($uri) {
                 case '/tracks':
-                    $data['title'] = 'Tracks |'.$data['title'];
-                    if($args)
-                    {
+                    $data['title'] = 'Tracks |' . $data['title'];
+                    if ($args) {
                         $argsVar = [];
                         parse_str($args, $argsVar);
-                        if(isset($argsVar['artists'])){
-
-                        }
+                        if (isset($argsVar['artists'])) {}
                     }
                     break;
                 case '/top100':
-                    $data['title'] = 'TOP 100 Tracks |'.$data['title'];break;
+                    $data['title'] = 'TOP 100 Tracks |' . $data['title'];
+                    break;
                 case '/page/about-us':
-                    $data['title'] = 'About us |'.$data['title'];
+                    $data['title'] = 'About us |' . $data['title'];
                     break;
                 case '/page/contact-us':
-                    $data['title'] = 'Contact us |'.$data['title'];
+                    $data['title'] = 'Contact us |' . $data['title'];
                     break;
                 case '/page/faq-help':
-                    $data['title'] = 'FAQ |'.$data['title'];
+                    $data['title'] = 'FAQ |' . $data['title'];
                     break;
                 case '/page/report-abuse':
-                    $data['title'] = 'Report Abuse |'.$data['title'];
+                    $data['title'] = 'Report Abuse |' . $data['title'];
                     break;
             }
         }
         $view = new ViewModel($data);
         $view->setTerminal(true);
-
+        
         return $view;
     }
 
@@ -155,10 +153,10 @@ class IndexController extends AbstractActionController
         $mail->addTo('svetlana.byrka@gmail.com');
         $mail->setSubject('New sign up from site WPM');
         $mail->setBody('Full name: ');
-
+        
         $transport = new \Zend\Mail\Transport\Sendmail();
         $transport->send($mail);
-
+        
         /*
          * $to = 'svetlana.byrka@gmail.com';
          * $subject = 'the subject';
@@ -169,7 +167,7 @@ class IndexController extends AbstractActionController
          *
          * mail($to, $subject, $message, $headers);
          */
-
+        
         exit();
     }
 
@@ -180,6 +178,24 @@ class IndexController extends AbstractActionController
 
     public function isMaintainAction()
     {
+        $request = $this->getRequest();
+        $result['logout'] = 0;
+        $result['quotes'] = null;
+        $this->checkAuthorization($request);
+        if (! empty($this->tokenPayload)) {
+            $userId = $this->tokenPayload->id;
+            $user = $this->em->find('Application\Entity\User', $userId);
+            if(!$user->getActive()){
+                $result['logout'] = 1;
+            }
+            $result['quotes'] = [
+                'quoteExclusive' => $user->quoteExclusive,
+                'quotePromo' => $user->quotePromo,
+                'expireDate' => $user->expireDate->format('Y-m-d'),
+                'showPromo' => $user->showPromo
+            ];           
+        }
+        
         $result['isMaintain'] = (int) $this->getEntityManager()
             ->getRepository('Application\Entity\Setting')
             ->checkMaintainMode();
@@ -198,6 +214,7 @@ class IndexController extends AbstractActionController
         $result['footer'] = $this->getEntityManager()
             ->getRepository('Application\Entity\Setting')
             ->getFooter();
+        
         return new JsonModel($result);
     }
 
@@ -207,7 +224,7 @@ class IndexController extends AbstractActionController
         $request = $this->getRequest();
         $remoteAddr = $request->getServer('REMOTE_ADDR');
         $result['ip'] = $remoteAddr;
-
+        
         return new JsonModel($result);
     }
 
@@ -257,12 +274,12 @@ class IndexController extends AbstractActionController
             $filter['wav'] = (int) $this->params()->fromQuery('wav');
         }
         $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracks($filter);
-
+        
         $start = $this->start($page, $limit);
         while ($start > $total) {
             $start = $this->start(-- $page, $limit);
         }
-
+        
         $tracks = $this->em->getRepository('Application\Entity\Track')->getTracks($limit, $start, $filter, $sortArr);
         $result['total'] = (int) $total;
         $result['page'] = $page;
@@ -277,7 +294,7 @@ class IndexController extends AbstractActionController
         $result['types'] = $this->em->getRepository('Application\Entity\Track')->getTypes($filter);
         $result['labels'] = $this->em->getRepository('Application\Entity\Track')->getLabels($filter);
         $result['genres'] = $this->em->getRepository('Application\Entity\Track')->getGenres($filter);
-
+        
         if (! empty($tracks)) {
             foreach ($tracks as $key => $track) {
                 $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
@@ -286,7 +303,7 @@ class IndexController extends AbstractActionController
                 if (! $track['cover'])
                     $track['cover'] = '/img/music.png';
                 $tracks[$key]['cover'] = $this->static . $track['cover'];
-                $tracks[$key]['wave'] = $this->static . $track['wave'];
+                //$tracks[$key]['wave'] = $this->static . $track['wave'];
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
             }
             $result['tracks'] = $tracks;
@@ -297,7 +314,7 @@ class IndexController extends AbstractActionController
     public function trackAction()
     {
         $id = (int) $this->params()->fromRoute('id', 0);
-
+        
         $result = [];
         $track = $this->em->getRepository('Application\Entity\Track')->getTrack($id);
         if ($track) {
@@ -307,7 +324,7 @@ class IndexController extends AbstractActionController
             if (! $track['cover'])
                 $track['cover'] = '/img/music.png';
             $track['cover'] = $this->static . $track['cover'];
-            $track['wave'] = $this->static . $track['wave'];
+            //$track['wave'] = $this->static . $track['wave'];
             $track['release'] = $track['release']->format('Y-m-d');
             $filter = [
                 'genre' => $track['genreId']
@@ -321,7 +338,7 @@ class IndexController extends AbstractActionController
                 if (! $rec['cover'])
                     $rec['cover'] = '/img/music.png';
                 $recommends[$key]['cover'] = $this->static . $rec['cover'];
-                $recommends[$key]['wave'] = $this->static . $rec['wave'];
+                //$recommends[$key]['wave'] = $this->static . $rec['wave'];
                 $recommends[$key]['release'] = $rec['release']->format('Y-m-d');
             }
             $track['recommends'] = $recommends;
@@ -338,7 +355,7 @@ class IndexController extends AbstractActionController
         if ($page) {
             $result['page'] = $page;
         }
-
+        
         return new JsonModel($result);
     }
 
@@ -352,7 +369,7 @@ class IndexController extends AbstractActionController
         $album['cover'] = $this->static . $album['cover'];
         $album['release'] = $album['date']->format('Y-m-d');
         $album['artists'] = $this->em->getRepository('Application\Entity\Track')->getAlbumArtists($id);
-
+        
         $result['album'] = $album;
         $tracks = $this->em->getRepository('Application\Entity\Track')->getTracks(100, 0, [
             'album' => $id
@@ -365,12 +382,12 @@ class IndexController extends AbstractActionController
                 if (! $track['cover'])
                     $track['cover'] = '/img/music.png';
                 $tracks[$key]['cover'] = $this->static . $track['cover'];
-                $tracks[$key]['wave'] = $this->static . $track['wave'];
+                //$tracks[$key]['wave'] = $this->static . $track['wave'];
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
             }
             $result['tracks'] = $tracks;
         }
-
+        
         return new JsonModel($result);
     }
 
@@ -382,7 +399,7 @@ class IndexController extends AbstractActionController
         $genres = $this->em->getRepository('Application\Entity\Track')->getGenres();
         $artists = $this->em->getRepository('Application\Entity\Track')->getArtists();
         $labels = $this->em->getRepository('Application\Entity\Track')->getLabels();
-
+        
         return new ViewModel([
             'title' => 'Tracks',
             'tracks' => $tracks,
@@ -411,14 +428,14 @@ class IndexController extends AbstractActionController
                     $payload = [
                         'email' => $user->email,
                         'username' => $user->email,
-                        'id' => $user->id,
+                        'id' => $user->id
                     ];
                     $result['token'] = $this->generateJwtToken($payload);
                     $result['quotes'] = [
                         'quoteExclusive' => $user->quoteExclusive,
                         'quotePromo' => $user->quotePromo,
                         'expireDate' => $user->expireDate->format('Y-m-d'),
-                        'showPromo' =>  $user->showPromo
+                        'showPromo' => $user->showPromo
                     ];
                 } else {
                     $messages[] = 'Username or password is incorrect!';
@@ -429,7 +446,7 @@ class IndexController extends AbstractActionController
         }
         $result['success'] = $success;
         $result['message'] = implode(' ', $messages);
-
+        
         return new JsonModel($result);
     }
 
@@ -437,7 +454,7 @@ class IndexController extends AbstractActionController
     {
         $pubKey = '6LdC0jIUAAAAABX9nREg28dzpXF902M8DfqtXtoP';
         $privKey = '6LdC0jIUAAAAAI-Tq0q4SLShBBQsF8F8o08SqhnI';
-
+        
         $result = [];
         $success = false;
         $messages = [];
@@ -445,7 +462,7 @@ class IndexController extends AbstractActionController
         if ($request->isPost()) {
             $data = $this->fromJson();
             $recaptcha = new \ReCaptcha\ReCaptcha($privKey);
-
+            
             if (empty($data['captcha'])) {
                 $messages[] = 'Captcha is required!';
             } else {
@@ -479,7 +496,7 @@ class IndexController extends AbstractActionController
                     $mail->addTo('svetlana.byrka@gmail.com');
                     $mail->setSubject('New sign up from site WPM');
                     $mail->setBody('Full name: ' . $data['fullname'] . '<br/>' . 'Email: ' . $data['email'] . '<br/>' . 'Payment: ' . $data['payment'] . '<br/>' . 'Additional info: ' . $data['info'] . '<br/>');
-
+                    
                     $transport = new \Zend\Mail\Transport\Sendmail();
                     $transport->send($mail);
                     $success = true;
@@ -495,12 +512,12 @@ class IndexController extends AbstractActionController
         }
         $result['success'] = $success;
         $result['message'] = implode(' ', $messages);
-
+        
         return new JsonModel($result);
     }
 
     // TODO: mail template
-    public function rememberAction()
+    public function forgotAction()
     {
         $result = [];
         $success = false;
@@ -508,7 +525,7 @@ class IndexController extends AbstractActionController
         $request = $this->getRequest();
         if ($request->isPost()) {
             $data = $this->fromJson();
-
+            
             if (empty($data['email'])) {
                 $messages[] = 'Email is required!';
             }
@@ -525,17 +542,19 @@ class IndexController extends AbstractActionController
                     $mail->addTo($data['email']);
                     $mail->setSubject('WhoPlayMusic account');
                     $mail->setBody('Your password: ' . $userExist->getPassword() . '<br/>');
-
+                    
                     $transport = new \Zend\Mail\Transport\Sendmail();
                     $transport->send($mail);
                     $success = true;
                     $messages[] = 'You will receive email with account data!';
+                } else {
+                    $messages[] = 'User not exist!';
                 }
             }
         }
         $result['success'] = $success;
         $result['message'] = implode(' ', $messages);
-
+        
         return new JsonModel($result);
     }
 
@@ -554,7 +573,7 @@ class IndexController extends AbstractActionController
         $messages = [];
         if ($request->isPost()) {
             $data = $this->fromJson();
-
+            
             if (empty($data['old_password'])) {
                 $messages[] = 'Old password is required!';
             }
@@ -583,7 +602,7 @@ class IndexController extends AbstractActionController
         }
         $result['success'] = $success;
         $result['message'] = implode(' ', $messages);
-
+        
         return new JsonModel($result);
     }
 
@@ -597,11 +616,11 @@ class IndexController extends AbstractActionController
             $userId = $this->tokenPayload->id;
         }
         $page = $this->em->getRepository('Application\Entity\Page')->getPaymentByUser($userId);
-
+        
         if ($page) {
             $result['page'] = $page;
         }
-
+        
         return new JsonModel($result);
     }
 
@@ -639,18 +658,18 @@ class IndexController extends AbstractActionController
                         if ($quote > 0 && $expireDate >= $now) {
                             $success = true;
                             $quoteSub = true;
-                            if($quoteType == 'quotePromo')
-                                $quotePromo--;
+                            if ($quoteType == 'quotePromo')
+                                $quotePromo --;
                             else
-                                $quoteExclusive--;
-                            $quote = [
-                                'quotePromo'    =>  $quotePromo,
-                                'quoteExclusive'    =>  $quoteExclusive,
-                            ];
+                                $quoteExclusive --;
                         } else {
                             $messages[] = 'Quote was expired';
                         }
                     }
+                    $quote = [
+                        'quotePromo' => $quotePromo,
+                        'quoteExclusive' => $quoteExclusive
+                    ];
                 } else {
                     $messages[] = 'Track or user wrong!';
                 }
@@ -662,7 +681,7 @@ class IndexController extends AbstractActionController
         $result['messages'] = implode(' ', $messages);
         $result['quoteSub'] = $quoteSub;
         $result['quote'] = $quote;
-
+        
         return new JsonModel($result);
     }
 
@@ -685,10 +704,12 @@ class IndexController extends AbstractActionController
                 $expireDate = $user->getExpireDate();
                 $quotePromo = $user->getQuotePromo();
                 $quoteExclusive = $user->getQuoteExclusive();
-
-                if($expireDate >= $now){
-                    $tracks = $this->em->getRepository('Application\Entity\Track')->findBy(['Album' => $id]);
-                    foreach ($tracks as $track){
+                
+                if ($expireDate >= $now) {
+                    $tracks = $this->em->getRepository('Application\Entity\Track')->findBy([
+                        'Album' => $id
+                    ]);
+                    foreach ($tracks as $track) {
                         $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
                             'User' => $user,
                             'Track' => $track
@@ -697,28 +718,28 @@ class IndexController extends AbstractActionController
                             $success = true;
                         } else {
                             $quoteType = 'quote' . $track->getTrackType()->getName();
-
-                            if (($quoteType == 'quotePromo' && $quotePromo > 0) || ($quoteType == 'quoteExclusive' && $quoteExclusive > 0)) {
+                            
+                            if ($quoteType == 'quotePromo' && $quotePromo > 0) {
                                 $success = true;
                                 $quoteSub = true;
-                                if($quoteType == 'quotePromo')
-                                    $quotePromo--;
-                                else
-                                    $quoteExclusive--;
+                                $quotePromo --;
+                            } elseif ($quoteType == 'quoteExclusive' && $quoteExclusive > 0) {
+                                $success = true;
+                                $quoteSub = true;
+                                $quoteExclusive --;
                             } else {
                                 $messages[] = 'Quote was expired';
+                                $success = false;
                                 break;
                             }
                         }
                     }
-                    if($quoteSub){
-                        $quote = [
-                            'quotePromo'    =>  $quotePromo,
-                            'quoteExclusive'    =>  $quoteExclusive,
-                        ];
-                    }
+                    $quote = [
+                        'quotePromo' => $quotePromo,
+                        'quoteExclusive' => $quoteExclusive
+                    ];
                 } else {
-                    $messages[] = 'Quote was expired '.$expireDate->format('Y-m-d H:i').' '.$now->format('Y-m-d H:i');
+                    $messages[] = 'Quote was expired ' . $expireDate->format('Y-m-d H:i') . ' ' . $now->format('Y-m-d H:i');
                 }
             }
         } else {
@@ -728,7 +749,7 @@ class IndexController extends AbstractActionController
         $result['messages'] = implode(' ', $messages);
         $result['quoteSub'] = $quoteSub;
         $result['quote'] = $quote;
-
+        
         return new JsonModel($result);
     }
 
@@ -750,14 +771,14 @@ class IndexController extends AbstractActionController
                 $expireDate = $user->getExpireDate();
                 $quotePromo = $user->getQuotePromo();
                 $quoteExclusive = $user->getQuoteExclusive();
-
-                if($expireDate >= $now){
+                
+                if ($expireDate >= $now) {
                     $filter = [
                         'trackIds' => []
                     ];
                     $filter['showPromo'] = $this->params()->fromQuery('showPromo', true);
                     $limit = (int) $this->params()->fromQuery('limit', 100);
-
+                    
                     if ($this->params()->fromQuery('artists')) {
                         $filter['artists'] = explode(',', $this->params()->fromQuery('artists'));
                     }
@@ -770,45 +791,50 @@ class IndexController extends AbstractActionController
                     if ($this->params()->fromQuery('type')) {
                         $filter['type'] = (int) $this->params()->fromQuery('type');
                     }
-
+                    
                     $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksTop($limit, $filter);
                     $trackIds = [];
-                    foreach ($tracks as $trEntry){
+                    foreach ($tracks as $trEntry) {
                         $trackIds[] = $trEntry['id'];
                     }
                     $filter['trackIds'] = $trackIds;
-                    $tracks = $this->em->getRepository('Application\Entity\Track')->findBy(['id' => $filter['trackIds']]);
-                    foreach ($tracks as $track){
+                    $tracks = $this->em->getRepository('Application\Entity\Track')->findBy([
+                        'id' => $filter['trackIds']
+                    ]);
+                    $downloadedAlready = 0;
+                    foreach ($tracks as $track) {
                         $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
                             'User' => $user,
                             'Track' => $track
                         ]);
                         if ($downloaded) {
                             $success = true;
+                            $downloadedAlready ++;
                         } else {
                             $quoteType = 'quote' . $track->getTrackType()->getName();
-
-                            if (($quoteType == 'quotePromo' && $quotePromo > 0) || ($quoteType == 'quoteExclusive' && $quoteExclusive > 0)) {
+                            
+                            if ($quoteType == 'quotePromo' && $quotePromo > 0) {
                                 $success = true;
                                 $quoteSub = true;
-                                if($quoteType == 'quotePromo')
-                                    $quotePromo--;
-                                    else
-                                        $quoteExclusive--;
+                                $quotePromo --;
+                            } elseif ($quoteType == 'quoteExclusive' && $quoteExclusive > 0) {
+                                $success = true;
+                                $quoteSub = true;
+                                $quoteExclusive --;
                             } else {
                                 $messages[] = 'Quote was expired';
+                                $success = false;
                                 break;
                             }
                         }
                     }
-                    if($quoteSub){
-                        $quote = [
-                            'quotePromo'    =>  $quotePromo,
-                            'quoteExclusive'    =>  $quoteExclusive,
-                        ];
-                    }
+                    $messages[] = "Already downloaded $downloadedAlready tracks";
+                    $quote = [
+                        'quotePromo' => $quotePromo,
+                        'quoteExclusive' => $quoteExclusive
+                    ];
                 } else {
-                    $messages[] = 'Quote was expired '.$expireDate->format('Y-m-d H:i').' '.$now->format('Y-m-d H:i');
+                    $messages[] = 'Quote was expired ' . $expireDate->format('Y-m-d H:i') . ' ' . $now->format('Y-m-d H:i');
                 }
             }
         } else {
@@ -818,7 +844,7 @@ class IndexController extends AbstractActionController
         $result['messages'] = implode(' ', $messages);
         $result['quoteSub'] = $quoteSub;
         $result['quote'] = $quote;
-
+        
         return new JsonModel($result);
     }
 
@@ -830,19 +856,19 @@ class IndexController extends AbstractActionController
         $userId = null;
         $maxSize = 4;
         $maxSizeLimited = false;
-
+        
         $this->checkAuthorization($request);
         if (! empty($this->tokenPayload)) {
             $userId = $this->tokenPayload->id;
-
+            
             if ($userId) {
-                $User = $this->em->getReference('Application\Entity\User',$userId);
+                $User = $this->em->getReference('Application\Entity\User', $userId);
                 $filter = [
                     'trackIds' => []
                 ];
                 $filter['showPromo'] = $this->params()->fromQuery('showPromo', true);
                 $limit = (int) $this->params()->fromQuery('limit', 100);
-
+                
                 if ($this->params()->fromQuery('artists')) {
                     $filter['artists'] = explode(',', $this->params()->fromQuery('artists'));
                 }
@@ -855,20 +881,20 @@ class IndexController extends AbstractActionController
                 if ($this->params()->fromQuery('type')) {
                     $filter['type'] = (int) $this->params()->fromQuery('type');
                 }
-
+                
                 $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksTop($limit, $filter);
                 $trackIds = [];
-                foreach ($tracks as $trEntry){
+                foreach ($tracks as $trEntry) {
                     $trackIds[] = $trEntry['id'];
                 }
                 $filter['trackIds'] = $trackIds;
-
+                
                 $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksForArchive($limit, 0, $filter);
-
-                $zipName = date('d_m_Y').'_top_'.count($tracks).'.zip';
+                
+                $zipName = date('d_m_Y') . '_top_' . count($tracks) . '.zip';
                 $contentArr = [];
                 $bytes = 0;
-
+                
                 foreach ($tracks as $track) {
                     $size = $track['fileSize'];
                     $bytes += $size;
@@ -876,13 +902,13 @@ class IndexController extends AbstractActionController
                         $maxSizeLimited = true;
                         break;
                     }
-                    $fileName = $track['artists'].' - '.$track['title'].(($track['label'])?' ['.$track['label'].']':'') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
                     $filePath = str_replace('public/', '/', $track['fileDestination']);
                     $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
                     $contentArr[] = "$crc32 $size $filePath $fileName";
-
-                    $Track = $this->em->getReference('Application\Entity\Track',$track['id']);
-
+                    
+                    $Track = $this->em->getReference('Application\Entity\Track', $track['id']);
+                    
                     $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
                         'User' => $User,
                         'Track' => $track
@@ -896,7 +922,7 @@ class IndexController extends AbstractActionController
                     $this->em->flush();
                 }
                 $content = implode("\r\n", $contentArr) . "\r\n";
-
+                
                 $response = $this->getResponse();
                 $headers = $response->getHeaders();
                 $headers->addHeaderLine("Content-Disposition: attachment; filename=\"" . $zipName . "\"");
@@ -914,7 +940,7 @@ class IndexController extends AbstractActionController
                 return $this->getResponse();
             }
         }
-
+        
         exit();
     }
 
@@ -936,8 +962,8 @@ class IndexController extends AbstractActionController
                 $expireDate = $user->getExpireDate();
                 $quotePromo = $user->getQuotePromo();
                 $quoteExclusive = $user->getQuoteExclusive();
-
-                if($expireDate >= $now){
+                
+                if ($expireDate >= $now) {
                     $filter = [];
                     $sort = $this->params()->fromQuery('sort', 'release-desc');
                     $limit = (int) $this->params()->fromQuery('limit', 100);
@@ -981,46 +1007,51 @@ class IndexController extends AbstractActionController
                         $filter['wav'] = (int) $this->params()->fromQuery('wav');
                     }
                     $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracks($filter);
-
+                    
                     $start = $this->start($page, $limit);
                     while ($start > $total) {
                         $start = $this->start(-- $page, $limit);
                     }
-
+                    
                     $tracksIds = $this->em->getRepository('Application\Entity\Track')->getTrackIds($limit, $start, $filter, $sortArr);
-
-                    $tracks = $this->em->getRepository('Application\Entity\Track')->findBy(['id' => $tracksIds]);
-                    foreach ($tracks as $track){
+                    
+                    $tracks = $this->em->getRepository('Application\Entity\Track')->findBy([
+                        'id' => $tracksIds
+                    ]);
+                    $downloadedAlready = 0;
+                    foreach ($tracks as $track) {
                         $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
                             'User' => $user,
                             'Track' => $track
                         ]);
                         if ($downloaded) {
                             $success = true;
+                            $downloadedAlready++;
                         } else {
                             $quoteType = 'quote' . $track->getTrackType()->getName();
-
-                            if (($quoteType == 'quotePromo' && $quotePromo > 0) || ($quoteType == 'quoteExclusive' && $quoteExclusive > 0)) {
+                            
+                            if ($quoteType == 'quotePromo' && $quotePromo > 0) {
                                 $success = true;
                                 $quoteSub = true;
-                                if($quoteType == 'quotePromo')
-                                    $quotePromo--;
-                                    else
-                                        $quoteExclusive--;
+                                $quotePromo --;
+                            } elseif ($quoteType == 'quoteExclusive' && $quoteExclusive > 0) {
+                                $success = true;
+                                $quoteSub = true;
+                                $quoteExclusive --;
                             } else {
                                 $messages[] = 'Quote was expired';
+                                $success = false;
                                 break;
                             }
                         }
                     }
-                    if($quoteSub){
-                        $quote = [
-                            'quotePromo'    =>  $quotePromo,
-                            'quoteExclusive'    =>  $quoteExclusive,
-                        ];
-                    }
+                    $quote = [
+                        'quotePromo' => $quotePromo,
+                        'quoteExclusive' => $quoteExclusive
+                    ];
+                    $messages[] = "Downloaded already $downloadedAlready tracks"; 
                 } else {
-                    $messages[] = 'Quote was expired '.$expireDate->format('Y-m-d H:i').' '.$now->format('Y-m-d H:i');
+                    $messages[] = 'Quote was expired ' . $expireDate->format('Y-m-d H:i') . ' ' . $now->format('Y-m-d H:i');
                 }
             }
         } else {
@@ -1030,7 +1061,7 @@ class IndexController extends AbstractActionController
         $result['messages'] = implode(' ', $messages);
         $result['quoteSub'] = $quoteSub;
         $result['quote'] = $quote;
-
+        
         return new JsonModel($result);
     }
 
@@ -1042,13 +1073,13 @@ class IndexController extends AbstractActionController
         $userId = null;
         $maxSize = 4;
         $maxSizeLimited = false;
-
+        
         $this->checkAuthorization($request);
         if (! empty($this->tokenPayload)) {
             $userId = $this->tokenPayload->id;
-
+            
             if ($userId) {
-                $User = $this->em->getReference('Application\Entity\User',$userId);
+                $User = $this->em->getReference('Application\Entity\User', $userId);
                 $filter = [];
                 $sort = $this->params()->fromQuery('sort', 'release-desc');
                 $limit = (int) $this->params()->fromQuery('limit', 100);
@@ -1092,21 +1123,21 @@ class IndexController extends AbstractActionController
                     $filter['wav'] = (int) $this->params()->fromQuery('wav');
                 }
                 $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracks($filter);
-
+                
                 $start = $this->start($page, $limit);
                 while ($start > $total) {
                     $start = $this->start(-- $page, $limit);
                 }
-
+                
                 $tracksIds = $this->em->getRepository('Application\Entity\Track')->getTrackIds($limit, $start, $filter, $sortArr);
                 $filter['trackIds'] = $tracksIds;
-
+                
                 $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksForArchive($limit, 0, $filter);
-
-                $zipName = date('d_m_Y').'_archive_'.count($tracks).'.zip';
+                
+                $zipName = date('d_m_Y') . '_archive_' . count($tracks) . '.zip';
                 $contentArr = [];
                 $bytes = 0;
-
+                
                 foreach ($tracks as $track) {
                     $size = $track['fileSize'];
                     $bytes += $size;
@@ -1114,13 +1145,13 @@ class IndexController extends AbstractActionController
                         $maxSizeLimited = true;
                         break;
                     }
-                    $fileName = $track['artists'].' - '.$track['title'].(($track['label'])?' ['.$track['label'].']':'') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
                     $filePath = str_replace('public/', '/', $track['fileDestination']);
                     $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
                     $contentArr[] = "$crc32 $size $filePath $fileName";
-
-                    $Track = $this->em->getReference('Application\Entity\Track',$track['id']);
-
+                    
+                    $Track = $this->em->getReference('Application\Entity\Track', $track['id']);
+                    
                     $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
                         'User' => $User,
                         'Track' => $track
@@ -1134,7 +1165,7 @@ class IndexController extends AbstractActionController
                     $this->em->flush();
                 }
                 $content = implode("\r\n", $contentArr) . "\r\n";
-
+                
                 $response = $this->getResponse();
                 $headers = $response->getHeaders();
                 $headers->addHeaderLine("Content-Disposition: attachment; filename=\"" . $zipName . "\"");
@@ -1152,10 +1183,10 @@ class IndexController extends AbstractActionController
                 return $this->getResponse();
             }
         }
-
+        
         exit();
-    }   
-    
+    }
+
     public function downloadFavoritesAction()
     {
         $now = new \DateTime(date('Y-m-d') . ' 23:59:59');
@@ -1175,7 +1206,7 @@ class IndexController extends AbstractActionController
                 $quotePromo = $user->getQuotePromo();
                 $quoteExclusive = $user->getQuoteExclusive();
                 
-                if($expireDate >= $now){
+                if ($expireDate >= $now) {
                     $filter = [
                         'user' => $userId,
                         'favorites' => 1
@@ -1230,12 +1261,14 @@ class IndexController extends AbstractActionController
                     $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksFavorites($userId, $limit, $start, $filter, $sortArr);
                     
                     $tracksIds = [];
-                    foreach ($tracks as $trEntry){
+                    foreach ($tracks as $trEntry) {
                         $tracksIds[] = $trEntry['id'];
                     }
                     
-                    $tracks = $this->em->getRepository('Application\Entity\Track')->findBy(['id' => $tracksIds]);
-                    foreach ($tracks as $track){
+                    $tracks = $this->em->getRepository('Application\Entity\Track')->findBy([
+                        'id' => $tracksIds
+                    ]);
+                    foreach ($tracks as $track) {
                         $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
                             'User' => $user,
                             'Track' => $track
@@ -1245,27 +1278,27 @@ class IndexController extends AbstractActionController
                         } else {
                             $quoteType = 'quote' . $track->getTrackType()->getName();
                             
-                            if (($quoteType == 'quotePromo' && $quotePromo > 0) || ($quoteType == 'quoteExclusive' && $quoteExclusive > 0)) {
+                            if ($quoteType == 'quotePromo' && $quotePromo > 0) {
                                 $success = true;
                                 $quoteSub = true;
-                                if($quoteType == 'quotePromo')
-                                    $quotePromo--;
-                                    else
-                                        $quoteExclusive--;
+                                $quotePromo --;
+                            } elseif ($quoteType == 'quoteExclusive' && $quoteExclusive > 0) {
+                                $success = true;
+                                $quoteSub = true;
+                                $quoteExclusive --;
                             } else {
                                 $messages[] = 'Quote was expired';
+                                $success = false;
                                 break;
                             }
                         }
                     }
-                    if($quoteSub){
-                        $quote = [
-                            'quotePromo'    =>  $quotePromo,
-                            'quoteExclusive'    =>  $quoteExclusive,
-                        ];
-                    }
+                    $quote = [
+                        'quotePromo' => $quotePromo,
+                        'quoteExclusive' => $quoteExclusive
+                    ];
                 } else {
-                    $messages[] = 'Quote was expired '.$expireDate->format('Y-m-d H:i').' '.$now->format('Y-m-d H:i');
+                    $messages[] = 'Quote was expired ' . $expireDate->format('Y-m-d H:i') . ' ' . $now->format('Y-m-d H:i');
                 }
             }
         } else {
@@ -1278,7 +1311,7 @@ class IndexController extends AbstractActionController
         
         return new JsonModel($result);
     }
-    
+
     public function downloadFavoritesStreamAction()
     {
         $nameFilter = new \Zend\Filter\Word\SeparatorToDash();
@@ -1293,7 +1326,7 @@ class IndexController extends AbstractActionController
             $userId = $this->tokenPayload->id;
             
             if ($userId) {
-                $User = $this->em->getReference('Application\Entity\User',$userId);
+                $User = $this->em->getReference('Application\Entity\User', $userId);
                 $filter = [
                     'user' => $userId,
                     'favorites' => 1
@@ -1348,14 +1381,14 @@ class IndexController extends AbstractActionController
                 $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksFavorites($userId, $limit, $start, $filter, $sortArr);
                 
                 $tracksIds = [];
-                foreach ($tracks as $trEntry){
+                foreach ($tracks as $trEntry) {
                     $tracksIds[] = $trEntry['id'];
                 }
                 $filter['trackIds'] = $tracksIds;
                 
                 $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksForArchive($limit, 0, $filter);
                 
-                $zipName = date('d_m_Y').'_archive_favorites_'.count($tracks).'.zip';
+                $zipName = date('d_m_Y') . '_archive_favorites_' . count($tracks) . '.zip';
                 $contentArr = [];
                 $bytes = 0;
                 
@@ -1366,12 +1399,12 @@ class IndexController extends AbstractActionController
                         $maxSizeLimited = true;
                         break;
                     }
-                    $fileName = $track['artists'].' - '.$track['title'].(($track['label'])?' ['.$track['label'].']':'') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
                     $filePath = str_replace('public/', '/', $track['fileDestination']);
                     $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
                     $contentArr[] = "$crc32 $size $filePath $fileName";
                     
-                    $Track = $this->em->getReference('Application\Entity\Track',$track['id']);
+                    $Track = $this->em->getReference('Application\Entity\Track', $track['id']);
                     
                     $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
                         'User' => $User,
@@ -1407,7 +1440,7 @@ class IndexController extends AbstractActionController
         
         exit();
     }
-    
+
     public function downloadFileAction()
     {
         $filter = new \Zend\Filter\Word\SeparatorToDash();
@@ -1430,7 +1463,7 @@ class IndexController extends AbstractActionController
                     $headers->addHeaderLine("X-filename: " . $fileName);
                     $headers->addHeaderLine("Content-length: " . $track->getFileSize());
                     $headers->addHeaderLine("Cache-control: private");
-
+                    
                     // Write file content
                     $fileContent = file_get_contents($filePath);
                     if ($fileContent != false) {
@@ -1440,7 +1473,7 @@ class IndexController extends AbstractActionController
                         $this->getResponse()->setStatusCode(500);
                         return;
                     }
-
+                    
                     $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
                         'User' => $user,
                         'Track' => $track
@@ -1452,13 +1485,13 @@ class IndexController extends AbstractActionController
                             ->getName());
                         $this->em->flush();
                     }
-
+                    
                     // Return Response to avoid default view rendering
                     return $this->getResponse();
                 }
             }
         }
-
+        
         exit();
     }
 
@@ -1483,22 +1516,22 @@ class IndexController extends AbstractActionController
                     $contentLength = $track->getFileSize();
                     if ($fileContent != false) {
                         $response = new Stream();
-                        if($format == 'mp3'){
-                           $mp3Path = $track->getFileDestinationMp3();
-                           if($mp3Path == null){
-                               $mp3Path = ImportManager::convertMp3($filePath);
-                               $track->setFileDestinationMp3($mp3Path);
-                               $this->em->flush($track);
-                           }
-                           $filePath = $mp3Path;
-                           $contentType = mime_content_type($filePath);
-                           $contentLength = filesize($filePath);
+                        if ($format == 'mp3') {
+                            $mp3Path = $track->getFileDestinationMp3();
+                            if ($mp3Path == null) {
+                                $mp3Path = ImportManager::convertMp3($filePath);
+                                $track->setFileDestinationMp3($mp3Path);
+                                $this->em->flush($track);
+                            }
+                            $filePath = $mp3Path;
+                            $contentType = mime_content_type($filePath);
+                            $contentLength = filesize($filePath);
                         }
                         $response->setStream(fopen($filePath, 'r'));
                         $response->setStatusCode(200);
                         $fileName = $track->getNameDownload() . '.' . pathinfo($filePath, PATHINFO_EXTENSION);
                         $response->setStreamName($fileName);
-
+                        
                         $headers = new Headers();
                         $headers->addHeaders(array(
                             'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
@@ -1513,25 +1546,26 @@ class IndexController extends AbstractActionController
                         $this->getResponse()->setStatusCode(500);
                         return;
                     }
-
+                    
                     $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
                         'User' => $user,
                         'Track' => $track
                     ]);
                     if (! $downloaded) {
-                        $user->subQuote($track->getTrackType()->getName());
+                        $user->subQuote($track->getTrackType()
+                            ->getName());
                     }
                     $download = new Download($track, $user);
                     $download->setIp($remoteAddr);
                     $this->em->persist($download);
                     $this->em->flush();
-
+                    
                     // Return Response to avoid default view rendering
                     return $response;
                 }
             }
         }
-
+        
         exit();
     }
 
@@ -1546,15 +1580,15 @@ class IndexController extends AbstractActionController
         // $userId = $this->tokenPayload->id;
         if ($userId) {
             $tracks = $this->em->getRepository('Application\Entity\Track')->getAllDownloaded($userId);
-
+            
             $i = 0;
-            $zipName = date('d_m_Y').'_tracks_'.count($tracks).'.zip';
+            $zipName = date('d_m_Y') . '_tracks_' . count($tracks) . '.zip';
             $zip = new \ZipArchive();
             // $zip->open($zipName, \ZipArchive::CREATE);
-
+            
             $tmp_file = tempnam('.', '');
             $zip->open($tmp_file, \ZipArchive::CREATE);
-
+            
             foreach ($tracks as $track) {
                 $fileName = $filter->filter($track['title']) . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
                 $zip->addFile(realpath($track['fileDestination']), $fileName);
@@ -1562,12 +1596,12 @@ class IndexController extends AbstractActionController
                     break;
             }
             $zip->close();
-
+            
             $response = new Stream();
             $response->setStream(fopen($tmp_file, 'r'));
             $response->setStatusCode(200);
             $response->setStreamName($zipName);
-
+            
             $headers = new Headers();
             $headers->addHeaders(array(
                 'Content-Disposition' => 'attachment; filename="' . $zipName . '"',
@@ -1580,7 +1614,7 @@ class IndexController extends AbstractActionController
             return $response;
         }
         // }
-
+        
         exit();
     }
 
@@ -1592,13 +1626,13 @@ class IndexController extends AbstractActionController
         $userId = null;
         $maxSize = 4;
         $maxSizeLimited = false;
-
+        
         $this->checkAuthorization($request);
         if (! empty($this->tokenPayload)) {
             $userId = $this->tokenPayload->id;
-
+            
             if ($userId) {
-                $User = $this->em->getReference('Application\Entity\User',$userId);
+                $User = $this->em->getReference('Application\Entity\User', $userId);
                 $filter = [
                     'user' => $userId
                 ];
@@ -1648,11 +1682,11 @@ class IndexController extends AbstractActionController
                     $start = $this->start(-- $page, $limit);
                 }
                 $tracks = $this->em->getRepository('Application\Entity\Track')->getDownloadedForArchive($userId, $limit, $start, $filter, $sortArr);
-
-                $zipName = date('d_m_Y').'_tracks_'.count($tracks).'.zip';
+                
+                $zipName = date('d_m_Y') . '_tracks_' . count($tracks) . '.zip';
                 $contentArr = [];
                 $bytes = 0;
-
+                
                 foreach ($tracks as $track) {
                     $size = $track['fileSize'];
                     $bytes += $size;
@@ -1660,19 +1694,19 @@ class IndexController extends AbstractActionController
                         $maxSizeLimited = true;
                         break;
                     }
-                    $fileName = $track['artists'].' - '.$track['title'].(($track['label'])?' ['.$track['label'].']':'') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
                     $filePath = str_replace('public/', '/', $track['fileDestination']);
                     $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
                     $contentArr[] = "$crc32 $size $filePath $fileName";
-
-                    $Track = $this->em->getReference('Application\Entity\Track',$track['id']);
+                    
+                    $Track = $this->em->getReference('Application\Entity\Track', $track['id']);
                     $download = new Download($Track, $User);
                     $download->setIp($remoteAddr);
                     $this->em->persist($download);
                     $this->em->flush($download);
                 }
                 $content = implode("\r\n", $contentArr) . "\r\n";
-
+                
                 $response = $this->getResponse();
                 $headers = $response->getHeaders();
                 $headers->addHeaderLine("Content-Disposition: attachment; filename=\"" . $zipName . "\"");
@@ -1690,7 +1724,7 @@ class IndexController extends AbstractActionController
                 return $this->getResponse();
             }
         }
-
+        
         exit();
     }
 
@@ -1702,25 +1736,27 @@ class IndexController extends AbstractActionController
         $userId = null;
         $maxSize = 4;
         $maxSizeLimited = false;
-
+        
         $this->checkAuthorization($request);
         if (! empty($this->tokenPayload)) {
             $userId = $this->tokenPayload->id;
-
+            
             if ($userId) {
-                $User = $this->em->getReference('Application\Entity\User',$userId);
+                $User = $this->em->getReference('Application\Entity\User', $userId);
                 $filter = [
                     'user' => $userId
                 ];
                 $albumId = (int) $this->params()->fromRoute('id');
-
-                $album = $this->em->find('Application\Entity\Album',$albumId);
-                $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksForArchive(100, 0, ['album' => $albumId]);
-
-                $zipName = date('d_m_Y').'_album_'.$nameFilter->filter($album->getName()).'.zip';
+                
+                $album = $this->em->find('Application\Entity\Album', $albumId);
+                $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksForArchive(100, 0, [
+                    'album' => $albumId
+                ]);
+                
+                $zipName = date('d_m_Y') . '_album_' . $nameFilter->filter($album->getName()) . '.zip';
                 $contentArr = [];
                 $bytes = 0;
-
+                
                 foreach ($tracks as $track) {
                     $size = $track['fileSize'];
                     $bytes += $size;
@@ -1728,13 +1764,13 @@ class IndexController extends AbstractActionController
                         $maxSizeLimited = true;
                         break;
                     }
-                    $fileName = $track['artists'].' - '.$track['title'].(($track['label'])?' ['.$track['label'].']':'') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
                     $filePath = str_replace('public/', '/', $track['fileDestination']);
                     $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
                     $contentArr[] = "$crc32 $size $filePath $fileName";
-
-                    $Track = $this->em->getReference('Application\Entity\Track',$track['id']);
-
+                    
+                    $Track = $this->em->getReference('Application\Entity\Track', $track['id']);
+                    
                     $downloaded = $this->em->getRepository('Application\Entity\Download')->findOneBy([
                         'User' => $User,
                         'Track' => $track
@@ -1748,7 +1784,7 @@ class IndexController extends AbstractActionController
                     $this->em->flush();
                 }
                 $content = implode("\r\n", $contentArr) . "\r\n";
-
+                
                 $response = $this->getResponse();
                 $headers = $response->getHeaders();
                 $headers->addHeaderLine("Content-Disposition: attachment; filename=\"" . $zipName . "\"");
@@ -1766,7 +1802,7 @@ class IndexController extends AbstractActionController
                 return $this->getResponse();
             }
         }
-
+        
         exit();
     }
 
@@ -1777,7 +1813,7 @@ class IndexController extends AbstractActionController
         $userId = 1;
         $maxSize = 4;
         $maxSizeLimited = false;
-
+        
         if ($userId) {
             $filter = [
                 'user' => $userId
@@ -1819,11 +1855,11 @@ class IndexController extends AbstractActionController
                 $start = $this->start(-- $page, $limit);
             }
             $tracks = $this->em->getRepository('Application\Entity\Track')->getDownloadedForArchive($userId, $limit, $start, $filter, $sortArr);
-
-            $zipName = date('d_m_Y').'_tracks_'.count($tracks).'.zip';
+            
+            $zipName = date('d_m_Y') . '_tracks_' . count($tracks) . '.zip';
             $contentArr = [];
             $bytes = 0;
-
+            
             foreach ($tracks as $track) {
                 $size = $track['fileSize'];
                 $bytes += $size;
@@ -1837,7 +1873,7 @@ class IndexController extends AbstractActionController
                 $contentArr[] = "$crc32 $size $filePath $fileName";
             }
             $content = implode("\r\n", $contentArr) . "\r\n";
-
+            
             $response = $this->getResponse();
             $headers = $response->getHeaders();
             $headers->addHeaderLine("Content-Disposition: attachment; filename=\"" . $zipName . "\"");
@@ -1854,7 +1890,7 @@ class IndexController extends AbstractActionController
             $response->setContent($content);
             return $this->getResponse();
         }
-
+        
         exit();
     }
 
@@ -1883,7 +1919,7 @@ class IndexController extends AbstractActionController
         } else {
             $bytes = '0 bytes';
         }
-
+        
         return $bytes;
     }
 
@@ -1898,7 +1934,7 @@ class IndexController extends AbstractActionController
         }
         if (! $userId)
             return new JsonModel($result);
-
+        
         $filter = [
             'user' => $userId
         ];
@@ -1943,9 +1979,9 @@ class IndexController extends AbstractActionController
             $filter['end'] = $this->params()->fromQuery('end');
         }
         $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracksDownloaded($userId, $filter);
-
+        
         $start = $this->start($page, $limit);
-
+        
         while ($start > $total) {
             $start = $this->start(-- $page, $limit);
         }
@@ -1963,7 +1999,7 @@ class IndexController extends AbstractActionController
         $result['types'] = $this->em->getRepository('Application\Entity\Track')->getTypes($filter);
         $result['labels'] = $this->em->getRepository('Application\Entity\Track')->getLabels($filter);
         $result['genres'] = $this->em->getRepository('Application\Entity\Track')->getGenres($filter);
-
+        
         if (! empty($tracks)) {
             foreach ($tracks as $key => $track) {
                 $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
@@ -1972,7 +2008,7 @@ class IndexController extends AbstractActionController
                 if (! $track['cover'])
                     $track['cover'] = '/img/music.png';
                 $tracks[$key]['cover'] = $this->static . $track['cover'];
-                $tracks[$key]['wave'] = $this->static . $track['wave'];
+                //$tracks[$key]['wave'] = $this->static . $track['wave'];
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
                 $tracks[$key]['downloaded'] = $track['created']->format('d.m');
             }
@@ -1985,24 +2021,24 @@ class IndexController extends AbstractActionController
     {
         $result = [];
         $search = $this->params()->fromQuery('query');
-
+        
         $artists = $this->em->getRepository('Application\Entity\Track')->searchArtistsArray($search);
-        if(!empty($artists)){
+        if (! empty($artists)) {
             $result['artists'] = $artists;
         }
         $labels = $this->em->getRepository('Application\Entity\Track')->searchLabelsArray($search);
-        if(!empty($labels)){
+        if (! empty($labels)) {
             $result['labels'] = $labels;
         }
         $albums = $this->em->getRepository('Application\Entity\Track')->searchAlbumsArray($search);
-        if(!empty($albums)){
+        if (! empty($albums)) {
             $result['albums'] = $albums;
         }
         $tracks = $this->em->getRepository('Application\Entity\Track')->searchTracksArray($search);
-        if(!empty($tracks)){
+        if (! empty($tracks)) {
             $result['tracks'] = $tracks;
         }
-
+        
         return new JsonModel($result);
     }
 
@@ -2010,11 +2046,13 @@ class IndexController extends AbstractActionController
     {
         $result = [];
         $search = $this->params()->fromRoute('query');
-        if($search == ''){
+        if ($search == '') {
             return new JsonModel($result);
         }
-
-        $filter = ['search' => $search];
+        
+        $filter = [
+            'search' => $search
+        ];
         $sort = $this->params()->fromQuery('sort', 'release-desc');
         $limit = (int) $this->params()->fromQuery('limit', 100);
         $page = (int) $this->params()->fromQuery('page', 1);
@@ -2032,14 +2070,14 @@ class IndexController extends AbstractActionController
         ])) {
             $sortArr[1] = 'desc';
         }
-
+        
         $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracks($filter);
-
+        
         $start = $this->start($page, $limit);
         while ($start > $total) {
             $start = $this->start(-- $page, $limit);
         }
-
+        
         $tracks = $this->em->getRepository('Application\Entity\Track')->getTracks($limit, $start, $filter, $sortArr);
         $result['total'] = (int) $total;
         $result['page'] = $page;
@@ -2050,7 +2088,7 @@ class IndexController extends AbstractActionController
                 $artists[$key]['checked'] = (isset($filter['artists']) && in_array($artist['id'], $filter['artists'])) ? 1 : 0;
             }
         }
-
+        
         if (! empty($tracks)) {
             foreach ($tracks as $key => $track) {
                 $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
@@ -2059,12 +2097,12 @@ class IndexController extends AbstractActionController
                 if (! $track['cover'])
                     $track['cover'] = '/img/music.png';
                 $tracks[$key]['cover'] = $this->static . $track['cover'];
-                $tracks[$key]['wave'] = $this->static . $track['wave'];
+                //$tracks[$key]['wave'] = $this->static . $track['wave'];
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
             }
             $result['tracks'] = $tracks;
         }
-
+        
         return new JsonModel($result);
     }
 
@@ -2079,7 +2117,7 @@ class IndexController extends AbstractActionController
         }
         if (! $userId)
             return new JsonModel($result);
-
+        
         $filter = [
             'user' => $userId,
             'favorites' => 1
@@ -2126,11 +2164,11 @@ class IndexController extends AbstractActionController
         }
         $total = $this->em->getRepository('Application\Entity\Track')->getTotalTracksFavorites($userId, $filter);
         $start = $this->start($page, $limit);
-
+        
         while ($start > $total) {
             $start = $this->start(-- $page, $limit);
         }
-
+        
         $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksFavorites($userId, $limit, $start, $filter, $sortArr);
         $result['total'] = (int) $total;
         $result['page'] = $page;
@@ -2145,7 +2183,7 @@ class IndexController extends AbstractActionController
         $result['types'] = $this->em->getRepository('Application\Entity\Track')->getTypes($filter);
         $result['labels'] = $this->em->getRepository('Application\Entity\Track')->getLabels($filter);
         $result['genres'] = $this->em->getRepository('Application\Entity\Track')->getGenres($filter);
-
+        
         if (! empty($tracks)) {
             foreach ($tracks as $key => $track) {
                 $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
@@ -2154,7 +2192,7 @@ class IndexController extends AbstractActionController
                 if (! $track['cover'])
                     $track['cover'] = '/img/music.png';
                 $tracks[$key]['cover'] = $this->static . $track['cover'];
-                $tracks[$key]['wave'] = $this->static . $track['wave'];
+                //$tracks[$key]['wave'] = $this->static . $track['wave'];
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
                 $tracks[$key]['downloaded'] = $track['created']->format('d.m');
                 $tracks[$key]['isFavorite'] = true;
@@ -2198,7 +2236,7 @@ class IndexController extends AbstractActionController
         if ($this->params()->fromQuery('type')) {
             $filter['type'] = (int) $this->params()->fromQuery('type');
         }
-
+        
         $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksTop($limit, $filter, $sortArr);
         $trackIds = [];
         if (! empty($tracks)) {
@@ -2209,13 +2247,13 @@ class IndexController extends AbstractActionController
                 if (! $track['cover'])
                     $track['cover'] = '/img/music.png';
                 $tracks[$key]['cover'] = $this->static . $track['cover'];
-                $tracks[$key]['wave'] = $this->static . $track['wave'];
+                //$tracks[$key]['wave'] = $this->static . $track['wave'];
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
                 $filter['trackIds'][] = $track['id'];
             }
             $result['tracks'] = $tracks;
         }
-
+        
         $artists = $this->em->getRepository('Application\Entity\Track')->getArtists($filter);
         if (! empty($artists)) {
             foreach ($artists as $key => $artist) {
@@ -2226,7 +2264,7 @@ class IndexController extends AbstractActionController
         $result['types'] = $this->em->getRepository('Application\Entity\Track')->getTypes($filter);
         $result['labels'] = $this->em->getRepository('Application\Entity\Track')->getLabels($filter);
         $result['genres'] = $this->em->getRepository('Application\Entity\Track')->getGenres($filter);
-
+        
         return new JsonModel($result);
     }
 
@@ -2268,7 +2306,7 @@ class IndexController extends AbstractActionController
         }
         $result['success'] = $success;
         $result['messages'] = implode(' ', $messages);
-
+        
         return new JsonModel($result);
     }
 
@@ -2307,7 +2345,7 @@ class IndexController extends AbstractActionController
         }
         $result['success'] = $success;
         $result['messages'] = implode(' ', $messages);
-
+        
         return new JsonModel($result);
     }
 
@@ -2335,7 +2373,7 @@ class IndexController extends AbstractActionController
         }
         $result['success'] = $success;
         $result['messages'] = implode(' ', $messages);
-
+        
         return new JsonModel($result);
     }
 
@@ -2348,7 +2386,7 @@ class IndexController extends AbstractActionController
                 return $json;
             }
         }
-
+        
         return false;
     }
 
@@ -2365,7 +2403,7 @@ class IndexController extends AbstractActionController
         } else {
             return false;
         }
-
+        
         return false;
     }
 

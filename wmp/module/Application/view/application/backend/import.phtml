@@ -1,14 +1,11 @@
-<?php use Application\Entity\Track;
-$this->headScript()->appendFile($this->basePath('plugins/DataTables/datatables.min.js'));
-$this->headlink()->appendStylesheet($this->basePath('plugins/DataTables/datatables.min.css'))?>
+<?php $this->headScript()->appendFile($this->basePath('js/handlebars-v4.0.11.js'));?>
 <?php 
 if(isset($title)) $this->headTitle($title);
 ?>
-<form method="post" id="form">
 <div class="page-header">
     <div class="container-fluid">
       <div class="pull-right">
-        <button type="button" data-toggle="tooltip" title="" class="btn btn-primary" onclick="confirm('Are you sure?') ? $('#form').submit() : false;" data-original-title="Submit"><i class="fa fa-check-square-o"></i> Submit</button>
+        <button id="button-submit" type="button" data-toggle="tooltip" title="" class="btn btn-primary hidden" onclick="confirm('Are you sure?') ? submitImport() : false;" data-original-title="Submit"><i class="fa fa-check-square-o"></i> Submit</button>
         <a href="<?= $this->url('backend/default',['action' => 'import'])?>" data-toggle="tooltip" title="" class="btn btn-default" data-original-title="Cancel"><i class="fa fa-reply"></i></a>
       </div>
       <h1>Import</h1>
@@ -36,58 +33,120 @@ if(isset($title)) $this->headTitle($title);
                           <td class="text-left">Cover</td>                          
                         </tr>
                       </thead>
-                    <tbody>
-                        <?php foreach ($data as $key => $entry):?>
-                        <?php $track = $entry['track']; $errors = $entry['errors']; $warnings = $entry['warnings'];?>
-                        <?php 
-                        if(isset($entry['success'])) 
-                            $class = 'bg-success text-success';
-                        else
-                            $class = (!empty($errors))?'bg-danger':((!empty($warnings))?'bg-warning':'');
-                        ?>
-                        <tr class="<?= $class?>">
-                            <td><?= $key+1?></td>
-                            <td><?= isset($track['title'])?$track['title']:''?></td>
-                            <td><?= $track['fileFormat']?></td>
-                            <td><?= (isset($track['artists_string']))?$track['artists_string']:''?></td>
-                            <td><?= (isset($track['label']))?$track['label']:''?></td>
-                            <td><?= (isset($track['genre']))?$track['genre']:''?></td>
-                            <td><?= (isset($track['album']))?$track['album']:'';?></td>
-                            <td><?= $track['publishDate']->format('Y-m-d')?></td>
-                            <td><?= (isset($track['picture']))?'Yes':'No';?></td>
-                        </tr>
-                        <?php if(!empty($warnings)):?>
-                        <tr class="bg-warning text-warning">
-                            <td></td>
-                            <td colspan="8"><?= implode(' ',$warnings)?></td>
-                        </tr>
-                        <?php endif;?>
-                        <?php if(!empty($errors)):?>
-                        <tr class="bg-danger text-danger">
-                            <td></td>
-                            <td colspan="8"><?= implode(' ',$errors)?></td>
-                        </tr>
-                        <?php endif;?>
-                        <?php endforeach;?>
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
-</form>
-        
-<?php $this->inlineScript()->captureStart();
+<script id="track-entry" type="text/x-handlebars-template">
+<tr id="track{{track.key}}" class="track-entry {{class}}">
+   <td>{{key}}</td>
+   <td>{{track.title}}</td>
+   <td>{{track.fileFormat}}</td>
+   <td>{{track.artists_string}}</td>
+   <td>{{track.label}}</td>
+   <td>{{track.genre}}</td>
+   <td>{{track.album}}</td>
+   <td>{{track.publishDate}}</td>
+   <td>{{#if track.picture}}Yes{{else}}No{{/if}}</td>
+</tr>
+{{#if warnings}}
+<tr class="bg-warning text-warning message-track{{track.key}}">
+    <td></td>
+    <td colspan="8">{{#each warnings}}{{this}} {{/each}}</td>
+</tr>
+{{/if}}
+{{#if errors}}
+<tr class="bg-danger text-danger message-track{{track.key}}">
+    <td></td>
+    <td colspan="8">{{#each errors}}{{this}} {{/each}}</td>
+</tr>
+{{/if}}
+</script>    
+<?php 
+$urlGetTrack = $this->url('backend/default',['action' => 'get-track-from-structure']);
+$urlSubmitTrack = $this->url('backend/default',['action' => 'submit-import']);
+$urlPublishTrack = $this->url('backend/default',['action' => 'publish-tracks-json']);
+$this->inlineScript()->captureStart();
 echo <<<JS
-$(function() {
-     $('#table-data').DataTable( {
-         "columnDefs": [ {
-          "targets"  : 'no-sort',
-          "orderable": false,
-          "order": []
-        }],
-        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
-    } );
+var importStructure = $structure;
+var length = importStructure.length;
+var done = 1;
+function changeProgress(val, text){
+    $('#progress .progress-bar').html(val+'% '+text);
+    $('#progress .progress-bar').css('width', val+'%');
+    $('#progress .progress-bar').attr('aria-valuenow', val);    
+    if(val >= 100){
+        $('#progress .progress-bar').removeClass('active progress-bar-striped');
+        $('#button-submit').removeClass('hidden');
+    }else{
+        $('#progress .progress-bar').addClass('active progress-bar-striped');
+    }
+}
+
+function publishAll(){
+    $.get( "$urlPublishTrack") .done(function( data ) {
+        alert('All done!');
+    });
+}
+
+function submitImport()
+{
+    var created = 0;
+    var updated = 0;
+    var removed = 0;
+    var key = 1;
+    changeProgress(0, ['Doing Import','Created '+created+' tracks','Updated '+updated+' tracks','Removed '+removed+' tracks'].join('. '));
+    $('.track-entry').each(function(i,item){
+        var index = $(item).attr('id');
+
+        $.post( "$urlSubmitTrack", { index: index} ) .done(function( data ) {
+            if(data.success){
+                if(data.result == 'updated'){
+                    updated += 1;
+                }else if(data.result == 'created'){
+                    created += 1;
+                }else if(data.result == 'removed'){
+                    removed += 1;
+                }
+                $(item).removeClass('bg-danger bg-warning');
+                $(item).addClass('bg-success');
+                $('.message-'+index).removeClass('bg-danger bg-warning');
+                $('.message-'+index).addClass('bg-success');
+                done += 1;
+                if(done == length){
+                    publishAll();
+                }
+            }
+            key += 1;
+            var percent = parseInt(100 * key/length);
+            
+            changeProgress(percent, ['Doing Import','Created '+created+' tracks','Updated '+updated+' tracks','Removed '+removed+' tracks'].join('. '));
+        });
+    });
+}
+
+$(function(){
+    var item = importStructure[0];
+    var key = 1;
+    var i = 0;
+    $('#progress').show();
+    $.each(importStructure, function(i, item){
+        $.post( "$urlGetTrack", { path: item, index: i} ) .done(function( data ) {
+            var template = Handlebars.compile($('#track-entry').html());
+            var className = '';
+            if(!$.isEmptyObject(data.errors)){
+                className = 'bg-danger';            
+            }else if(data.warnings.length > 0){
+                className = 'bg-warning';
+            }
+            $('#table-data tbody').append(template({track: data.track, key: key, errors: data.errors, warnings: data.warnings, class: className}));
+            key += 1;
+            var percent = parseInt(100 * key/length);
+            changeProgress(percent, 'Parsing VS Validation Tracks');
+        });
+   });
 });
 JS;
 $this->inlineScript()->captureEnd();

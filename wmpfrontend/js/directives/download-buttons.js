@@ -8,7 +8,7 @@ angular.module('WhoPlayMusic')
     	isDownloaded: '@',
         track: "=",
     },
-    controller: function($scope, $http, $rootScope, $location, $window, $cookieStore, $httpParamSerializer, $compile){
+    controller: function($scope, $http, $rootScope, $location, $window, $cookies, $httpParamSerializer, $compile){
     	$scope.downloading = false;
     	$scope.downloaded = false;
     	$scope.quoteSub = false;
@@ -56,20 +56,20 @@ angular.module('WhoPlayMusic')
 	    					else
 	    						$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.value;
 
-	    					$cookieStore.put('globals', $rootScope.globals);
+	    					$cookies.putObject('globals', $rootScope.globals);
 	    				}
 
-	    				var tmp = $cookieStore.get('downloaded') || [];
+	    				var tmp = $cookies.getObject('downloaded') || [];
                     	if(tmp.indexOf($scope.track.id) < 0){
                     		tmp.push($scope.track.id);
-                    		$cookieStore.put('downloaded', tmp);
+                    		$cookies.putObject('downloaded', tmp);
                     	}
                     	$window.location = 'http://api.wpm.zeit.style/download-file-stream/' + $scope.track.id +'?'+ $httpParamSerializer(query);
     				}
     			})
     	}
     	$scope.lunchMenu = function(){
-    		if($cookieStore.get('globals')){
+    		if($cookies.getObject('globals')){
     			$scope.lunch = !$scope.lunch;
         		if($scope.lunch == true){
         			var width = angular.element($window).width();

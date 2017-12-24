@@ -6313,16 +6313,16 @@ ngSoundManager.filter('humanTime', function () {
         };
     });
 
-ngSoundManager.factory('angularPlayer', ['$rootScope', '$log','$cookieStore','$document',
-    function($rootScope, $log, $cookieStore,$document) {    	
+ngSoundManager.factory('angularPlayer', ['$rootScope', '$log','$cookies','$document',
+    function($rootScope, $log, $cookies,$document) {    	
 	
-        var currentTrack = /*$cookieStore.get('currentPlaying') || */null,
+        var currentTrack = /*$cookies.getObject('currentPlaying') || */null,
             repeat = true,
             autoPlay = true,
             isPlaying = false,
             volume = 90,
             trackProgress = 0,
-            playlist = /*$cookieStore.get('playlist') ||*/ [];
+            playlist = /*$cookies.getObject('playlist') ||*/ [];
         	
         	if(typeof playlist === 'undefined') {
         		playlist = [];
@@ -6764,8 +6764,8 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log','$cookieStore','$d
 ]);
 
 
-ngSoundManager.directive('soundManager', ['$filter', 'angularPlayer','$cookieStore',
-    function($filter, angularPlayer, $cookieStore) {
+ngSoundManager.directive('soundManager', ['$filter', 'angularPlayer','$cookies',
+    function($filter, angularPlayer, $cookies) {
         return {
             restrict: "E",
             link: function(scope, element, attrs) {
@@ -6780,14 +6780,14 @@ ngSoundManager.directive('soundManager', ['$filter', 'angularPlayer','$cookieSto
                     scope.$apply(function() {
                         scope.currentPlaying = angularPlayer.currentTrackData();
                         if(scope.currentPlaying){
-                        	$cookieStore.put('currentPlaying', scope.currentPlaying.id);
-                        	var tmp = $cookieStore.get('played') || [];
+                        	$cookies.putObject('currentPlaying', scope.currentPlaying.id);
+                        	var tmp = $cookies.getObject('played') || [];
                         	if(tmp.indexOf(scope.currentPlaying.id) < 0){
                         		tmp.push(scope.currentPlaying.id);
-                        		$cookieStore.put('played', tmp);
+                        		$cookies.putObject('played', tmp);
                         	}                        	
                         }else{
-                        	$cookieStore.put('currentPlaying', 0);
+                        	$cookies.putObject('currentPlaying', 0);
                         }                        
                     });
                 });
@@ -6811,7 +6811,7 @@ ngSoundManager.directive('soundManager', ['$filter', 'angularPlayer','$cookieSto
                 scope.$on('player:playlist', function(event, data) {
                     scope.$apply(function() {
                         scope.playlist = data;
-                        //$cookieStore.put('playlist',scope.playlist);
+                        //$cookies.putObject('playlist',scope.playlist);
                     });
                 });
             }

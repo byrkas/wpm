@@ -1,8 +1,9 @@
 angular.module('WhoPlayMusic').config(
-		[ '$routeProvider', "$locationProvider", "$httpProvider", '$rootScopeProvider','vcRecaptchaServiceProvider','ngMetaProvider',
-				function($routeProvider, $locationProvider, $httpProvider, $rootScopeProvider, vcRecaptchaServiceProvider, ngMetaProvider) {
+		[ '$routeProvider', "$locationProvider", "$httpProvider", '$rootScopeProvider','vcRecaptchaServiceProvider','ngMetaProvider','$cookiesProvider',
+				function($routeProvider, $locationProvider, $httpProvider, $rootScopeProvider, vcRecaptchaServiceProvider, ngMetaProvider,$cookiesProvider) {
 					$locationProvider.html5Mode(true);
 					$rootScopeProvider.isMaintain = false;
+					//$cookiesProvider.defaults.secure = true;
 
 					ngMetaProvider.useTitleSuffix(true);
 				    ngMetaProvider.setDefaultTitle('Who Play Music');
@@ -76,6 +77,7 @@ angular.module('WhoPlayMusic').config(
 						templateUrl : 'templates/pages/user-login.html',
 						controller : function() {
 							AuthenticationService.ClearCredentials();
+							$locationProvider.path('/account/login');
 						}
 					}).when('/account/downloads', {
 						templateUrl : 'templates/pages/my-downloads.html',
@@ -118,23 +120,32 @@ angular.module('WhoPlayMusic').config(
 				} ])
 		.run(
 				[
-						'$rootScope','$location','$cookieStore','$injector','$http','$route','ngMeta','$sce',
-						function($rootScope, $location, $cookieStore, $injector, $http, $route, ngMeta, $sce) {
+						'$rootScope','$location','$cookies','$injector','$http','$route','ngMeta','$sce',
+						function($rootScope, $location, $cookies, $injector, $http, $route, ngMeta, $sce) {
 							ngMeta.init();
 							$rootScope.keyboardModalShow = false;
 							$rootScope.mobileMenu = false;
 							$rootScope.cursorStyle = {};
 							$rootScope.siteMode = 0;
 							$rootScope.parseSiteMode = false;
-							$rootScope.footer = $cookieStore.get('footer') || '';
+							$rootScope.footer = $cookies.getObject('footer') || '';
 							$rootScope.isLoading = false;
-							$rootScope.globals = $cookieStore.get('globals') || {};
+							$rootScope.globals = $cookies.getObject('globals') || {};
 							$rootScope.quotes = ($rootScope.globals.currentUser !== undefined)?$rootScope.globals.currentUser.quotes || {}:{};
 
 							$rootScope.$on("$routeChangeStart", function (event, next, current) {
 								//if(current !== undefined && next.templateUrl != current.templateUrl)
-									$http.get('http://api.wpm.zeit.style/is-maintain/').then(function(response){
+									var maintainPath = 'http://api.wpm.zeit.style/is-maintain/';
+									if($rootScope.isLogged()){
+										maintainPath = maintainPath + '?token='+$rootScope.globals.currentUser.token;
+									}
+									$http.get(maintainPath).then(function(response){
 										$rootScope.parseSiteMode = true;
+										if(response.data.logout == 1){
+											$rootScope.globals = {};
+								            $cookies.remove('globals');
+											$location.path('/account/login');
+										}
 										if(response.data.isMaintain === 1){
 											$rootScope.isMaintain = 1;
 											$location.path('/maintain');
@@ -143,6 +154,11 @@ angular.module('WhoPlayMusic').config(
 										$rootScope.footer = $sce.trustAsHtml(response.data.footer);
 	
 										if ($rootScope.globals.currentUser) {
+											if(response.data.quotes){
+												$rootScope.globals.currentUser.quotes = response.data.quotes;
+												$cookies.putObject('globals', $rootScope.globals);
+												$rootScope.quotes = response.data.quotes;
+											}
 										}else{
 											var routesToRedirect = ['/account/downloads','/account/favorite','/account/profile'];
 											if($rootScope.siteMode == 0){
@@ -168,7 +184,7 @@ angular.module('WhoPlayMusic').config(
 
 							$rootScope.logout = function() {
 								$rootScope.globals = {};
-								$cookieStore.remove('globals');
+								$cookies.remove('globals');
 							}
 							$rootScope.isLogged = function() {
 								return ($rootScope.globals.currentUser);
@@ -190,17 +206,17 @@ angular.module('WhoPlayMusic').config(
 
 							$rootScope.isCurrentPlaying = function(id)
 							{
-								return ($cookieStore.get('currentPlaying') == id);
+								return ($cookies.getObject('currentPlaying') == id);
 							}
 							$rootScope.isDownloaded = function(id)
 							{
-								var downloaded = $cookieStore.get('downloaded') || [];
+								var downloaded = $cookies.getObject('downloaded') || [];
 								return (downloaded.indexOf(id) > -1 );
 							}
 
 							$rootScope.playedList = function(id)
 							{
-								var played = $cookieStore.get('played') || [];
+								var played = $cookies.getObject('played') || [];
 								return (played.indexOf(id) > -1 );
 							}
 

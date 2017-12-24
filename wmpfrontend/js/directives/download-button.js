@@ -7,7 +7,7 @@ angular.module('WhoPlayMusic')
     	trackBuyButton: '@',
         track: "=",
     },    
-    controller: function($scope, $http, $rootScope, $location, $window, $cookieStore){    	
+    controller: function($scope, $http, $rootScope, $location, $window, $cookies){    	
     	$scope.downloading = false;
     	$scope.downloaded = false;
     	$scope.quoteSub = false;
@@ -41,7 +41,7 @@ angular.module('WhoPlayMusic')
     		    					else
     		    						$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.value;
     		    					
-    		    					$cookieStore.put('globals', $rootScope.globals);
+    		    					$cookies.put('globals', $rootScope.globals);
     		    				}
     		    				var data = response.data;
     		    				var filename = response.headers('X-filename');    		    				

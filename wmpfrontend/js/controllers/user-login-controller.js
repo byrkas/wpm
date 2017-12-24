@@ -1,6 +1,6 @@
 angular.module('WhoPlayMusic').factory('AuthenticationService',
-    ['Base64', '$http', '$cookieStore', '$rootScope', '$timeout', '$window',
-    function (Base64, $http, $cookieStore, $rootScope, $timeout, $window) {
+    ['Base64', '$http', '$cookies', '$rootScope', '$timeout', '$window',
+    function (Base64, $http, $cookies, $rootScope, $timeout, $window) {
         var service = {};
 
         service.Login = function (username, password, callback) {
@@ -27,12 +27,12 @@ angular.module('WhoPlayMusic').factory('AuthenticationService',
             $rootScope.quotes = quotes;
 
             //$http.defaults.headers.common.Authorization = 'Basic ' + authdata; // jshint ignore:line
-            $cookieStore.put('globals', $rootScope.globals);
+            $cookies.putObject('globals', $rootScope.globals);
         };
 
         service.ClearCredentials = function () {
             $rootScope.globals = {};
-            $cookieStore.remove('globals');
+            $cookies.remove('globals');
             //$http.defaults.headers.common.Authorization = '';
         };
 
@@ -169,7 +169,7 @@ angular.module('WhoPlayMusic').controller('UserSignupController',
 }]);
 
 angular.module('WhoPlayMusic').controller('UserForgotController', 
-	['$scope', '$location','$http', function ($scope, $location, $http) {
+	['$scope', '$location','$http', '$rootScope', function ($scope, $location, $http, $rootScope) {
 	
 	$scope.forgot = function(){
 		$scope.dataLoading = true;		

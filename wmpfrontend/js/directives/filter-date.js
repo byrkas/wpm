@@ -24,7 +24,7 @@ angular.module('WhoPlayMusic')
     	}   
     	$scope.dateApply = function()
     	{
-    		$scope.applyDates = true;
+    		$scope.applyDates = $scope.applyDates+1;
     		$scope.releasedLast = '';
     	}
     	$scope.today = function()
@@ -48,33 +48,22 @@ angular.module('WhoPlayMusic')
 
             scope.$apply(function(){
             	scope.isTouched = false;
+            	scope.visibilityStart = false;
+            	scope.visibilityEnd = false;
             });
         });
     	scope.resetDate = function(){
     	  scope.startDate = '';
     	  scope.endDate = '';
     	  scope.releasedLast = '';
-    	  scope.applyDates = false;
+    	  scope.applyDates = 0;
     	}
     	scope.setDate = function(type){
     		scope.releasedLast = type;
     		scope.startDate = '';
       	  	scope.endDate = '';
-      	  	scope.applyDates = false;
+      	  	scope.applyDates = 0;
     	}    	
-    	$(document).bind('click', function(event){
-            var isClickedElementChildOfPopup = element
-                .find(event.target)
-                .length > 0;
-
-            if (isClickedElementChildOfPopup)
-                return;
-
-            scope.$apply(function(){
-            	scope.visibilityStart = false;
-            	scope.visibilityEnd = false;
-            });
-        });
         scope.$on('$destroy', function () {
         	element.remove();
         	scope.Delete();

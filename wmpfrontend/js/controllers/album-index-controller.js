@@ -2,7 +2,7 @@ angular.module('WhoPlayMusic').factory( 'Album', function($resource){
   return $resource('http://api.wpm.zeit.style/album/:id');
 });
 
-angular.module('WhoPlayMusic').controller('AlbumIndexController', function($scope, $http, Album, $filter, $routeParams, $rootScope, $window, ngMeta, $location, $cookieStore) {
+angular.module('WhoPlayMusic').controller('AlbumIndexController', function($scope, $http, Album, $filter, $routeParams, $rootScope, $window, ngMeta, $location, $cookies) {
 	$scope.album = {};
 	$scope.tracks = [];
 	$scope.url = $window.location.href;
@@ -40,7 +40,7 @@ angular.module('WhoPlayMusic').controller('AlbumIndexController', function($scop
     					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;
     					$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.quoteExclusive;
 
-    					$cookieStore.put('globals', $rootScope.globals);
+    					$cookies.putObject('globals', $rootScope.globals);
     					$rootScope.quotes = $scope.quote;
     				}
 				}

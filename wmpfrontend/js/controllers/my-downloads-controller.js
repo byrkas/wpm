@@ -32,7 +32,7 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
   $scope.endDate = '';
   $scope.releasedLast = '';
   $scope.onlyWav = 'off';
-  $scope.applyDates = false;
+  $scope.applyDates = 0;
 
   if($routeParams.artists !== undefined){
 	  $scope.selectedArtists = $routeParams.artists.split(',');
@@ -49,7 +49,7 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
   if($routeParams.start !== undefined && $routeParams.end !== undefined){
 	  $scope.startDate = $routeParams.start;
 	  $scope.endDate = $routeParams.end;
-	  $scope.applyDates = true;
+	  $scope.applyDates = 1;
   }
   if($routeParams.limit !== undefined){
 	  $scope.itemsPerPage = ($routeParams.limit > 150)?150:$routeParams.limit;
@@ -113,7 +113,7 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 		 }else{
 			 delete search.last;
 		 }
-		 if($scope.applyDates == true){
+		 if($scope.applyDates > 0){
 			 query.start = $scope.startDate;
 			 query.end = $scope.endDate;
 			 search.start = query.start;
@@ -186,7 +186,7 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 	  $scope.startDate = '';
 	  $scope.endDate = '';
 	  $scope.releasedLast = '';
-	  $scope.applyDates = false;
+	  $scope.applyDates = 0;
 	  $location.search('');
   }
 

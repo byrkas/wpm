@@ -111,7 +111,7 @@ class BackendController extends AbstractActionController
         exit;
     }
     
-    public function removeUnused()
+    public function removeUnusedAction()
     {
         $query = $this->em->createQueryBuilder();
         $query->select('l')
@@ -164,6 +164,52 @@ class BackendController extends AbstractActionController
         exit;
     }
     
+    public function removeUnused()
+    {
+        $query = $this->em->createQueryBuilder();
+        $query->select('l')
+        ->from('Application\Entity\Label', 'l')
+        ->leftJoin('Application\Entity\Track','t','WITH','t.Label = l.id')
+        ->where('t.id IS NULL');
+        
+        $labels = $query->getQuery()->getResult();
+        $cnt = count($labels);
+        if($cnt){
+            foreach ($labels as $entry){
+                $this->em->remove($entry);
+            }
+        }        
+        $query = $this->em->createQueryBuilder();
+        $query->select('a')
+        ->from('Application\Entity\Album', 'a')
+        ->leftJoin('Application\Entity\Track','t','WITH','t.Album = a.id')
+        ->where('t.id IS NULL');
+        
+        $albums = $query->getQuery()->getResult();
+        $cnt = count($albums);
+        if($cnt){
+            foreach ($albums as $entry){
+                $this->em->remove($entry);
+            }
+        }
+        
+        $query = $this->em->createQueryBuilder();
+        $query->select('a')
+        ->from('Application\Entity\Artist', 'a')
+        ->leftJoin('a.Tracks','t')
+        ->where('t.id IS NULL');
+        
+        $artists = $query->getQuery()->getResult();
+        $cnt = count($artists);
+        if($cnt){
+            foreach ($artists as $entry){
+                $this->em->remove($entry);
+            }
+        }        
+        
+        $this->em->flush();
+    }
+    
     public function indexAction()
     {       
        
@@ -200,16 +246,17 @@ class BackendController extends AbstractActionController
         exit;
     }
     
-    public function importAction()
+    public function oldImportAction()
     {
         set_time_limit(0);
         $session = new Container('ImportSession');
         if(!isset($session->data)){
             $session->data = [];
         }
+        $data = [];
         $request = $this->getRequest();
         $this->layout()->contentFluid = true;
-        
+        /*
         if ($request->isPost()) {
             $created = 0;
             $updated = 0;
@@ -242,12 +289,106 @@ class BackendController extends AbstractActionController
                 $data[] = $this->importManager->validateTrack($track, $data);
             }
             $session->data = $data;
-        }
+        }*/
                 
         return new ViewModel([
             'title'     =>  'Import',
             'data' =>  $data
         ]);
+    }
+    
+    public function importAction()
+    {
+        set_time_limit(0);
+        $session = new Container('NewImportSession');
+        $session->data = [];
+        $data = [];
+        $request = $this->getRequest();
+        $this->layout()->contentFluid = true;                
+        
+        $structure = $this->importManager->scanDirectories($this->importManager->getImportFolder());
+                
+        return new ViewModel([
+            'title'     =>  'Import',
+            'structure' =>  json_encode($structure)
+        ]);
+    }
+    
+    public function deleteTestAction()
+    {
+        $path = "data/import-music/2017/11-November/28-Exclusive/DJ Tools @ Acapellas/Key To Life - Forever Feat Sabrina Johnston (Buddah's Mo'beats Mix) [4 To The Floor Records].mp3";
+        var_dump(unlink($path));
+        
+        if (! file_exists($path)) {
+           echo "not exist!";
+        }else {
+            echo "exist!";
+        }
+        exit;
+        
+    }
+    
+    public function submitImportAction()
+    {
+        $session = new Container('NewImportSession');
+        if(!isset($session->data)){
+            $session->data = [];
+        }
+        $result = [];
+        $request = $this->getRequest();
+        if ($request->isPost()) {
+            $dataPost = $request->getPost();
+            $index = (int)str_replace('track', '', $dataPost['index']);
+            $data = [];
+            
+            if(isset($session->data[$index])){
+                $entry = $session->data[$index];
+                $track = $entry['track'];
+                if(isset($entry['warnings']['trackExistId'])){                    
+                    $this->importManager->updateTrack($track, $entry['warnings']['trackExistId']);
+                    $result['success'] = true;
+                    $result['result'] = 'updated';
+                }elseif(empty($entry['errors'])){
+                    $this->importManager->createTrack($track);
+                    $result['success'] = true;
+                    $result['result'] = 'created';
+                }elseif(!empty($entry['errors'])){
+                    unlink($track['filePath']);
+                    $result['path'] = $track['filePath'];
+                    $result['success'] = true;
+                    $result['result'] = 'removed';
+                }
+            }            
+        }
+        
+        return new JsonModel($result);
+    }
+    
+    public function getTrackFromStructureAction()
+    {
+        $session = new Container('NewImportSession');
+        if(!isset($session->data)){
+            $session->data = [];
+        }
+        $result = [];
+        $request = $this->getRequest();
+        if ($request->isPost()) {
+            $data = $request->getPost();
+            $trackEntry = $this->importManager->trackFromStructure($data['path']);
+            $track = $this->importManager->formatTrackFromInfo($trackEntry);            
+            $validatedTrack = $this->importManager->validateTrack($track, $session->data);  
+            $session->data[] = $validatedTrack;
+            
+            if(isset($validatedTrack['track']['picture']))
+            {
+                $validatedTrack['track']['picture'] = true;
+            }
+            $validatedTrack['track']['publishDate'] = $validatedTrack['track']['publishDate']->format('Y-m-d'); 
+            $validatedTrack['track']['key'] = count($session->data)-1;
+            $result = $validatedTrack;
+        }
+        
+        return new JsonModel($result);
     }
     
     public function labelAction()
@@ -350,6 +491,7 @@ class BackendController extends AbstractActionController
                         $this->em->remove($track);
                     }
                     $this->em->flush();
+                    $this->removeUnused();
                     $this->flashMessenger()->addSuccessMessage('Removed '.count($data['selected']).' tracks!');
                 }else{
                     $this->flashMessenger()->addErrorMessage('Choose some tracks to delete');
@@ -502,6 +644,13 @@ class BackendController extends AbstractActionController
         $track = $this->em->getRepository('Application\Entity\Track')->publishAll();        
         return $this->redirect()->toRoute('backend/tracks');
     }
+    
+    public function publishTracksJsonAction()
+    {
+        $track = $this->em->getRepository('Application\Entity\Track')->publishAll();
+        return new JsonModel(['success' => true]);
+    }
+    
 
     public function banAction()
     {

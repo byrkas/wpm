@@ -2,7 +2,7 @@ angular.module('WhoPlayMusic').factory( 'Top', function($resource, $rootScope){
   return $resource('http://api.wpm.zeit.style/top');
 });
 
-angular.module('WhoPlayMusic').controller('TopController', function($scope, $http, $filter, Top, $routeParams, $rootScope, $location, $window, $httpParamSerializer) {
+angular.module('WhoPlayMusic').controller('TopController', function($scope, $http, $filter, Top, $routeParams, $rootScope, $location, $window, $httpParamSerializer, $cookies) {
   $scope.predicate = '';
   $scope.reverse = true;
   $scope.sortBy = 'release-desc';
@@ -132,7 +132,7 @@ angular.module('WhoPlayMusic').controller('TopController', function($scope, $htt
   					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;
   					$rootScope.globals.currentUser.quotes.quoteExclusive = $scope.quote.quoteExclusive;
 
-  					$cookieStore.put('globals', $rootScope.globals);
+  					$cookies.putObject('globals', $rootScope.globals);
   					$rootScope.quotes = $scope.quote;
   				}
 				}
