@@ -1,8 +1,6 @@
 <?php
 namespace Application\Service;
 
-use Zend\Session\SessionManager;
-use Zend\Session\Container;
 use Zend\View\Helper\FlashMessenger;
 use \GetId3\GetId3Core as GetId3;
 use Application\Entity\Label;
@@ -104,7 +102,7 @@ class ImportManager
     public function getExtension($filePath)
     {
         if (strpos($filePath, '.stem.mp4')) {
-            return 'stem.mp4';
+            return 'mp4';
         }
         return pathinfo($filePath, PATHINFO_EXTENSION);
     }
@@ -134,8 +132,11 @@ class ImportManager
         $data['Artists'] = $artistsData['Artists'];
         $data['artistsString'] = $artistsData['string'];
         $data['sampleDestination'] = $this->createSample($trackData);
-        $data['wave'] = $this->createWave($trackData, $data['sampleDestination']);
+       // $data['wave'] = $this->createWave($trackData, $data['sampleDestination']);
         $data['crc32'] = hash_file('crc32b', realpath($data['fileDestination']));
+        if($data['fileFormat'] == 'riff'){
+            $data['fileDestinationMp3'] = self::convertMp3($data['fileDestination']);
+        }
         
         $Track->exchangeArray($data);
         $this->objectManager->persist($Track);
@@ -335,15 +336,20 @@ class ImportManager
             $errors['label'] = 'Label is empty!';
         } else {
             $Label = $this->getLabel($track['label']);
+            $track['labelId'] = $Label->getId();
         }
         if (! isset($track['artists_string'])) {
             $errors['artists_string'] = 'Artist is empty!';
         } else {
             $ArtistsData = $this->getArtists($track['artists_string']);
-            $Artitsts = $ArtistsData['Artists'];
+            $Artists = $ArtistsData['Artists'];
         }
         if (! isset($track['title'])) {
             $errors['title'] = 'Title is empty!';
+        }else{            
+            $titleSimple = str_ireplace('(Original Mix)', '', $track['title']);
+            $titleSimple = str_ireplace('Original Mix', '', $titleSimple);
+            $track['titleSimple'] = trim($titleSimple);
         }
         
         $genreExist = $this->objectManager->getRepository('Application\Entity\Genre')->findOneBy([
@@ -353,8 +359,8 @@ class ImportManager
             $errors['genre'] = 'Genre ' . $track['genre'] . ' not found!';
         }
         
-        if (! empty($Artitsts) && $Label !== null) {
-            $trackExist = $this->objectManager->getRepository('Application\Entity\Track')->checkTrackExist($track['title'], $Label, $Artitsts);
+        if (! empty($Artists) && $Label !== null && $genreExist !== null) {
+            $trackExist = $this->objectManager->getRepository('Application\Entity\Track')->checkTrackExist($track['title'], $Label, $Artists, $genreExist);
             if ($trackExist) {
                 if ($trackExist->getFileFormat() == $track['fileFormat'])
                     $errors['trackExist'] = 'Track already exist!';
@@ -370,8 +376,9 @@ class ImportManager
         if (! empty($otherTracks)) {
             foreach ($otherTracks as $key => $oTEntry) {
                 $otherTrack = $oTEntry['track'];
-                if ($track['title'] == $otherTrack['title'] && $track['label'] == $otherTrack['label'] && $track['artists_string'] == $otherTrack['artists_string']) {
+                if ($track['titleSimple'] == $otherTrack['titleSimple'] && $track['labelId'] == $otherTrack['labelId'] && $track['artists_string'] == $otherTrack['artists_string']) {
                     $errors['trackExist'] = 'Track is the same as track #' . ($key + 1) . ' !';
+                    break;
                 }
             }
         }
@@ -579,6 +586,7 @@ class ImportManager
             'ffmpeg.threads' => 12 // The number of threads that FFMpeg should use
         ]);
         $format = new \FFMpeg\Format\Audio\Mp3();
+        $format->setAudioKiloBitrate(320)->setAudioChannels(2);
         $audio = $ffmpeg->open($filePath);
         $audio->save($format, $convertedPath);
         

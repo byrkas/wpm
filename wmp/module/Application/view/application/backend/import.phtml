@@ -120,7 +120,8 @@ function submitImport()
                 }
             }
             key += 1;
-            var percent = parseInt(100 * key/length);
+            var percent = parseInt(100 * key/length);            
+            if(percent > 100 ) percent = 100;
             
             changeProgress(percent, ['Doing Import','Created '+created+' tracks','Updated '+updated+' tracks','Removed '+removed+' tracks'].join('. '));
         });
@@ -144,6 +145,7 @@ $(function(){
             $('#table-data tbody').append(template({track: data.track, key: key, errors: data.errors, warnings: data.warnings, class: className}));
             key += 1;
             var percent = parseInt(100 * key/length);
+            if(percent > 100 ) percent = 100;
             changeProgress(percent, 'Parsing VS Validation Tracks');
         });
    });

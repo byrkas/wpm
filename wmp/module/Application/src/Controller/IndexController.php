@@ -14,6 +14,11 @@ use Zend\Mail\Message;
 use Zend\Http\Headers;
 use Zend\Http\Response\Stream;
 use Application\Service\ImportManager;
+use Zend\Mail\Transport\Smtp as SmtpTransport;
+use Zend\Mail\Transport\SmtpOptions;
+use Zend\Mime\Message as MimeMessage;
+use Zend\Mime\Part as MimePart;
+use Zend\Mime\Mime;
 
 class IndexController extends AbstractActionController
 {
@@ -145,6 +150,39 @@ class IndexController extends AbstractActionController
         return new ViewModel([]);
     }
 
+    public function getTransport()
+    {
+        $transport = new SmtpTransport();
+        $options   = new SmtpOptions([
+            'name' => 'yandex',
+            'host' => 'smtp.yandex.com',
+            'port' => 465,
+            'connection_class'  => 'login',
+            'connection_config' => [
+                'username' => 'people@whoplaymusic.com',
+                'password' => 'Cristen9-',
+                'ssl'      => 'ssl',
+            ],
+        ]);
+        $transport->setOptions($options);
+        
+        return $transport;
+    }
+    
+    public function smtpAction()
+    {        
+        $mail = new Message();
+        $mail->setEncoding('UTF-8');
+        $mail->addFrom('people@whoplaymusic.com', 'Who play music');
+        $mail->addTo('svetlana.byrka@gmail.com');
+        $mail->setSubject('New sign up from site WPM');
+        $mail->setBody('Full name: ');
+        
+        $this->getTransport()->send($mail);
+        
+        exit;
+    }
+    
     public function mailAction()
     {
         $mail = new Message();
@@ -154,8 +192,7 @@ class IndexController extends AbstractActionController
         $mail->setSubject('New sign up from site WPM');
         $mail->setBody('Full name: ');
         
-        $transport = new \Zend\Mail\Transport\Sendmail();
-        $transport->send($mail);
+        $this->getTransport()->send($mail);
         
         /*
          * $to = 'svetlana.byrka@gmail.com';
@@ -492,13 +529,19 @@ class IndexController extends AbstractActionController
                 if (empty($messages)) {
                     $mail = new Message();
                     $mail->setEncoding('UTF-8');
-                    $mail->addFrom('info@whoplayurmusic.com', 'Who play music');
-                    $mail->addTo('svetlana.byrka@gmail.com');
-                    $mail->setSubject('New sign up from site WPM');
-                    $mail->setBody('Full name: ' . $data['fullname'] . '<br/>' . 'Email: ' . $data['email'] . '<br/>' . 'Payment: ' . $data['payment'] . '<br/>' . 'Additional info: ' . $data['info'] . '<br/>');
+                    $mail->addFrom('people@whoplaymusic.com', 'Who play music');
+                    $mail->addTo('people@whoplaymusic.com');
+                    $mail->setSubject('New sign up from site WPM');                    
                     
-                    $transport = new \Zend\Mail\Transport\Sendmail();
-                    $transport->send($mail);
+                    $html = new MimePart('Full name: ' . $data['fullname'] . '<br/>' . 'Email: ' . $data['email'] . '<br/>' . 'Payment: ' . $data['payment'] . '<br/>' . 'Additional info: ' . $data['info'] . '<br/>');
+                    $html->type = Mime::TYPE_HTML;
+                    $html->charset = 'utf-8';
+                    $html->encoding = Mime::ENCODING_QUOTEDPRINTABLE;
+                    $body = new MimeMessage();
+                    $body->addPart($html);
+                    $mail->setBody($body);
+                    
+                    $this->getTransport()->send($mail);
                     $success = true;
                     $messages[] = 'Thank you for signup! You will receive email with account data!';
                 }
@@ -538,13 +581,19 @@ class IndexController extends AbstractActionController
                 if ($userExist) {
                     $mail = new Message();
                     $mail->setEncoding('UTF-8');
-                    $mail->addFrom('info@whoplayurmusic.com', 'Who play music');
+                    $mail->addFrom('people@whoplaymusic.com', 'Who play music');
                     $mail->addTo($data['email']);
                     $mail->setSubject('WhoPlayMusic account');
-                    $mail->setBody('Your password: ' . $userExist->getPassword() . '<br/>');
                     
-                    $transport = new \Zend\Mail\Transport\Sendmail();
-                    $transport->send($mail);
+                    $html = new MimePart('Your password: ' . $userExist->getPassword() . '<br/>');
+                    $html->type = Mime::TYPE_HTML;
+                    $html->charset = 'utf-8';
+                    $html->encoding = Mime::ENCODING_QUOTEDPRINTABLE;
+                    $body = new MimeMessage();
+                    $body->addPart($html);
+                    $mail->setBody($body);
+                    
+                    $this->getTransport()->send($mail);
                     $success = true;
                     $messages[] = 'You will receive email with account data!';
                 } else {

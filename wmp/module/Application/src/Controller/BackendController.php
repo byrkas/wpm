@@ -19,6 +19,8 @@ use Application\Form\PageForm;
 use Application\Entity\Page;
 use Application\Form\UserForm;
 use Application\Entity\User;
+use Application\Service\ImportManager;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class BackendController extends AbstractActionController
 {
@@ -45,24 +47,103 @@ class BackendController extends AbstractActionController
         return $this->em;
     }
     
+    public function checkAction()
+    {
+       /*  $title = 'Turn It Around (Instrumental Mix)';
+        $label = 2980;
+        $genre = 7;
+        $artStr = 'Kremont, Merk';
+        $ar = explode(', ', $artStr);
+        $Artists = new ArrayCollection();
+        foreach ($ar as $name){
+            $Artist = $this->em->getRepository('Application\Entity\Artist')->findOneBy([
+                'name' => $name
+            ]);
+            $Artists[] = $Artist;
+        }
+        
+        $trackExist = $this->em->getRepository('Application\Entity\Track')->checkTrackExist($title, $label, $Artists);
+        if($trackExist){
+            echo " exist!";
+        } */
+        
+        $label = 'Dnc';
+        $labelExist = $this->importManager->getLabel($label);
+        if($labelExist){
+            echo "exist! ".$labelExist->getId();
+        }else{
+            echo "not exist!";
+        }
+        
+        
+        exit;
+    }
+    
+    public function updateLabelAction()
+    {
+        $old = 165;
+        $new = 4772;
+        
+        $updated = $this->getEntityManager()->getRepository('Application\Entity\Track')->updateLabel($new, $old);
+        
+        echo $updated;
+        exit;
+    }
+    
     public function duplicateLabelAction()
     {
+        $ids = [];
         echo "<pre>";
+        $word = 'rec';
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('l.id','l.name')
+        $query->select('l.id','l.name','COUNT(t.id) as tracks')
         ->from('Application\Entity\Label', 'l')
-        ->where('l.name not like :search1 AND l.name not like :search2 AND l.name not like :search3 AND l.name not like :search4 AND l.name not like :search5')
-        ->setParameter('search1',  '% records%')
-        ->setParameter('search2',  '% recordings%')
-        ->setParameter('search3',  '% recording%')
-        ->setParameter('search4',  '% rec%')
-        ->setParameter('search5',  '% music%')
+        ->leftJoin('Application\Entity\Track','t','WITH','t.Label = l.id')
+        ->where('l.name like :search')
+        ->setParameter('search',  '% '.$word.'%')
         ->orderBy('l.name')
-        //->setMaxResults(1000)
+        ->groupBy('l.id')
+        ->setMaxResults(1000)
         ;
         
-        $results = $query->getQuery()->getArrayResult();
-        var_dump($results); 
+        $results = $query->getQuery()->getArrayResult();  
+        //var_dump($results);
+        
+        $cnt = 0;
+        foreach ($results as $entry){
+            $pos = stripos($entry['name'], ' '.$word);  
+            $name = substr($entry['name'], 0, $pos);
+           // echo $name.'<br/>';
+            
+            $query1 = $this->getEntityManager()->createQueryBuilder();
+            $query1->select('l.id','l.name','COUNT(t.id) as tracks')
+            ->from('Application\Entity\Label', 'l')
+            ->leftJoin('Application\Entity\Track','t','WITH','t.Label = l.id')
+            ->where('l.name = :search')
+            ->andWhere('l.id != :id')
+            ->setParameter('search', $name)
+            ->setParameter('id', $entry['id'])
+            ->orderBy('l.name')
+            ->groupBy('l.id')
+            ->setMaxResults(1);
+            $result = $query1->getQuery()->getOneOrNullResult();  
+            
+            if(count($result)){
+                echo $entry['id'].' '.$entry['name'].' ('.$entry['tracks'].')<br/>';                
+                var_dump($result);
+                /* if($entry['tracks'] > 0){
+                     $updated = $this->getEntityManager()->getRepository('Application\Entity\Track')->updateLabel($result['id'], $entry['id']);
+                    $entry['tracks'] -= $updated;
+                }
+                if($entry['tracks'] == 0){
+                   $label = $this->em->find('Application\Entity\Label', $entry['id']);
+                   $this->em->remove($label);
+                   $this->em->flush();
+                } */
+                
+                if($cnt++ >= 10)  break;
+            }
+        }
         exit;
         
         foreach ($results as $entry){
@@ -316,16 +397,50 @@ class BackendController extends AbstractActionController
     
     public function deleteTestAction()
     {
-        $path = "data/import-music/2017/11-November/28-Exclusive/DJ Tools @ Acapellas/Key To Life - Forever Feat Sabrina Johnston (Buddah's Mo'beats Mix) [4 To The Floor Records].mp3";
-        var_dump(unlink($path));
+        $path = "data/import-music/2018/01-January/04-Exclusive/House/Lvna Nox - Umbra (Original Mix) [Dnc Limited].mp3";
+        $path = "data/music/Abrupt Gear - Koyrta (Original Mix) [Alter Ego Progressive].mp3";
+        $path = "data/music/Antonio Rossini - Can You Dig It (Original Mix) [Flashmob Records].wav";
+        //var_dump(unlink($path));
+        $user_name = "www-data";
+        
+        /* $fPath =  __DIR__ . '/../../../../'.$path;
+        echo $fPath; */
         
         if (! file_exists($path)) {
-           echo "not exist!";
+           echo " not exist!";
         }else {
-            echo "exist!";
+            echo " exist!<br/><pre>";
+            chown($path, $user_name);
+            
+           /*  var_dump(chmod($path, 0755));
+            echo substr(sprintf('%o', fileperms($path)), -4); */
+            
+            $stat = stat($path);
+            print_r(posix_getpwuid($stat['uid']));
+        }
+        
+        
+        exit;        
+    }
+    
+    public function searchWavAction()
+    {
+        set_time_limit(0);
+        $tracks = $this->em->getRepository('Application\Entity\Track')->findBy(['fileFormat' => 'riff']);
+        $cnt = 0;
+        foreach ($tracks as $track){
+            if($track->getFileDestinationMp3() == null){
+                try{
+                $mp3Path = ImportManager::convertMp3($track->getFileDestination());
+                $track->setFileDestinationMp3($mp3Path);
+                $this->em->flush($track);
+                if($cnt++ >= 1000) break;
+                }catch (\Exception $e){
+                    //echo $e;
+                }
+           }
         }
         exit;
-        
     }
     
     public function submitImportAction()

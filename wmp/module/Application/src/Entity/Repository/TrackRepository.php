@@ -108,6 +108,19 @@ class TrackRepository extends EntityRepository
         
         return $res;
     }
+    
+    public function updateLabel($label, $labelOld)
+    {
+        $query = $this->getEntityManager()->createQueryBuilder();
+        $res = $query->update('Application\Entity\Track', 't')
+        ->set('t.Label', $label)
+        ->where('t.Label = :label')
+        ->setParameter('label', $labelOld)
+        ->getQuery()
+        ->execute();
+        
+        return $res;
+    }
 
     public function getSettingValue($code)
     {
@@ -120,7 +133,7 @@ class TrackRepository extends EntityRepository
         return $query->getQuery()->getSingleScalarResult();
     }
 
-    public function checkTrackExist($title, $Label, $Artists)
+    public function checkTrackExist($title, $Label, $Artists, $genre = null)
     {
         $titleSimple = str_ireplace('(Original Mix)', '', $title);
         $titleSimple = str_ireplace('Original Mix', '', $titleSimple);
@@ -128,15 +141,24 @@ class TrackRepository extends EntityRepository
         $query = $this->getEntityManager()->createQueryBuilder();
         $query->select('t')
             ->from('Application\Entity\Track', 't')
+            ->leftJoin('t.Artists','a')
             ->where('t.title = :title OR t.title = :titleSimple')
             ->andWhere('t.Label = :label')
             ->setParameter('title', $title)
             ->setParameter('titleSimple', $titleSimple)
             ->setParameter('label', $Label)
+            ->having('COUNT(a.id) = :artistsCnt')
+            ->setParameter('artistsCnt',count($Artists))
+            ->groupBy('t.id')
             ->setMaxResults(1);
         
+        if($genre != null){
+            $query
+            ->andWhere('t.Genre = :genre')
+            ->setParameter('genre', $genre);
+        }
         $track = $query->getQuery()->getOneOrNullResult();
-        if ($track) {
+        if ($track) {            
             $count = count($Artists);
             foreach ($Artists as $artist) {
                 if ($track->getArtists()->contains($artist))
