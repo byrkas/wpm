@@ -171,8 +171,11 @@ class ImportManager
                 $this->objectManager->persist($Artist);
                 $this->objectManager->flush($Artist);
             }
-            $Artists[] = $Artist;
-            $artistsString = str_replace($name, '{' . $Artist->getId() . '}', $artistsString);
+            if(!$Artists->contains($Artist)){
+                $Artists[] = $Artist;
+                $artistsString = str_replace($name, '{' . $Artist->getId() . '}', $artistsString);
+            }           
+           
         }
         
         return [
@@ -359,8 +362,8 @@ class ImportManager
             $errors['genre'] = 'Genre ' . $track['genre'] . ' not found!';
         }
         
-        if (! empty($Artists) && $Label !== null && $genreExist !== null) {
-            $trackExist = $this->objectManager->getRepository('Application\Entity\Track')->checkTrackExist($track['title'], $Label, $Artists, $genreExist);
+        if (! empty($Artists) && $Label !== null) {
+            $trackExist = $this->objectManager->getRepository('Application\Entity\Track')->checkTrackExist($track['title'], $Label, $Artists);
             if ($trackExist) {
                 if ($trackExist->getFileFormat() == $track['fileFormat'])
                     $errors['trackExist'] = 'Track already exist!';

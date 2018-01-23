@@ -26,7 +26,7 @@ class TrackRepository extends EntityRepository
     public function getList($start, $limit, $orderBy, $order, $search = '')
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('t.id as id', 't.title as title', 't.publishDate as publishDate', "GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') as artists", 't.fileType as fileType', "REPLACE(t.fileDestination, 'public/','/') as track", "REPLACE(t.wave, 'public/','/') as wave", "REPLACE(t.sampleDestination, 'public/','/') as sample", "REPLACE(t.cover, 'public/','/') as cover", 'l.name as label', 'r.name as album', 'g.title as genre', 'tt.name as type', 't.playtimeString', 't.isPublished as isPublished', 'COUNT(DISTINCT d.id) as downloaded')
+        $query->select('t.id as id', 't.title as title', 't.publishDate as publishDate','t.created as created', "GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') as artists", 't.fileType as fileType', "REPLACE(t.fileDestination, 'public/','/') as track", "REPLACE(t.wave, 'public/','/') as wave", "REPLACE(t.sampleDestination, 'public/','/') as sample", "REPLACE(t.cover, 'public/','/') as cover", 'l.name as label', 'r.name as album', 'g.title as genre', 'tt.name as type', 't.playtimeString', 't.isPublished as isPublished', 'COUNT(DISTINCT d.id) as downloaded')
             ->from('Application\Entity\Track', 't')
             ->leftJoin('t.Artists', 'a')
             ->leftJoin('t.Label', 'l')
@@ -142,10 +142,11 @@ class TrackRepository extends EntityRepository
         $query->select('t')
             ->from('Application\Entity\Track', 't')
             ->leftJoin('t.Artists','a')
-            ->where('t.title = :title OR t.title = :titleSimple')
+            ->where('t.title = :title OR t.title = :titleSimple OR t.title = :titleOriginal')
             ->andWhere('t.Label = :label')
             ->setParameter('title', $title)
             ->setParameter('titleSimple', $titleSimple)
+            ->setParameter('titleOriginal', $titleSimple.' (Original Mix)')
             ->setParameter('label', $Label)
             ->having('COUNT(a.id) = :artistsCnt')
             ->setParameter('artistsCnt',count($Artists))

@@ -1,5 +1,5 @@
 angular.module('WhoPlayMusic')
-.directive('search', function() {
+.directive('search', ['$location' ,function(location) {
   return {
     restrict: "A",
     scope: {
@@ -11,9 +11,10 @@ angular.module('WhoPlayMusic')
     	 $scope.searchData = null;
     	 $scope.autoSearchStarted = false;
     	 $scope.autoSearch = '';
+    	 $scope.clicked = false;
 
     	 $scope.initiateAutoSearch = function() {
-    		 if($scope.search.length >= 3){
+    		 if($scope.search.length >= 3 && $scope.clicked == false){
     	    	 $scope.toggleAutoSearch = 'visible';
     	    	 if($scope.autoSearch != $scope.search){
     	    		 $scope.autoSearch = $scope.search;
@@ -32,10 +33,14 @@ angular.module('WhoPlayMusic')
     	 }
     	 $scope.startSearch = function(){
     		 $location.path('/search/'+$scope.search);
+	    	 $scope.toggleAutoSearch = 'none';
     	 }
      	$scope.Delete = function(e) {
   		  $scope.$destroy();
   		}
+     	$scope.hideSearch = function(){
+     		$scope.toggleAutoSearch = 'none';
+     	}
     },
     templateUrl: '/templates/directives/search.html',
     link: function(scope, element, attrs) {
@@ -55,17 +60,22 @@ angular.module('WhoPlayMusic')
             });
         });
     	element.bind("keydown keypress", function (event) {
+    		scope.clicked = false;
             if(event.which === 13) {
             	if(liSelected !== undefined && liSelected.hasClass('tt-link')){
-            		 window.location = liSelected.attr('ng-href');
-            	}else{
+            		location.url(liSelected.attr('ng-href'));
             		scope.$apply(function(){
                     	scope.toggleAutoSearch = 'none';
+                    });
+            	}else{
+            		scope.$apply(function(){
+            			scope.toggleAutoSearch = 'none';
                     	scope.startSearch();
                     });
             	}
 
                 event.preventDefault();
+                scope.clicked = true;
             }else if(event.which === 40){
                 if(liSelected){
                     liSelected.removeClass('selected');
@@ -98,4 +108,4 @@ angular.module('WhoPlayMusic')
           });
     }
   };
-});
+}]);

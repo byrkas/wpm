@@ -69,29 +69,29 @@ angular.module('WhoPlayMusic')
     			})
     	}
     	$scope.lunchMenu = function(){
-    		if($cookies.getObject('globals')){
-    			$scope.lunch = !$scope.lunch;
-        		if($scope.lunch == true){
-        			var width = angular.element($window).width();
-        			if(width < 1140){
-        				$scope.object = angular.element('<div id="modal" class="modal">'+
-        				  '<div class="modal-body modal-body-multi-cart">'+
-        				    '<div class="modal-title-bar">'+
-        				      '<h1 class="cart-settings-title"></h1>'+
-        				      '<a ng-click="removeObject()" class="close-modal-link icon icon-delete"></a>'+
-        				    '</div>'+
-        				    '<div class="modal-main-content">'+
-        				    '<div class="buy-button-menu">'+
-        				    '<ul class="cart-list">'+
-        				    '<li ng-click="addFavorite();removeObject();" ng-show="!track.isFavorite"><span class="title"><svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"></use></svg>Add to favorites</span></li>'+
-        				    '<li ng-click="removeFavorite();removeObject();" ng-show="track.isFavorite"><span class="title"><svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"></use></svg>Remove from favorites</span></li>'+
-        				    '</ul></div>'+
-        				    '</div>'+
-        				  '</div>'+
-        				'</div>');
-        				angular.element('footer').append($scope.object);
-        				$compile($scope.object)($scope);
-        			}
+			if($cookies.getObject('globals')){
+				$scope.lunch = !$scope.lunch;
+				var width = angular.element($window).width();
+				if(width < 1140){	    			
+	        		if($scope.lunch == true){
+	        				$scope.object = angular.element('<div id="modal" class="modal">'+
+	        				  '<div class="modal-body modal-body-multi-cart">'+
+	        				    '<div class="modal-title-bar">'+
+	        				      '<h1 class="cart-settings-title"></h1>'+
+	        				      '<a ng-click="removeObject()" class="close-modal-link icon icon-delete"></a>'+
+	        				    '</div>'+
+	        				    '<div class="modal-main-content">'+
+	        				    '<div class="buy-button-menu">'+
+	        				    '<ul class="cart-list">'+
+	        				    '<li ng-click="addFavorite();removeObject();" ng-show="!track.isFavorite"><span class="title"><svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"></use></svg>Add to favorites</span></li>'+
+	        				    '<li ng-click="removeFavorite();removeObject();" ng-show="track.isFavorite"><span class="title"><svg viewBox="0 0 200 200" class="cart-menu-default-icon"><use xlink:href="/static/images/defs.svg#icon-star"></use></svg>Remove from favorites</span></li>'+
+	        				    '</ul></div>'+
+	        				    '</div>'+
+	        				  '</div>'+
+	        				'</div>');
+	        				angular.element('footer').append($scope.object);
+	        				$compile($scope.object)($scope);
+	        			}
         		}
     		}
     	}

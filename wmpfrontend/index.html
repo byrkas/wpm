@@ -293,11 +293,11 @@
 
 			    <div class="track-button-container">
 			    	<div style="display:flex" track="track" download-buttons></div>
-			      <a href="javascript:void(0)" remove-from-playlist="track" data-index="{{$index}}" class="delete-track playlist-item-remove">
-			        <svg viewBox="0 0 200 200" class="delete-track-icon">
-			          <use xlink:href="/static/images/defs.svg#icon-x"/>
-			        </svg>
-			      </a>
+				      <a href="javascript:void(0)" remove-from-playlist="track" data-index="{{$index}}" class="delete-track playlist-item-remove">
+				        <svg viewBox="0 0 200 200" class="delete-track-icon">
+				          <use xlink:href="/static/images/defs.svg#icon-x"/>
+				        </svg>
+				      </a>
 			    </div>
 			</li>
 	    </ul>
@@ -461,20 +461,20 @@
     	    }else if(e.keyCode == 65){ //a
     	    	$('#download-archive').trigger('click');
     	    }else if(e.keyCode == 77){ //m
-    	    	if(!gridSelected){
+    	    	/*if(!gridSelected){
     	    		gridSelected = $('.bucket-item.active-playable');
-    	    	}
-    	    	gridSelected.find('.add-to-default.mp3').trigger('click');
+    	    	}*/
+    	    	$('#player-container .player-buttons-container .add-to-default.mp3').trigger('click');
     	    }else if(e.keyCode == 87){ //w
-    	    	if(!gridSelected){
+    	    	/*if(!gridSelected){
     	    		gridSelected = $('.bucket-item.active-playable');
-    	    	}
-    	    	gridSelected.find('.add-to-default.wav').trigger('click');
+    	    	}*/
+    	    	$('#player-container .player-buttons-container .add-to-default.wav').trigger('click');
     	    }else if(e.keyCode == 70){ //f
-    	    	if(!gridSelected){
+    	    	/*if(!gridSelected){
     	    		gridSelected = $('.bucket-item.active-playable');
-    	    	}
-    	    	gridSelected.find('.add-to-fav').trigger('click');
+    	    	}*/
+    	    	$('#player-container .player-buttons-container .add-to-fav').trigger('click');
     	    }else if(e.keyCode == 37 || e.keyCode == 75){ // <- k
     	    	grid = $('.bucket-item');
     	    	if(gridSelected){
