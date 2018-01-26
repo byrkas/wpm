@@ -6726,6 +6726,11 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log','$cookies','$docum
                 changeVolume(value);
             },
             clearPlaylist: function(callback) {
+                togglePlaylist();
+                playlist = [];
+                currentTrack = null;
+                $rootScope.$broadcast('player:playlist', playlist);
+                
                 $log.debug('clear playlist');
                 this.resetProgress();
                 //unload and destroy soundmanager sounds
@@ -6738,16 +6743,12 @@ ngSoundManager.factory('angularPlayer', ['$rootScope', '$log','$cookies','$docum
                             soundManager.destroySound(soundManager.soundIDs[0]);
                             //custom code
                             loop();
-                        }, 100);
+                        }, 10);
                     },
                     callback: function() {
                         //callback custom code
                         $log.debug('All done!');
                         //clear playlist
-                        playlist = [];
-                        currentTrack = null;
-                        $rootScope.$broadcast('player:playlist', playlist);
-                        togglePlaylist();
                         callback(true);
                         //callback custom code
                     }
@@ -6780,14 +6781,16 @@ ngSoundManager.directive('soundManager', ['$filter', 'angularPlayer','$cookies',
                     scope.$apply(function() {
                         scope.currentPlaying = angularPlayer.currentTrackData();
                         if(scope.currentPlaying){
-                        	$cookies.putObject('currentPlaying', scope.currentPlaying.id);
+                        	//$cookies.putObject('currentPlaying', scope.currentPlaying.id);
+                        	currentPlaying(scope.currentPlaying.id);
                         	var tmp = $cookies.getObject('played') || [];
                         	if(tmp.indexOf(scope.currentPlaying.id) < 0){
                         		tmp.push(scope.currentPlaying.id);
-                        		$cookies.putObject('played', tmp);
+                        		//$cookies.putObject('played', tmp);
                         	}                        	
                         }else{
-                        	$cookies.putObject('currentPlaying', 0);
+                        	currentPlaying(0);
+                        	//$cookies.putObject('currentPlaying', 0);
                         }                        
                     });
                 });

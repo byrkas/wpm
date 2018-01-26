@@ -230,9 +230,9 @@ class TrackRepository extends EntityRepository
     public function getTypes($filter = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('COUNT(DISTINCT t.id) as cnt', 'tt.name', 'tt.id')
+        $query->select('COUNT(t.id) as cnt', 'tt.name', 'tt.id')
             ->from('Application\Entity\Track', 't')
-            ->leftJoin('t.TrackType', 'tt')
+            ->innerJoin('t.TrackType', 'tt')
             ->where('t.isPublished = 1')
             ->groupBy('tt.id')
             ->orderBy('cnt', 'DESC');
@@ -314,9 +314,9 @@ class TrackRepository extends EntityRepository
     public function getGenres($filter = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('COUNT(DISTINCT t.id) as cnt', 'g.title as name', 'g.id')
+        $query->select('COUNT(t.id) as cnt', 'g.title as name', 'g.id')
             ->from('Application\Entity\Track', 't')
-            ->leftJoin('t.Genre', 'g')
+            ->innerJoin('t.Genre', 'g')
             ->where('t.isPublished = 1')
             ->groupBy('g.id')
             ->orderBy('cnt', 'DESC')
@@ -396,9 +396,9 @@ class TrackRepository extends EntityRepository
     public function getLabels($filter = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('COUNT(DISTINCT t.id) as cnt', 'l.name', 'l.id')
+        $query->select('COUNT(t.id) as cnt', 'l.name', 'l.id')
             ->from('Application\Entity\Track', 't')
-            ->leftJoin('t.Label', 'l')
+            ->innerJoin('t.Label', 'l')
             ->where('t.isPublished = 1')
             ->groupBy('l.id')
             ->orderBy('cnt', 'DESC')
@@ -481,9 +481,9 @@ class TrackRepository extends EntityRepository
     public function getArtists($filter = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('COUNT(DISTINCT t.id) as cnt', 'a.name', 'a.id')
+        $query->select('COUNT(t.id) as cnt', 'a.name', 'a.id')
             ->from('Application\Entity\Track', 't')
-            ->leftJoin('t.Artists', 'a')
+            ->innerJoin('t.Artists', 'a')
             ->where('t.isPublished = 1')
             ->groupBy('a.id')
             ->orderBy('cnt', 'DESC')
@@ -563,11 +563,11 @@ class TrackRepository extends EntityRepository
     public function getTracks($limit, $start, $filter = [], $sortBy = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('t.id', 't.title as title', 't.publishDate as release', 'GROUP_CONCAT(a.name) as artists', 't.playtimeString as length',  't.fileFormat', "REPLACE(t.sampleDestination, 'public/','/') as sample", "REPLACE(t.cover, 'public/','/') as cover", 'l.name as label', 'l.id as labelId', 'r.name as album', 'r.id as albumId', 'g.title as genre', 'g.id as genreId', 'tt.name as type', 'tt.id as typeId')
+        $query->select('t.id', 't.title as title', 't.publishDate as release', 't.playtimeString as length',  't.fileFormat', "t.sampleDestination as sample", "t.cover as cover", 
+            'l.name as label', 'l.id as labelId', 'g.title as genre', 'g.id as genreId', 
+            'tt.name as type', 'tt.id as typeId')
             ->from('Application\Entity\Track', 't')
-            ->leftJoin('t.Artists', 'a')
             ->leftJoin('t.Label', 'l')
-            ->leftJoin('t.Album', 'r')
             ->leftJoin('t.Genre', 'g')
             ->leftJoin('t.TrackType', 'tt')
             ->where('t.isPublished = 1')
@@ -578,8 +578,12 @@ class TrackRepository extends EntityRepository
             $query->orderBy($sortBy[0], $sortBy[1]);
         }
         
+        if(isset($filter['search']) || isset($filter['artists'])){            
+            $query->leftJoin('t.Artists', 'a');
+        }
         if (isset($filter['search'])) {
-            $query->andWhere('t.title like :search OR l.name like :search OR r.name like :search OR a.name like :search')->setParameter('search', '%' . $filter['search'] . '%');
+            $query->leftJoin('t.Album', 'r')
+            ->andWhere('t.title like :search OR l.name like :search OR r.name like :search OR a.name like :search')->setParameter('search', '%' . $filter['search'] . '%');
         }
         if (isset($filter['type'])) {
             $query->andWhere('tt.id = :type')->setParameter('type', $filter['type']);
@@ -594,7 +598,7 @@ class TrackRepository extends EntityRepository
             $query->andWhere('g.id = :genre')->setParameter('genre', $filter['genre']);
         }
         if (isset($filter['album'])) {
-            $query->andWhere('r.id = :album')->setParameter('album', $filter['album']);
+            $query->andWhere('t.Album = :album')->setParameter('album', $filter['album']);
         }
         if (isset($filter['start'])) {
             $query->andWhere('t.publishDate >= :start')->setParameter('start', $filter['start'] . ' 00:00');

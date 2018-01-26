@@ -355,6 +355,10 @@ class ImportManager
             $track['titleSimple'] = trim($titleSimple);
         }
         
+        if (! isset($track['type'])) {
+            $errors['type'] = 'Type is empty!';
+        }
+        
         $genreExist = $this->objectManager->getRepository('Application\Entity\Genre')->findOneBy([
             'title' => $track['genre']
         ]);
@@ -534,7 +538,7 @@ class ImportManager
             'ffmpeg.binaries' => '/usr/bin/ffmpeg',
             'ffprobe.binaries' => '/usr/bin/ffprobe',
             'timeout' => 3600, // The timeout for the underlying process
-            'ffmpeg.threads' => 12 // The number of threads that FFMpeg should use
+            'ffmpeg.threads' => 1 // The number of threads that FFMpeg should use
         ]);
         $audio = $ffmpeg->open($sample);
         // color #cbcbcb; 203,203,203 //transparent
@@ -567,7 +571,7 @@ class ImportManager
             'ffmpeg.binaries' => '/usr/bin/ffmpeg',
             'ffprobe.binaries' => '/usr/bin/ffprobe',
             'timeout' => 3600, // The timeout for the underlying process
-            'ffmpeg.threads' => 12 // The number of threads that FFMpeg should use
+            'ffmpeg.threads' => 1 // The number of threads that FFMpeg should use
         ]);
         $format = new \FFMpeg\Format\Audio\Mp3();
         $audio = $ffmpeg->open($track['filePath']);
@@ -586,7 +590,7 @@ class ImportManager
             'ffmpeg.binaries' => '/usr/bin/ffmpeg',
             'ffprobe.binaries' => '/usr/bin/ffprobe',
             'timeout' => 3600, // The timeout for the underlying process
-            'ffmpeg.threads' => 12 // The number of threads that FFMpeg should use
+            'ffmpeg.threads' => 1 // The number of threads that FFMpeg should use
         ]);
         $format = new \FFMpeg\Format\Audio\Mp3();
         $format->setAudioKiloBitrate(320)->setAudioChannels(2);

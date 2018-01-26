@@ -21,6 +21,7 @@ use Application\Form\UserForm;
 use Application\Entity\User;
 use Application\Service\ImportManager;
 use Doctrine\Common\Collections\ArrayCollection;
+use \Imagine\Image\ImageInterface;
 
 class BackendController extends AbstractActionController
 {
@@ -420,10 +421,10 @@ class BackendController extends AbstractActionController
         $request = $this->getRequest();
         $this->layout()->contentFluid = true;
         
-        $structure = $this->importManager->scanDirectories($this->importManager->getImportFolder());
+        $structure = [];//$this->importManager->scanDirectories($this->importManager->getImportFolder());
         
         return new ViewModel([
-            'title' => 'Import',
+            'title' => 'Import In Maintaince',
             'structure' => json_encode($structure)
         ]);
     }
@@ -1216,5 +1217,16 @@ class BackendController extends AbstractActionController
     {
         $this->authManager->logout();
         return $this->redirect()->toRoute('backend/login');
+    }
+    
+    public function coverAction()
+    {
+        $filePath = 'media/img/2018/01/31/cover_4fc38e6feedc1aff8d8f8f9a40ddf183.png';
+        $imagine = new \Imagine\Gd\Imagine();
+        $image   = $imagine->open($filePath);
+        $options = array(
+            'jpeg_quality' => 70,
+            'png_compression_level' => 9,
+        );
     }
 }

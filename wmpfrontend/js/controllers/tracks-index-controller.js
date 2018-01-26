@@ -30,6 +30,7 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
   $scope.onlyWav = 'off';
   $scope.applyDates = 0;
   $scope.queryParams = {};
+  $scope.getStart = false;
 
   if($routeParams.artists !== undefined){
 	  $scope.selectedArtists = $routeParams.artists.split(',');
@@ -66,6 +67,7 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 
   $scope.query = function(page, limit){
 	  var search = $location.search();
+	  var searchOld = $location.search();
 
 		 if(page===undefined){
 			 page = $scope.currentPage;
@@ -140,10 +142,13 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 		 }
 
 		 $location.search(search);
+			 
 		 return query;
   }
 
-  $scope.getTracks = function(page, limit){	 
+  $scope.getTracks = function(page, limit){
+	  if($scope.getStart == true)
+		  return;
 	 $scope.queryParams = $scope.query(page, limit);
 	 if(page===undefined){
 		 page = $scope.currentPage;
@@ -152,6 +157,7 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 		 limit = $scope.itemsPerPage;
 	 }
 	 body.addClass('waiting');
+	 $scope.getStrart = true;
 	 Tracks.get($scope.queryParams, function(response){
 		 $scope.tracks = response.tracks;
 		 $scope.totalItems = response.total;
@@ -169,6 +175,7 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 			  $scope.pages = getPages(page, $scope.totalPages, $scope.maxSize);
 		 }
 		 body.removeClass('waiting');
+		 $scope.getStart = false;
 	 })
   }
 
@@ -222,9 +229,9 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
   }
 
 //init
-  if($rootScope.siteModeShow()){
+  /*if($rootScope.siteModeShow()){
 	  $scope.getTracks();
-  }	 
+  }	 */
   //end init
 
   var listenerFilterHandler = function (newValue, oldValue, scope) {

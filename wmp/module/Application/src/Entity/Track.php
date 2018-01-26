@@ -8,7 +8,8 @@ use Doctrine\Common\Collections\Collection;
 
 /**
  * @ORM\Entity(repositoryClass="Application\Entity\Repository\TrackRepository")
- * @ORM\Table(name="track")
+ * @ORM\Table(name="track", indexes={@ORM\Index(name="idx_published", columns={"is_published"}),@ORM\Index(name="idx_file_type", columns={"file_type"}),
+ * })
  * @ORM\HasLifecycleCallbacks
  */
 class Track

@@ -36,6 +36,7 @@ class IndexController extends AbstractActionController
     private $authService;
 
     protected $static = 'http://api.wpm.zeit.style';
+    protected $staticImg = 'http://static.wpm.zeit.style';
 
     protected $sortList = [
         'release',
@@ -335,12 +336,15 @@ class IndexController extends AbstractActionController
         if (! empty($tracks)) {
             foreach ($tracks as $key => $track) {
                 $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
-                $tracks[$key]['sample'] = $this->static . $track['sample'];
-                $tracks[$key]['url'] = $this->static . $track['sample'];
+                $tracks[$key]['url'] = $this->static . str_replace('public/', '/', $track['sample']);
                 unset($tracks[$key]['sample']);
-                if (! $track['cover'])
-                    $track['cover'] = '/img/music.png';
-                $tracks[$key]['cover'] = $this->static . $track['cover'];
+                if (! $track['cover']){
+                    $tracks[$key]['cover'] = $this->staticImg.'/music.png';
+                }                
+                else{
+                    $tracks[$key]['cover'] = $this->staticImg.'/400x400'. str_replace('public/media/img/', '/', $track['cover']);
+                }           
+                
                 //$tracks[$key]['wave'] = $this->static . $track['wave'];
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
             }

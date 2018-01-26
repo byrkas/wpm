@@ -508,6 +508,11 @@
     	function removeObject(obj){
     		obj.remove();
     	}
+    	function currentPlaying(id){
+    		$('.bucket-item').removeClass('active-playable');
+    		$('#track-'+id).addClass('active-playable');
+    		$('#track-'+id).addClass('already-played');
+    	}
     	document.addEventListener('keyup', doc_keyUp, false);
     </script>
 </body>

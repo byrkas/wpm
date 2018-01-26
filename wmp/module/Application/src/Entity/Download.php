@@ -8,7 +8,8 @@ use Doctrine\Common\Collections\Collection;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="download")
+ * @ORM\Table(name="download", indexes={@ORM\Index(name="track_user", columns={"track_id", "user_id"}),
+ * })
  */
 class Download
 {
