@@ -1,4 +1,4 @@
-<div class="buy-button" ng-class="{'track-buy-button': trackBuyButton,'loading':downloading, 'in-cart': isDownloaded(track.id), 'opened':lunch}">
+<div class="buy-button" ng-class="{'track-buy-button': trackBuyButton,'loading':downloading, 'in-cart': track.downloaded == true, 'opened':lunch}">
     <button class="add-to-default wav" ng-click="download();$event.stopPropagation();" ng-show="track.fileFormat == 'riff'">WAV</button>
     <button class="add-to-default stem" ng-click="download();$event.stopPropagation();" ng-show="track.fileFormat == 'mp4'">STEM</button>
     <button class="add-to-default mp3" ng-click="download();$event.stopPropagation();" ng-show="track.fileFormat == 'mp3'">MP3</button>

@@ -49,7 +49,7 @@
 			    </div>
 			</div>
 			<ul class="bucket-items ec-bucket ">
-				<li ng-repeat="track in tracks" class="bucket-item ec-item track" id="track-{{track.id}}" ng-class="{'active-playable': isCurrentPlaying(track.id), 'already-played': playedList(track.id)}">
+				<li ng-repeat="track in tracks" class="bucket-item ec-item track" id="track-{{track.id}}">
 					<div class="buk-track-num">{{$index+1}}</div>
 					<div class="buk-track-meta-parent">
 			          <p class="buk-track-title">

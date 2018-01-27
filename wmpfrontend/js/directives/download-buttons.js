@@ -59,11 +59,12 @@ angular.module('WhoPlayMusic')
 	    					$cookies.putObject('globals', $rootScope.globals);
 	    				}
 
-	    				var tmp = $cookies.getObject('downloaded') || [];
+	    				/*var tmp = $cookies.getObject('downloaded') || [];
                     	if(tmp.indexOf($scope.track.id) < 0){
                     		tmp.push($scope.track.id);
                     		$cookies.putObject('downloaded', tmp);
-                    	}
+                    	}*/
+		        		$scope.track.downloaded = true;
                     	$window.location = 'http://api.wpm.zeit.style/download-file-stream/' + $scope.track.id +'?'+ $httpParamSerializer(query);
     				}
     			})
@@ -115,11 +116,10 @@ angular.module('WhoPlayMusic')
         scope.$on('$destroy', function () {
         	element.remove();
         	scope.Delete();
+            $(document).off('click');
         });
-    	$(document).bind('click', function(event){
-            var isClickedElementChildOfPopup = element
-                .find(event.target)
-                .length > 0;
+    	$(document).on('click', function(event){
+            var isClickedElementChildOfPopup = element.find(event.target).length > 0;
 
             if (isClickedElementChildOfPopup)
                 return;

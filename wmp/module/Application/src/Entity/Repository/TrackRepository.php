@@ -807,7 +807,8 @@ class TrackRepository extends EntityRepository
     public function getTracksDownloaded($user, $limit, $start, $filter = [], $sortBy = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('t.id', 't.title as title', 't.publishDate as release', 'GROUP_CONCAT(a.name) as artists', 't.playtimeString as length',  't.fileFormat', "REPLACE(t.sampleDestination, 'public/','/') as sample", "REPLACE(t.cover, 'public/','/') as cover", 'l.name as label', 'l.id as labelId', 'r.name as album', 'r.id as albumId', 'g.title as genre', 'g.id as genreId', 'tt.name as type', 'd.created')
+        $query->select('t.id', 't.title as title', 't.publishDate as release', 't.playtimeString as length',  't.fileFormat', 
+            "t.sampleDestination as sample", "t.cover as cover", 'l.name as label', 'l.id as labelId',  'g.title as genre', 'g.id as genreId', 'tt.name as type', 'd.created')
             ->from('Application\Entity\Download', 'd')
             ->leftJoin('d.Track', 't')
             ->leftJoin('t.Artists', 'a')
@@ -1067,7 +1068,8 @@ class TrackRepository extends EntityRepository
     public function getTracksFavorites($user, $limit, $start, $filter = [], $sortBy = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('t.id', 't.title as title', 't.publishDate as release', "GROUP_CONCAT(a.name SEPARATOR ', ') as artists", 't.playtimeString as length',  't.fileFormat', "REPLACE(t.sampleDestination, 'public/','/') as sample", "REPLACE(t.cover, 'public/','/') as cover", 'l.name as label', 'l.id as labelId', 'r.name as album', 'r.id as albumId', 'g.title as genre', 'g.id as genreId', 'tt.name as type', 'f.created')
+        $query->select('t.id', 't.title as title', 't.publishDate as release', 't.playtimeString as length',  't.fileFormat', 
+            "t.sampleDestination as sample", "t.cover as cover", 'l.name as label', 'l.id as labelId', 'g.title as genre', 'g.id as genreId', 'tt.name as type', 'f.created')
             ->from('Application\Entity\Favorite', 'f')
             ->leftJoin('f.Track', 't')
             ->leftJoin('t.Artists', 'a')
@@ -1208,7 +1210,9 @@ class TrackRepository extends EntityRepository
     public function getTracksTop($limit, $filter = [], $sortBy = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('COUNT(DISTINCT d.User) as cnt', 't.id', 't.title as title', 't.publishDate as release', 'GROUP_CONCAT(a.name) as artists', 't.playtimeString as length',  't.fileFormat', "REPLACE(t.sampleDestination, 'public/','/') as sample", "REPLACE(t.cover, 'public/','/') as cover", 'l.name as label', 'l.id as labelId', 'r.name as album', 'r.id as albumId', 'g.title as genre', 'g.id as genreId', 'tt.name as type')
+        $query->select('COUNT(DISTINCT d.User) as cnt', 't.id', 't.title as title', 't.publishDate as release', 
+            't.playtimeString as length',  't.fileFormat', "t.sampleDestination as sample", "t.cover as cover",  'l.name as label', 'l.id as labelId', 'g.title as genre', 'g.id as genreId',
+            'tt.name as type')
             ->from('Application\Entity\Track', 't')
             ->leftJoin('Application\Entity\Download', 'd', 'WITH', 'd.Track = t.id')
             ->leftJoin('t.Artists', 'a')
@@ -1316,7 +1320,8 @@ class TrackRepository extends EntityRepository
     public function getTrack($id)
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('t.id', 't.title as title', 't.publishDate as release', 'GROUP_CONCAT(a.name) as artists', 't.playtimeString as length',  't.fileFormat', "REPLACE(t.sampleDestination, 'public/','/') as sample", "REPLACE(t.cover, 'public/','/') as cover", 'l.name as label', 'l.id as labelId', 'r.name as album', 'r.id as albumId', 'g.title as genre', 'g.id as genreId', 'tt.name as type')
+        $query->select('t.id', 't.title as title', 't.publishDate as release', 't.playtimeString as length',  't.fileFormat',
+            "t.sampleDestination as sample", "t.cover as cover",  'l.name as label', 'l.id as labelId', 'r.name as album', 'r.id as albumId', 'g.title as genre', 'g.id as genreId', 'tt.name as type')
             ->from('Application\Entity\Track', 't')
             ->leftJoin('t.Artists', 'a')
             ->leftJoin('t.Label', 'l')

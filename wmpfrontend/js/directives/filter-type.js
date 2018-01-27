@@ -23,7 +23,7 @@ angular.module('WhoPlayMusic')
     },
     templateUrl: '/templates/directives/filter-type.html',
     link: function(scope, element, attrs) {
-    	$(document).bind('click', function(event){
+    	$(document).on('click', function(event){
             var isClickedElementChildOfPopup = element
                 .find(event.target)
                 .length > 0;
@@ -41,6 +41,7 @@ angular.module('WhoPlayMusic')
       scope.$on('$destroy', function () {
       	element.remove();
       	scope.Delete();
+      	$(document).off('click');
       });
     }
   };

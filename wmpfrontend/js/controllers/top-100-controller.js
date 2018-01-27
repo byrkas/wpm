@@ -1,5 +1,8 @@
 angular.module('WhoPlayMusic').factory( 'Top', function($resource, $rootScope){
-  return $resource('http://api.wpm.zeit.style/top');
+	if($rootScope.globals){
+		return $resource('http://api.wpm.zeit.style/top?token='+$rootScope.globals.currentUser.token);
+	}
+	return $resource('http://api.wpm.zeit.style/top');
 });
 
 angular.module('WhoPlayMusic').controller('TopController', function($scope, $http, $filter, Top, $routeParams, $rootScope, $location, $window, $httpParamSerializer, $cookies) {

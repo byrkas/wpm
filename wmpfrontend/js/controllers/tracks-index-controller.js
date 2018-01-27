@@ -1,5 +1,8 @@
-angular.module('WhoPlayMusic').factory( 'Tracks', function($resource){
-  return $resource('http://api.wpm.zeit.style/tracks');
+angular.module('WhoPlayMusic').factory( 'Tracks', function($resource, $rootScope){
+	if($rootScope.globals){
+		return $resource('http://api.wpm.zeit.style/tracks?token='+$rootScope.globals.currentUser.token);
+	}
+	return $resource('http://api.wpm.zeit.style/tracks');
 });
 
 angular.module('WhoPlayMusic').controller('TracksIndexController', function($scope, $http, Tracks, $filter, $routeParams, $location, $rootScope, $cookies, $window, $httpParamSerializer) {

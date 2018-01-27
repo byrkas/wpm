@@ -24,7 +24,7 @@
 	            </div>
 	        </div>
 	        <ul class="bucket-items ec-bucket">
-		      	<li track-item class="bucket-item ec-item track" ng-class="{'active-playable': isCurrentPlaying(track.id), 'already-played': playedList(track.id)}" globals="globals" track="track" id="track-{{track.id}}" ng-repeat="track in tracks"></li>
+		      	<li track-item class="bucket-item ec-item track" globals="globals" track="track" id="track-{{track.id}}" ng-repeat="track in tracks"></li>
 	        </ul>
 	        <pagination-tracks only-wav="onlyWav" pages="pages" ng-class="'pagination-bottom-container'"  total-pages="totalPages" items-per-page="itemsPerPage" total-items="totalItems" current-page="currentPage"></pagination-tracks>
 		</div>

@@ -270,6 +270,13 @@ class IndexController extends AbstractActionController
     {
         $result = [];
         $filter = [];
+        $userId = null;
+        $downloadedIds = [];
+        $request = $this->getRequest();
+        $this->checkAuthorization($request);
+        if (! empty($this->tokenPayload)) {
+            $userId = $this->tokenPayload->id;
+        }
         $sort = $this->params()->fromQuery('sort', 'release-desc');
         $limit = (int) $this->params()->fromQuery('limit', 100);
         $page = (int) $this->params()->fromQuery('page', 1);
@@ -334,6 +341,13 @@ class IndexController extends AbstractActionController
         $result['genres'] = $this->em->getRepository('Application\Entity\Track')->getGenres($filter);
 
         if (! empty($tracks)) {
+            if($userId){
+                $trackIds = [];
+                foreach ($tracks as $track){
+                    $trackIds[] = $track['id'];
+                }
+                $downloadedIds = $this->em->getRepository('Application\Entity\User')->getDownloadedIds($userId, $trackIds);
+            }
             foreach ($tracks as $key => $track) {
                 $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
                 $tracks[$key]['url'] = $this->static . str_replace('public/', '/', $track['sample']);
@@ -343,7 +357,8 @@ class IndexController extends AbstractActionController
                 }                
                 else{
                     $tracks[$key]['cover'] = $this->staticImg.'/400x400'. str_replace('public/media/img/', '/', $track['cover']);
-                }           
+                }
+                $tracks[$key]['downloaded'] = (in_array($track['id'], $downloadedIds));
                 
                 //$tracks[$key]['wave'] = $this->static . $track['wave'];
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
@@ -358,30 +373,55 @@ class IndexController extends AbstractActionController
         $id = (int) $this->params()->fromRoute('id', 0);
 
         $result = [];
+        $userId = null;
+        $downloadedIds = [];
+        $request = $this->getRequest();
+        $this->checkAuthorization($request);
+        if (! empty($this->tokenPayload)) {
+            $userId = $this->tokenPayload->id;
+        }
         $track = $this->em->getRepository('Application\Entity\Track')->getTrack($id);
         if ($track) {
+            if($userId){
+                $downloadedIds = $this->em->getRepository('Application\Entity\User')->getDownloadedIds($userId, [$track['id']]);
+            }
             $track['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
-            $track['sample'] = $this->static . $track['sample'];
-            $track['url'] = $track['sample'];
-            if (! $track['cover'])
-                $track['cover'] = '/img/music.png';
-            $track['cover'] = $this->static . $track['cover'];
-            //$track['wave'] = $this->static . $track['wave'];
+            $track['url'] = $this->static . str_replace('public/', '/', $track['sample']);
+            unset($track['sample']);
+            if (! $track['cover']){
+                $track['cover'] = $this->staticImg.'/music.png';
+            }
+            else{
+                $track['cover'] = $this->staticImg.'/400x400'. str_replace('public/media/img/', '/', $track['cover']);
+            }
+            $track['downloaded'] = (in_array($track['id'], $downloadedIds));
             $track['release'] = $track['release']->format('Y-m-d');
             $filter = [
                 'genre' => $track['genreId']
             ];
             $filter['showPromo'] = $this->params()->fromQuery('showPromo', true);
             $recommends = $this->em->getRepository('Application\Entity\Track')->getTracksTop(20, $filter);
+            if(!empty($recommends)){
+                if($userId){
+                    $trackIds = [];
+                    foreach ($recommends as $rec){
+                        $trackIds[] = $rec['id'];
+                    }
+                    $downloadedIds = $this->em->getRepository('Application\Entity\User')->getDownloadedIds($userId, $trackIds);
+                }
+            }
             foreach ($recommends as $key => $rec) {
                 $recommends[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($rec['id']);
-                $recommends[$key]['sample'] = $this->static . $rec['sample'];
-                $recommends[$key]['url'] = $this->static . $rec['sample'];
-                if (! $rec['cover'])
-                    $rec['cover'] = '/img/music.png';
-                $recommends[$key]['cover'] = $this->static . $rec['cover'];
-                //$recommends[$key]['wave'] = $this->static . $rec['wave'];
+                $recommends[$key]['url'] = $this->static . str_replace('public/', '/', $rec['sample']);
+                unset($recommends[$key]['sample']);
+                if (! $rec['cover']){
+                    $recommends[$key]['cover'] = $this->staticImg.'/music.png';
+                }
+                else{
+                    $recommends[$key]['cover'] = $this->staticImg.'/400x400'. str_replace('public/media/img/', '/', $rec['cover']);
+                }  
                 $recommends[$key]['release'] = $rec['release']->format('Y-m-d');
+                $recommends[$key]['downloaded'] = (in_array($rec['id'], $downloadedIds));
             }
             $track['recommends'] = $recommends;
         }
@@ -405,6 +445,13 @@ class IndexController extends AbstractActionController
     {
         $id = (int) $this->params()->fromRoute('id', 0);
         $result = [];
+        $userId = null;
+        $downloadedIds = [];
+        $request = $this->getRequest();
+        $this->checkAuthorization($request);
+        if (! empty($this->tokenPayload)) {
+            $userId = $this->tokenPayload->id;
+        }
         $album = $this->em->getRepository('Application\Entity\Track')->getAlbum($id);
         if (! $album['cover'])
             $album['cover'] = '/img/music.png';
@@ -417,14 +464,24 @@ class IndexController extends AbstractActionController
             'album' => $id
         ]);
         if (! empty($tracks)) {
+            if($userId){
+                $trackIds = [];
+                foreach ($tracks as $track){
+                    $trackIds[] = $track['id'];
+                }
+                $downloadedIds = $this->em->getRepository('Application\Entity\User')->getDownloadedIds($userId, $trackIds);
+            }
             foreach ($tracks as $key => $track) {
                 $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
-                $tracks[$key]['sample'] = $this->static . $track['sample'];
-                $tracks[$key]['url'] = $this->static . $track['sample'];
-                if (! $track['cover'])
-                    $track['cover'] = '/img/music.png';
-                $tracks[$key]['cover'] = $this->static . $track['cover'];
-                //$tracks[$key]['wave'] = $this->static . $track['wave'];
+                $tracks[$key]['url'] = $this->static . str_replace('public/', '/', $track['sample']);
+                unset($tracks[$key]['sample']);
+                if (! $track['cover']){
+                    $tracks[$key]['cover'] = $this->staticImg.'/music.png';
+                }
+                else{
+                    $tracks[$key]['cover'] = $this->staticImg.'/400x400'. str_replace('public/media/img/', '/', $track['cover']);
+                }
+                $tracks[$key]['downloaded'] = (in_array($track['id'], $downloadedIds));
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
             }
             $result['tracks'] = $tracks;
@@ -2056,15 +2113,18 @@ class IndexController extends AbstractActionController
 
         if (! empty($tracks)) {
             foreach ($tracks as $key => $track) {
-                $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
-                $tracks[$key]['sample'] = $this->static . $track['sample'];
-                $tracks[$key]['url'] = $this->static . $track['sample'];
-                if (! $track['cover'])
-                    $track['cover'] = '/img/music.png';
-                $tracks[$key]['cover'] = $this->static . $track['cover'];
-                //$tracks[$key]['wave'] = $this->static . $track['wave'];
+                $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);  
+                $tracks[$key]['url'] = $this->static . str_replace('public/', '/', $track['sample']);
+                unset($tracks[$key]['sample']);
+                if (! $track['cover']){
+                    $tracks[$key]['cover'] = $this->staticImg.'/music.png';
+                }
+                else{
+                    $tracks[$key]['cover'] = $this->staticImg.'/400x400'. str_replace('public/media/img/', '/', $track['cover']);
+                } 
+                
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
-                $tracks[$key]['downloaded'] = $track['created']->format('d.m');
+                $tracks[$key]['downloaded'] = true;//$track['created']->format('d.m');
             }
             $result['tracks'] = $tracks;
         }
@@ -2239,17 +2299,25 @@ class IndexController extends AbstractActionController
         $result['genres'] = $this->em->getRepository('Application\Entity\Track')->getGenres($filter);
 
         if (! empty($tracks)) {
+            $trackIds = [];
+            foreach ($tracks as $track){
+                $trackIds[] = $track['id'];
+            }
+            $downloadedIds = $this->em->getRepository('Application\Entity\User')->getDownloadedIds($userId, $trackIds);
             foreach ($tracks as $key => $track) {
                 $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
-                $tracks[$key]['sample'] = $this->static . $track['sample'];
-                $tracks[$key]['url'] = $this->static . $track['sample'];
-                if (! $track['cover'])
-                    $track['cover'] = '/img/music.png';
-                $tracks[$key]['cover'] = $this->static . $track['cover'];
-                //$tracks[$key]['wave'] = $this->static . $track['wave'];
+                $tracks[$key]['url'] = $this->static . str_replace('public/', '/', $track['sample']);
+                unset($tracks[$key]['sample']);
+                if (! $track['cover']){
+                    $tracks[$key]['cover'] = $this->staticImg.'/music.png';
+                }
+                else{
+                    $tracks[$key]['cover'] = $this->staticImg.'/400x400'. str_replace('public/media/img/', '/', $track['cover']);
+                } 
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
-                $tracks[$key]['downloaded'] = $track['created']->format('d.m');
+                $tracks[$key]['downloaded'] = (in_array($track['id'], $downloadedIds));
                 $tracks[$key]['isFavorite'] = true;
+                
             }
             $result['tracks'] = $tracks;
         }
@@ -2259,6 +2327,13 @@ class IndexController extends AbstractActionController
     public function topAction()
     {
         $result = [];
+        $userId = null;
+        $downloadedIds = [];
+        $request = $this->getRequest();
+        $this->checkAuthorization($request);
+        if (! empty($this->tokenPayload)) {
+            $userId = $this->tokenPayload->id;
+        }
         $filter = [
             'trackIds' => []
         ];
@@ -2294,15 +2369,25 @@ class IndexController extends AbstractActionController
         $tracks = $this->em->getRepository('Application\Entity\Track')->getTracksTop($limit, $filter, $sortArr);
         $trackIds = [];
         if (! empty($tracks)) {
+            if($userId){
+                $trackIds = [];
+                foreach ($tracks as $track){
+                    $trackIds[] = $track['id'];
+                }
+                $downloadedIds = $this->em->getRepository('Application\Entity\User')->getDownloadedIds($userId, $trackIds);
+            }
             foreach ($tracks as $key => $track) {
                 $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
-                $tracks[$key]['sample'] = $this->static . $track['sample'];
-                $tracks[$key]['url'] = $this->static . $track['sample'];
-                if (! $track['cover'])
-                    $track['cover'] = '/img/music.png';
-                $tracks[$key]['cover'] = $this->static . $track['cover'];
-                //$tracks[$key]['wave'] = $this->static . $track['wave'];
+                $tracks[$key]['url'] = $this->static . str_replace('public/', '/', $track['sample']);
+                unset($tracks[$key]['sample']);
+                if (! $track['cover']){
+                    $tracks[$key]['cover'] = $this->staticImg.'/music.png';
+                }
+                else{
+                    $tracks[$key]['cover'] = $this->staticImg.'/400x400'. str_replace('public/media/img/', '/', $track['cover']);
+                }           
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
+                $tracks[$key]['downloaded'] = (in_array($track['id'], $downloadedIds));
                 $filter['trackIds'][] = $track['id'];
             }
             $result['tracks'] = $tracks;

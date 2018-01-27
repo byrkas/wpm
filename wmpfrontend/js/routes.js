@@ -24,7 +24,7 @@ angular.module('WhoPlayMusic').config(
 						// redirect to the notes index
 						redirectTo : '/tracks'
 					}).when('/tracks', {
-						templateUrl : 'templates/pages/tracks.html',
+						templateUrl : 'templates/pages/tracks.html?v=1',
 						controller : 'TracksIndexController as TI',
 						//reloadOnSearch: false,
 					    data: {
@@ -33,13 +33,13 @@ angular.module('WhoPlayMusic').config(
 					        }
 					      }
 					}).when('/track/:id', {
-						templateUrl : 'templates/pages/track.html',
+						templateUrl : 'templates/pages/track.html?v=1',
 						controller : 'TrackViewController as TV'
 					}).when('/album/:id', {
-						templateUrl : 'templates/pages/album.html',
+						templateUrl : 'templates/pages/album.html?v=1',
 						controller : 'AlbumIndexController as AI'
 					}).when('/search/:query', {
-						templateUrl : 'templates/pages/search-results.html',
+						templateUrl : 'templates/pages/search-results.html?v=1',
 						controller : 'SearchResultsController as SR'
 					}).when('/account/login', {
 						templateUrl : 'templates/pages/user-login.html',
@@ -80,7 +80,7 @@ angular.module('WhoPlayMusic').config(
 							$locationProvider.path('/account/login');
 						}
 					}).when('/account/downloads', {
-						templateUrl : 'templates/pages/my-downloads.html',
+						templateUrl : 'templates/pages/my-downloads.html?v=1',
 						controller : 'MyDownloadsController as MD',
 					    data: {
 					        meta: {
@@ -88,7 +88,7 @@ angular.module('WhoPlayMusic').config(
 					        }
 					      }
 					}).when('/account/favorite', {
-						templateUrl : 'templates/pages/my-favorites.html',
+						templateUrl : 'templates/pages/my-favorites.html?v=1',
 						controller : 'MyFavoritesController as MF',
 					    data: {
 					        meta: {
@@ -99,7 +99,7 @@ angular.module('WhoPlayMusic').config(
 						templateUrl : 'templates/pages/payment-page.html',
 						controller : 'PaymentPageController as PP'
 					}).when('/top100', {
-						templateUrl : 'templates/pages/top100.html',
+						templateUrl : 'templates/pages/top100.html?v=1',
 						controller : 'TopController as T',
 					    data: {
 					        meta: {
@@ -203,23 +203,11 @@ angular.module('WhoPlayMusic').config(
 							$rootScope.setKeyboardModalShow = function(param){
 								$rootScope.keyboardModalShow = param;
 							}
-
-							$rootScope.isCurrentPlaying = function(id)
-							{
-								return ($cookies.getObject('currentPlaying') == id);
-							}
 							$rootScope.isDownloaded = function(id)
 							{
 								var downloaded = $cookies.getObject('downloaded') || [];
 								return (downloaded.indexOf(id) > -1 );
 							}
-
-							$rootScope.playedList = function(id)
-							{
-								var played = $cookies.getObject('played') || [];
-								return (played.indexOf(id) > -1 );
-							}
-
 							$rootScope.$on('rootScope:toggleKeyboardModal', function (event, data) {
 								$rootScope.toggleKeyboardModal();
 							});

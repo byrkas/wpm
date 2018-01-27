@@ -47,7 +47,7 @@ angular.module('WhoPlayMusic')
     	var li = $('.tt-suggestion');
     	var liSelected;
 
-    	$(document).bind('click', function(event){
+    	$(document).on('click', function(event){
             var isClickedElementChildOfPopup = element
                 .find(event.target)
                 .length > 0;
@@ -59,7 +59,7 @@ angular.module('WhoPlayMusic')
             	scope.toggleAutoSearch = 'none';
             });
         });
-    	element.bind("keydown keypress", function (event) {
+    	element.on("keydown keypress", function (event) {
     		scope.clicked = false;
             if(event.which === 13) {
             	if(liSelected !== undefined && liSelected.hasClass('tt-link')){
@@ -105,6 +105,8 @@ angular.module('WhoPlayMusic')
         scope.$on('$destroy', function () {
           	element.remove();
           	scope.Delete();
+          	$(document).off('click');
+          	element.off('keydown keypress');
           });
     }
   };
