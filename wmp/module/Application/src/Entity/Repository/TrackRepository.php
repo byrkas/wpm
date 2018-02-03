@@ -208,24 +208,6 @@ class TrackRepository extends EntityRepository
         return $query->getQuery()->getOneOrNullResult();
     }
 
-    public function searchArtists($search)
-    {
-        $templateValue = $this->getSettingValue('label');
-        $templateExploded = explode(';', $templateValue);
-        $searchSimple = str_ireplace($templateExploded, '', $search);
-        $searchArr = [];
-        foreach ($templateExploded as $tE) {
-            $searchArr[] = $searchSimple . ' ' . ucfirst($tE);
-        }
-        
-        $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('l')
-            ->from('Application\Entity\Label', 'l')
-            ->where('l.name in (:search)')
-            ->setParameter('search', $searchArr);
-        
-        return $query->getQuery()->getOneOrNullResult();
-    }
 
     public function getTypes($filter = [])
     {
@@ -949,7 +931,7 @@ class TrackRepository extends EntityRepository
     public function getDownloadedForArchive($user, $limit, $start, $filter = [], $sortBy = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('t.id', 't.fileDestination', 't.publishDate as release','t.title', 't.fileSize', 't.crc32', 'l.name as label', "GROUP_CONCAT(a.name SEPARATOR ', ') as artists")
+        $query->select('t.id', 't.fileDestination', 't.publishDate as release','t.title', 't.fileSize', 't.crc32', 'l.name as label', "GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') as artists")
             ->from('Application\Entity\Download', 'd')
             ->leftJoin('d.Track', 't')
             ->leftJoin('t.Artists', 'a')
@@ -1356,7 +1338,7 @@ class TrackRepository extends EntityRepository
         $query->select('a.id', 'a.name')
             ->from('Application\Entity\Artist', 'a')
             ->leftJoin('a.Tracks', 't')
-            ->where('a.name like :search')
+            ->where('a.name like :search OR a.nameTranslit like :search')
             ->andWhere('t.isPublished = 1')
             ->setParameter('search', '%' . $search . '%')
             ->setMaxResults($limit)

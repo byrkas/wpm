@@ -176,12 +176,6 @@ angular.module('WhoPlayMusic').config(
 									})
 							});
 
-							$injector.get("$http").defaults.transformRequest =	 function(data, headersGetter) {
-								 if($rootScope.globals.currentUser) {
-									 headersGetter()['Authorization'] = 'Bearer ' + $rootScope.globals.currentUser.authdata; }
-								 if(data) { return angular.toJson(data); }
-							};
-
 							$rootScope.logout = function() {
 								$rootScope.globals = {};
 								$cookies.remove('globals');

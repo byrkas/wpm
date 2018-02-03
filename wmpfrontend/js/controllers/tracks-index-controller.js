@@ -1,5 +1,5 @@
 angular.module('WhoPlayMusic').factory( 'Tracks', function($resource, $rootScope){
-	if($rootScope.globals){
+	if($rootScope.globals.currentUser){
 		return $resource('http://api.wpm.zeit.style/tracks?token='+$rootScope.globals.currentUser.token);
 	}
 	return $resource('http://api.wpm.zeit.style/tracks');
@@ -34,6 +34,7 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
   $scope.applyDates = 0;
   $scope.queryParams = {};
   $scope.getStart = false;
+  $scope.init = false;
 
   if($routeParams.artists !== undefined){
 	  $scope.selectedArtists = $routeParams.artists.split(',');
@@ -232,22 +233,25 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
   }
 
 //init
-  /*if($rootScope.siteModeShow()){
+  if($rootScope.siteModeShow()){
 	  $scope.getTracks();
-  }	 */
+	  $scope.init = true;
+  }
   //end init
+
+  var siteModeListener = function(newValue, oldValue, scope){
+	  if (newValue === oldValue) { return;};
+	  if($rootScope.siteModeShow()){
+		  $scope.getTracks();
+	  }
+  }
+  $rootScope.$watch('parseSiteMode',siteModeListener);
 
   var listenerFilterHandler = function (newValue, oldValue, scope) {
     if (newValue === oldValue) { return;};
     $scope.getTracks();
   };
 
-  var siteModeListener = function(newValue, oldValue, scope){
-	  if($rootScope.siteModeShow()){
-		  $scope.getTracks();
-	  }
-  }
-  $rootScope.$watch('parseSiteMode',siteModeListener);
   $scope.$watchGroup(['activeGenre','activeType','activeLabel','selectedArtists','sortBy','currentPage','itemsPerPage', 'applyDates','releasedLast','onlyWav'], listenerFilterHandler);
 
   function calculateTotalPages(){

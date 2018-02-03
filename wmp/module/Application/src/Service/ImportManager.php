@@ -163,11 +163,9 @@ class ImportManager
         $Artists = new ArrayCollection();
         foreach ($artistsArr as $artEntry) {
             $name = trim($artEntry);
-            $Artist = $this->objectManager->getRepository('Application\Entity\Artist')->findOneBy([
-                'name' => $name
-            ]);
+            $Artist = $this->objectManager->getRepository('Application\Entity\Artist')->findOneByName($name);
             if (! $Artist) {
-                $Artist = new Artist($name);
+                $Artist = new Artist($name);                
                 $this->objectManager->persist($Artist);
                 $this->objectManager->flush($Artist);
             }
@@ -538,7 +536,7 @@ class ImportManager
             'ffmpeg.binaries' => '/usr/bin/ffmpeg',
             'ffprobe.binaries' => '/usr/bin/ffprobe',
             'timeout' => 3600, // The timeout for the underlying process
-            'ffmpeg.threads' => 1 // The number of threads that FFMpeg should use
+           // 'ffmpeg.threads' => 1 // The number of threads that FFMpeg should use
         ]);
         $audio = $ffmpeg->open($sample);
         // color #cbcbcb; 203,203,203 //transparent
@@ -571,9 +569,10 @@ class ImportManager
             'ffmpeg.binaries' => '/usr/bin/ffmpeg',
             'ffprobe.binaries' => '/usr/bin/ffprobe',
             'timeout' => 3600, // The timeout for the underlying process
-            'ffmpeg.threads' => 1 // The number of threads that FFMpeg should use
+            //'ffmpeg.threads' => 3 // The number of threads that FFMpeg should use
         ]);
-        $format = new \FFMpeg\Format\Audio\Mp3();
+        //$format = new \FFMpeg\Format\Audio\Mp3();
+        $format = new Shine();
         $audio = $ffmpeg->open($track['filePath']);
         $filter = new \FFMpeg\Filters\Audio\AudioClipFilter(\FFMpeg\Coordinate\TimeCode::fromSeconds(30), \FFMpeg\Coordinate\TimeCode::fromSeconds(120));
         $audio->addFilter($filter);
@@ -590,9 +589,10 @@ class ImportManager
             'ffmpeg.binaries' => '/usr/bin/ffmpeg',
             'ffprobe.binaries' => '/usr/bin/ffprobe',
             'timeout' => 3600, // The timeout for the underlying process
-            'ffmpeg.threads' => 1 // The number of threads that FFMpeg should use
+            //'ffmpeg.threads' => 4 // The number of threads that FFMpeg should use
         ]);
-        $format = new \FFMpeg\Format\Audio\Mp3();
+        //$format = new \FFMpeg\Format\Audio\Mp3();
+        $format = new Shine();
         $format->setAudioKiloBitrate(320)->setAudioChannels(2);
         $audio = $ffmpeg->open($filePath);
         $audio->save($format, $convertedPath);

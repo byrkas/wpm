@@ -30,6 +30,7 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
   $scope.onlyWav = 'off';
   $scope.applyDates = 0;
   $scope.queryParams = {};
+  $scope.init = false;
   
   if($routeParams.artists !== undefined){
 	  $scope.selectedArtists = $routeParams.artists.split(',');

@@ -23,6 +23,10 @@ use Application\Service\ImportManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use \Imagine\Image\ImageInterface;
 
+use FFMpeg\Format\Audio\Mp3;
+use FFMpeg\FFMpeg;
+use Application\Service\Shine;
+
 class BackendController extends AbstractActionController
 {
 
@@ -76,12 +80,55 @@ class BackendController extends AbstractActionController
          * echo " exist!";
          * }
          */
-        $label = 'Dnc';
+        /* $label = 'Dnc';
         $labelExist = $this->importManager->getLabel($label);
         if ($labelExist) {
             echo "exist! " . $labelExist->getId();
         } else {
             echo "not exist!";
+            } */
+        
+       /*  $artists = $this->em->getRepository('Application\Entity\Artist')->findAll();
+        foreach ($artists as $artist){
+            if(!$artist->getNameTranslit())
+            {                
+                $name = $artist->getName();
+                $nameTranslit = iconv('UTF-8', 'ASCII//TRANSLIT', $name);
+                $artist->setNameTranslit($nameTranslit);
+            }
+        } 
+        $this->em->flush();
+        die; */
+        /*
+        $string = 'Lvna Nøx'; // file must be UTF-8 encoded
+        echo $string.' '.iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+        
+        die; */
+       
+        
+        /* $artStr = 'Lvna Nox feat. tormo, Aasavz';
+        $artists = $this->importManager->getArtists($artStr);
+        
+        echo count($artists['Artists']).' '.$artists['string'];   */
+        
+        $art = $this->em->getRepository('Application\Entity\Artist')->findStrange();
+        foreach ($art as $entry){
+            $artStr = $entry->getName();
+            $artId = $entry->getId();
+            $tracks = $entry->getTracks();
+            echo $artId.'# '.$artStr.'<br>';
+            
+            $artists = $this->importManager->getArtists($artStr);
+            echo count($artists['Artists']).' '.$artists['string'];
+            foreach ($artists['Artists'] as $artist){
+                $artist->addTracks($tracks);
+            }
+            foreach ($tracks as $track){
+                $track->addArtists($artists['Artists']);
+                $track->setArtistsString($artists['string']);
+            }
+            $this->em->remove($entry);
+            $this->em->flush();
         }
         
         exit();
@@ -227,6 +274,7 @@ class BackendController extends AbstractActionController
          */
         exit();
     }
+    
 
     public function removeUnusedAction()
     {
@@ -342,6 +390,7 @@ class BackendController extends AbstractActionController
         // $path = $this->importManager->getImportFolder().'/2017/12-December/19-Promo/Electronica/test.wav';
         
         $path = $this->importManager->getImportFolder() . '/2017/11-November/28-Exclusive/Trance/Stranded-(Infinity-State-Remix).mp3';
+        $path = "data/import-music/2018/02-February/05-Promo/Minimal/Paul Cart - Where Is The Party (Manu-L Remix) [Shitfuck Records].wav";
         
         $info = $this->importManager->getAudioInfo($path);
         
@@ -421,8 +470,12 @@ class BackendController extends AbstractActionController
         $request = $this->getRequest();
         $this->layout()->contentFluid = true;
         
-        $structure = [];//$this->importManager->scanDirectories($this->importManager->getImportFolder());
+        $structure = [];//
+        $structure = $this->importManager->scanDirectories($this->importManager->getImportFolder());
+        $structure = array_slice($structure, 0, 100);
         
+        $structure = [];//
+         
         return new ViewModel([
             'title' => 'Import In Maintaince',
             'structure' => json_encode($structure)
@@ -1104,7 +1157,34 @@ class BackendController extends AbstractActionController
             'effect' => $effect
         ]);
     }
-
+        
+    public function tttAction()
+    {
+     
+        $path = "data/music/test/ttt.wav";
+        /* $mp3 = $this->importManager->convertMp3($path);
+        echo $mp3; */
+        
+        $filePath = 'data/music/test/sample.mp3';
+        
+        //$format = new \FFMpeg\Format\Audio\Mp3();
+        //$format->setAudioKiloBitrate(320)->setAudioChannels(2);
+        
+        $ffmpeg = FFMpeg::create([ 
+            'ffmpeg.binaries' => '/usr/bin/ffmpeg',
+            'ffprobe.binaries' => '/usr/bin/ffprobe',
+            'timeout' => 3600, // The timeout for the underlying process
+            //'ffmpeg.threads' => 5 // The number of threads that FFMpeg should use
+        ]);
+        $format = new Shine();
+        $audio = $ffmpeg->open($path);
+        $filter = new \FFMpeg\Filters\Audio\AudioClipFilter(\FFMpeg\Coordinate\TimeCode::fromSeconds(30), \FFMpeg\Coordinate\TimeCode::fromSeconds(120));
+        $audio->addFilter($filter);
+        $audio->save($format, $filePath);
+        
+        exit;
+    }
+    
     public function settingAction()
     {
         $code = $this->params()->fromRoute('code');

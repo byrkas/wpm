@@ -1013,7 +1013,11 @@ class IndexController extends AbstractActionController
                         $maxSizeLimited = true;
                         break;
                     }
-                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $extension = pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    if($extension == 'mp4'){
+                        $extension = 'stem.mp4';
+                    }
+                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . $extension;
                     $filePath = str_replace('public/', '/', $track['fileDestination']);
                     $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
                     $contentArr[] = "$crc32 $size $filePath $fileName";
@@ -1256,7 +1260,11 @@ class IndexController extends AbstractActionController
                         $maxSizeLimited = true;
                         break;
                     }
-                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $extension = pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                   /*  if($extension == 'mp4'){
+                        $extension = 'stem.mp4';
+                    } */
+                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . $extension;
                     $filePath = str_replace('public/', '/', $track['fileDestination']);
                     $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
                     $contentArr[] = "$crc32 $size $filePath $fileName";
@@ -1510,7 +1518,11 @@ class IndexController extends AbstractActionController
                         $maxSizeLimited = true;
                         break;
                     }
-                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $extension = pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    /* if($extension == 'mp4'){
+                        $extension = 'stem.mp4';
+                    } */
+                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . $extension;
                     $filePath = str_replace('public/', '/', $track['fileDestination']);
                     $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
                     $contentArr[] = "$crc32 $size $filePath $fileName";
@@ -1566,7 +1578,8 @@ class IndexController extends AbstractActionController
                 $user = $this->em->find('Application\Entity\User', $userId);
                 if ($track && $user) {
                     $filePath = $track->getFileDestination();
-                    $fileName = $filter->filter($track->getTitle()) . '.' . pathinfo($filePath, PATHINFO_EXTENSION);
+                    $fileFormat = $track->getFileFormat();
+                    $fileName = $filter->filter($track->getTitle()) . '.' . (($fileFormat == 'mp4')?'stem.':''). pathinfo($filePath, PATHINFO_EXTENSION);
                     $response = $this->getResponse();
                     $headers = $response->getHeaders();
                     $headers->addHeaderLine("Content-type: " . $track->getFileType());
@@ -1623,6 +1636,7 @@ class IndexController extends AbstractActionController
                 if ($track && $user) {
                     $filePath = $track->getFileDestination();
                     $fileContent = file_get_contents($filePath);
+                    $fileFormat = $track->getFileFormat();
                     $contentType = $track->getFileType();
                     $contentLength = $track->getFileSize();
                     if ($fileContent != false) {
@@ -1640,7 +1654,11 @@ class IndexController extends AbstractActionController
                         }
                         $response->setStream(fopen($filePath, 'r'));
                         $response->setStatusCode(200);
-                        $fileName = $track->getNameDownload() . '.' . pathinfo($filePath, PATHINFO_EXTENSION);
+                        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+                        if($extension == 'mp4'){
+                            $extension = 'stem.mp4';
+                        }
+                        $fileName = $track->getNameDownload() . '.' . $extension;
                         $response->setStreamName($fileName);
 
                         $headers = new Headers();
@@ -1805,7 +1823,11 @@ class IndexController extends AbstractActionController
                         $maxSizeLimited = true;
                         break;
                     }
-                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $extension = pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    /* if($extension == 'mp4'){
+                        $extension = 'stem.mp4';
+                    } */
+                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . $extension;
                     $filePath = str_replace('public/', '/', $track['fileDestination']);
                     $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
                     $contentArr[] = "$crc32 $size $filePath $fileName";
@@ -1875,7 +1897,11 @@ class IndexController extends AbstractActionController
                         $maxSizeLimited = true;
                         break;
                     }
-                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    $extension = pathinfo($track['fileDestination'], PATHINFO_EXTENSION);
+                    /* if($extension == 'mp4'){
+                        $extension = 'stem.mp4';
+                    } */
+                    $fileName = $track['artists'] . ' - ' . $track['title'] . (($track['label']) ? ' [' . $track['label'] . ']' : '') . '.' . $extension;
                     $filePath = str_replace('public/', '/', $track['fileDestination']);
                     $crc32 = ($track['crc32']) ? $track['crc32'] : hash_file('crc32b', realpath($track['fileDestination']));
                     $contentArr[] = "$crc32 $size $filePath $fileName";
@@ -2206,12 +2232,14 @@ class IndexController extends AbstractActionController
         if (! empty($tracks)) {
             foreach ($tracks as $key => $track) {
                 $tracks[$key]['artists'] = $this->em->getRepository('Application\Entity\Track')->getTrackArtists($track['id']);
-                $tracks[$key]['sample'] = $this->static . $track['sample'];
-                $tracks[$key]['url'] = $this->static . $track['sample'];
-                if (! $track['cover'])
-                    $track['cover'] = '/img/music.png';
-                $tracks[$key]['cover'] = $this->static . $track['cover'];
-                //$tracks[$key]['wave'] = $this->static . $track['wave'];
+                $tracks[$key]['url'] = $this->static . str_replace('public/', '/', $track['sample']);
+                unset($tracks[$key]['sample']);
+                if (! $track['cover']){
+                    $tracks[$key]['cover'] = $this->staticImg.'/music.png';
+                }
+                else{
+                    $tracks[$key]['cover'] = $this->staticImg.'/400x400'. str_replace('public/media/img/', '/', $track['cover']);
+                } 
                 $tracks[$key]['release'] = $track['release']->format('Y-m-d');
             }
             $result['tracks'] = $tracks;

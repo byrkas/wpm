@@ -1,5 +1,5 @@
 angular.module('WhoPlayMusic').factory( 'Album', function($resource, $rootScope){  
-	if($rootScope.globals){
+	if($rootScope.globals.currentUser){
 		return $resource('http://api.wpm.zeit.style/album/:id?token='+$rootScope.globals.currentUser.token);
 	}
   return $resource('http://api.wpm.zeit.style/album/:id');

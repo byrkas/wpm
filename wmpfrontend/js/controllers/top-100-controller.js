@@ -1,5 +1,5 @@
 angular.module('WhoPlayMusic').factory( 'Top', function($resource, $rootScope){
-	if($rootScope.globals){
+	if($rootScope.globals.currentUser){
 		return $resource('http://api.wpm.zeit.style/top?token='+$rootScope.globals.currentUser.token);
 	}
 	return $resource('http://api.wpm.zeit.style/top');
@@ -22,6 +22,7 @@ angular.module('WhoPlayMusic').controller('TopController', function($scope, $htt
   $scope.labels = [];
   $scope.genres = [];
   $scope.queryParams = {};
+  $scope.init = false;
 
   if($routeParams.artists !== undefined){
 	  $scope.selectedArtists = $routeParams.artists.split(',');
@@ -163,10 +164,12 @@ angular.module('WhoPlayMusic').controller('TopController', function($scope, $htt
   //init
   if($rootScope.siteModeShow()){
 	  $scope.getTracks();
-  }	 
+	  $scope.init = true;
+  }
   //end init
 
   var siteModeListener = function(newValue, oldValue, scope){
+	  if (newValue === oldValue) { return;};
 	  if($rootScope.siteModeShow()){
 		  $scope.getTracks();
 	  }

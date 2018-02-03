@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Application\Entity\Repository\ArtistRepository")
  * @ORM\Table(name="artist")
  */
 class Artist
@@ -23,9 +23,14 @@ class Artist
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=100, nullable=false, unique=true)
+     * @ORM\Column(type="string", length=100, nullable=false, unique=true, options={"collation":"utf8_general_ci"})
      */
     private $name;
+
+    /**
+     * @ORM\Column(name="name_translit", type="string", length=100, nullable=true, options={"collation":"utf8_general_ci"})
+     */
+    private $nameTranslit;
 
     /**
      * @ORM\ManyToMany(targetEntity="Track", mappedBy="Artists",fetch="EXTRA_LAZY")
@@ -35,6 +40,8 @@ class Artist
     public function __construct($name)
     {
         $this->name = $name;
+        $nameTranslit = iconv('UTF-8', 'ASCII//TRANSLIT', $name);
+        $this->nameTranslit = $nameTranslit;
         $this->Tracks = new ArrayCollection();
     }
 
@@ -63,6 +70,24 @@ class Artist
     public function setName($name)
     {
         $this->name = $name;
+    }
+
+    /**
+     *
+     * @return the $nameTranslit
+     */
+    public function getNameTranslit()
+    {
+        return $this->nameTranslit;
+    }
+
+    /**
+     *
+     * @param field_type $nameTranslit            
+     */
+    public function setNameTranslit($nameTranslit)
+    {
+        $this->nameTranslit = $nameTranslit;
     }
 
     /**

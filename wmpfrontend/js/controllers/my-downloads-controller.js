@@ -33,6 +33,7 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
   $scope.releasedLast = '';
   $scope.onlyWav = 'off';
   $scope.applyDates = 0;
+  $scope.init = false;
 
   if($routeParams.artists !== undefined){
 	  $scope.selectedArtists = $routeParams.artists.split(',');
@@ -191,8 +192,21 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
   }
 
   //init
-  $scope.getTracks();
+  if($rootScope.siteModeShow()){
+	  $scope.getTracks();
+	  $scope.init = true;
+  }
   //end init
+
+  var siteModeListener = function(newValue, oldValue, scope){
+	  if (newValue === oldValue) { return;};
+	  if($rootScope.siteModeShow()){
+		  if(!$scope.init){
+			  $scope.getTracks();
+		  }
+	  }
+  }
+  $rootScope.$watch('parseSiteMode',siteModeListener);
 
   var listenerFilterHandler = function (newValue, oldValue, scope) {
     if (newValue === oldValue) { return;};
