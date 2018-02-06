@@ -167,7 +167,7 @@ return [
             'api' => [
                 'type' => Hostname::class,
                 'options' => [
-                    'route'    => 'api.wpm.zeit.style',
+                    'route'    => 'api.djdownload.me',
                     'defaults' => [
                         '__NAMESPACE__' => 'Application\Controller',
                         'controller' => Controller\IndexController::class,

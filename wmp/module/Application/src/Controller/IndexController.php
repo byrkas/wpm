@@ -35,8 +35,8 @@ class IndexController extends AbstractActionController
 
     private $authService;
 
-    protected $static = 'http://api.wpm.zeit.style';
-    protected $staticImg = 'http://static.wpm.zeit.style';
+    protected $static = 'http://api.djdownload.me';
+    protected $staticImg = 'http://static.djdownload.me';
 
     protected $sortList = [
         'release',
@@ -188,7 +188,7 @@ class IndexController extends AbstractActionController
     {
         $mail = new Message();
         $mail->setEncoding('UTF-8');
-        $mail->addFrom('wpm@wpm.zeit.style', 'Who play music');
+        $mail->addFrom('wpm@djdownload.me', 'Who play music');
         $mail->addTo('svetlana.byrka@gmail.com');
         $mail->setSubject('New sign up from site WPM');
         $mail->setBody('Full name: ');
