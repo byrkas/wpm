@@ -1,5 +1,5 @@
 angular.module('WhoPlayMusic').factory( 'Search', function($resource){  
-  return $resource('http://api.wpm.zeit.style/search-results/:query');
+  return $resource('http://api.djdownload.me/search-results/:query');
 });
 
 angular.module('WhoPlayMusic').controller('SearchResultsController', function($scope, $http, Search, $filter, $routeParams, $window, ngMeta, $rootScope, $location) {

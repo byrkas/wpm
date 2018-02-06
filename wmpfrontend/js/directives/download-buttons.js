@@ -28,7 +28,7 @@ angular.module('WhoPlayMusic')
     			return;
     		}
     		$rootScope.isLoading = true;
-    		$http.get('http://api.wpm.zeit.style/download/' + $scope.track.id+ '?token='+$rootScope.globals.currentUser.token).then(function(response){
+    		$http.get('http://api.djdownload.me/download/' + $scope.track.id+ '?token='+$rootScope.globals.currentUser.token).then(function(response){
     	    		$rootScope.isLoading = false;
     				if(!response.data.success){
     					if(response.data.messages != ''){
@@ -65,7 +65,7 @@ angular.module('WhoPlayMusic')
                     		$cookies.putObject('downloaded', tmp);
                     	}*/
 		        		$scope.track.downloaded = true;
-                    	$window.location = 'http://api.wpm.zeit.style/download-file-stream/' + $scope.track.id +'?'+ $httpParamSerializer(query);
+                    	$window.location = 'http://api.djdownload.me/download-file-stream/' + $scope.track.id +'?'+ $httpParamSerializer(query);
     				}
     			})
     	}
@@ -101,12 +101,12 @@ angular.module('WhoPlayMusic')
     		angular.element('#modal').remove();
     	}
     	$scope.addFavorite = function(){
-    		$http.get('http://api.wpm.zeit.style/add-favorite/' + $scope.track.id + '?token='+$rootScope.globals.currentUser.token).then(function(response){
+    		$http.get('http://api.djdownload.me/add-favorite/' + $scope.track.id + '?token='+$rootScope.globals.currentUser.token).then(function(response){
     				$scope.track.isFavorite = true;
     			})
     	}
     	$scope.removeFavorite = function(){
-    		$http.get('http://api.wpm.zeit.style/remove-favorite/' + $scope.track.id + '?token='+$rootScope.globals.currentUser.token).then(function(response){
+    		$http.get('http://api.djdownload.me/remove-favorite/' + $scope.track.id + '?token='+$rootScope.globals.currentUser.token).then(function(response){
     				$scope.track.isFavorite = false;
     			})
     	}

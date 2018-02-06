@@ -1,8 +1,8 @@
 angular.module('WhoPlayMusic').factory( 'Album', function($resource, $rootScope){  
 	if($rootScope.globals.currentUser){
-		return $resource('http://api.wpm.zeit.style/album/:id?token='+$rootScope.globals.currentUser.token);
+		return $resource('http://api.djdownload.me/album/:id?token='+$rootScope.globals.currentUser.token);
 	}
-  return $resource('http://api.wpm.zeit.style/album/:id');
+  return $resource('http://api.djdownload.me/album/:id');
 });
 
 angular.module('WhoPlayMusic').controller('AlbumIndexController', function($scope, $http, Album, $filter, $routeParams, $rootScope, $window, ngMeta, $location, $cookies) {
@@ -30,14 +30,14 @@ angular.module('WhoPlayMusic').controller('AlbumIndexController', function($scop
 			return;
 		}
 		$rootScope.isLoading = true;
-		$http.get('http://api.wpm.zeit.style/download-album/' + $routeParams.id + '?token='+$rootScope.globals.currentUser.token).then(function(response){
+		$http.get('http://api.djdownload.me/download-album/' + $routeParams.id + '?token='+$rootScope.globals.currentUser.token).then(function(response){
 	    		$rootScope.isLoading = false;
 				if(!response.data.success){
 					$location.path('/payment-page');
 				}else{
 					$scope.quoteSub = response.data.quoteSub;
 					$scope.quote = response.data.quote;
-					$window.location = 'http://api.wpm.zeit.style/download-album-stream/' + $routeParams.id + '?token='+$rootScope.globals.currentUser.token;
+					$window.location = 'http://api.djdownload.me/download-album-stream/' + $routeParams.id + '?token='+$rootScope.globals.currentUser.token;
 					$scope.downloaded = true;
     				if($scope.quoteSub && $scope.quote.length > 0){
     					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;

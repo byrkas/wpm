@@ -1,5 +1,5 @@
 angular.module('WhoPlayMusic').factory( 'Page', function($resource){  
-  return $resource('http://api.wpm.zeit.style/page/:slug');
+  return $resource('http://api.djdownload.me/page/:slug');
 });
 
 angular.module('WhoPlayMusic').controller('PaymentPageController', function($scope, $http, $rootScope, ngMeta, $sce) {
@@ -8,7 +8,7 @@ angular.module('WhoPlayMusic').controller('PaymentPageController', function($sco
 	$scope.getPage = function()
 	{
 		if($rootScope.globals.currentUser)
-			$http.get('http://api.wpm.zeit.style/payment-page/', {
+			$http.get('http://api.djdownload.me/payment-page/', {
 				withCredentials: true,
 				headers : {
 					'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
@@ -19,7 +19,7 @@ angular.module('WhoPlayMusic').controller('PaymentPageController', function($sco
 					 $scope.page.content = $sce.trustAsHtml($scope.page.content);
 				})
 		else
-			$http.get('http://api.wpm.zeit.style/payment-page/').then(function(response){
+			$http.get('http://api.djdownload.me/payment-page/').then(function(response){
 					$scope.page = response.data.page;
 					ngMeta.setTitle($scope.page.title);
 					 $scope.page.content = $sce.trustAsHtml($scope.page.content);

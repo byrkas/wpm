@@ -7,7 +7,7 @@ angular.module('WhoPlayMusic').factory('Type', function TypeFactory($http, $q) {
       if(types) {
         deferred.resolve(types);
       } else {
-        $http.get("http://api.wpm.zeit.style/types")
+        $http.get("http://api.djdownload.me/types")
         .then(
         function (response){
         	types = response.data;

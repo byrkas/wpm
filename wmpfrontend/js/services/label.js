@@ -7,7 +7,7 @@ angular.module('WhoPlayMusic').factory('Label', function LabelFactory($http, $q)
       if(labels) {
         deferred.resolve(labels);
       } else {
-        $http.get("http://api.wpm.zeit.style/labels")
+        $http.get("http://api.djdownload.me/labels")
         .then(
         function (response){
         	labels = response.data;

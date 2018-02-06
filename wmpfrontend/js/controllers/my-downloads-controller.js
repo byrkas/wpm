@@ -1,9 +1,9 @@
 angular.module('WhoPlayMusic').factory( 'Downloads', function($resource, $rootScope){
-  return $resource('http://api.wpm.zeit.style/downloads?token='+$rootScope.globals.currentUser.token);
+  return $resource('http://api.djdownload.me/downloads?token='+$rootScope.globals.currentUser.token);
 });
 
 angular.module('WhoPlayMusic').factory( 'DownloadArchive', function($resource, $rootScope){
-	  return $resource('http://api.wpm.zeit.style/download-archive-stream?token='+$rootScope.globals.currentUser.token);
+	  return $resource('http://api.djdownload.me/download-archive-stream?token='+$rootScope.globals.currentUser.token);
 	});
 
 angular.module('WhoPlayMusic').controller('MyDownloadsController', function($scope,$httpParamSerializer, $http, $filter, Downloads, DownloadArchive, $routeParams, $rootScope, $location, $window) {
@@ -165,7 +165,7 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 
   $scope.downloadArchive = function() {
 		 var query = $scope.query();
-		 $window.location = 'http://api.wpm.zeit.style/download-archive-stream/?token=' + $rootScope.globals.currentUser.token +'&'+ $httpParamSerializer(query);
+		 $window.location = 'http://api.djdownload.me/download-archive-stream/?token=' + $rootScope.globals.currentUser.token +'&'+ $httpParamSerializer(query);
   };
 
   $scope.order = function(predicate, reverse) {

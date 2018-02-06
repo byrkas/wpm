@@ -1,5 +1,5 @@
 angular.module('WhoPlayMusic').factory( 'Favorites', function($resource, $rootScope){
-  return $resource('http://api.wpm.zeit.style/favorites?token='+$rootScope.globals.currentUser.token);
+  return $resource('http://api.djdownload.me/favorites?token='+$rootScope.globals.currentUser.token);
 });
 
 angular.module('WhoPlayMusic').controller('MyFavoritesController', function($scope, $http, $filter, Favorites, $routeParams, $rootScope, $location, $httpParamSerializer, $window, $cookies) { 
@@ -67,7 +67,7 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
   
   $scope.removeAll = function()
   {
-	  $http.get('http://api.wpm.zeit.style/clear-favorites/?token='+$rootScope.globals.currentUser.token).then(function(response){
+	  $http.get('http://api.djdownload.me/clear-favorites/?token='+$rootScope.globals.currentUser.token).then(function(response){
 				$scope.getTracks();
 			});
   }
@@ -186,14 +186,14 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
   $scope.downloadArchive = function() {
 		$rootScope.isLoading = true;
 		var query = $scope.queryParams;
-		$http.get('http://api.wpm.zeit.style/download-favorites/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer(query)).then(function(response){
+		$http.get('http://api.djdownload.me/download-favorites/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer(query)).then(function(response){
 	    		$rootScope.isLoading = false;
 				if(!response.data.success){
 					$location.path('/payment-page');
 				}else{
 					$scope.quoteSub = response.data.quoteSub;
 					$scope.quote = response.data.quote;
-					$window.location = 'http://api.wpm.zeit.style/download-favorites-stream/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer(query);
+					$window.location = 'http://api.djdownload.me/download-favorites-stream/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer(query);
 					$scope.downloaded = true;
  				if($scope.quoteSub && $scope.quote.length > 0){
  					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;

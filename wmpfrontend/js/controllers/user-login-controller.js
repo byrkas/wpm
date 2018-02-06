@@ -4,7 +4,7 @@ angular.module('WhoPlayMusic').factory('AuthenticationService',
         var service = {};
 
         service.Login = function (username, password, callback) {
-            $http.post('http://api.wpm.zeit.style/login', { username: username, password: password }, {headers : {
+            $http.post('http://api.djdownload.me/login', { username: username, password: password }, {headers : {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
             }})
                 .then(function (response) {
@@ -148,7 +148,7 @@ angular.module('WhoPlayMusic').controller('UserSignupController',
 	$scope.signup = function(){
 		$scope.dataLoading = true;
 		
-		$http.post('http://api.wpm.zeit.style/signup', {captcha: $scope.captcha ,fullname: $scope.fullname, email: $scope.email, info: $scope.info, payment: $scope.payment}, {headers : {
+		$http.post('http://api.djdownload.me/signup', {captcha: $scope.captcha ,fullname: $scope.fullname, email: $scope.email, info: $scope.info, payment: $scope.payment}, {headers : {
             'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
         }})
         .then(function (response) {
@@ -173,7 +173,7 @@ angular.module('WhoPlayMusic').controller('UserForgotController',
 	
 	$scope.forgot = function(){
 		$scope.dataLoading = true;		
-		$http.post('http://api.wpm.zeit.style/forgot', {email: $scope.email}, {headers : {
+		$http.post('http://api.djdownload.me/forgot', {email: $scope.email}, {headers : {
             'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
         }})
         .then(function (response) {
@@ -205,7 +205,7 @@ angular.module('WhoPlayMusic').controller('UserProfileController',
 			$scope.error.confirm_password = null;
 		}
 		if($scope.error.confirm_passord !== true)
-			$http.post('http://api.wpm.zeit.style/profile', {old_password: $scope.old_password,new_password: $scope.new_password}, 
+			$http.post('http://api.djdownload.me/profile', {old_password: $scope.old_password,new_password: $scope.new_password}, 
 			{
 				withCredentials: true,
 				headers : {

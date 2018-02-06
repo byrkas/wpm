@@ -7,7 +7,7 @@ angular.module('WhoPlayMusic').factory('Artist', function ArtistFactory($http, $
       if(artists) {
         deferred.resolve(artists);
       } else {
-        $http.get("http://api.wpm.zeit.style/artists")
+        $http.get("http://api.djdownload.me/artists")
         .then(
         function (response){
         	  artists = response.data;

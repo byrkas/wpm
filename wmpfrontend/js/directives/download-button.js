@@ -15,7 +15,7 @@ angular.module('WhoPlayMusic')
     	$scope.quote = [];
     	$scope.download = function(){
     		$rootScope.isLoading = true;
-    		$http.get('http://api.wpm.zeit.style/download/' + $scope.track.id, {
+    		$http.get('http://api.djdownload.me/download/' + $scope.track.id, {
     			withCredentials: true,
     			headers : {
     				'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
@@ -28,7 +28,7 @@ angular.module('WhoPlayMusic')
     					$scope.downloading = true;
     					$scope.quoteSub = response.data.quoteSub;
     					$scope.quote = response.data.quote;
-    					$http.get('http://api.wpm.zeit.style/download-file-stream/' + $scope.track.id, {
+    					$http.get('http://api.djdownload.me/download-file-stream/' + $scope.track.id, {
     						responseType: "arraybuffer",
     		    			withCredentials: true,
     		    			headers : {'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token}
@@ -74,7 +74,7 @@ angular.module('WhoPlayMusic')
     		$scope.lunch = !$scope.lunch;
     	}
     	$scope.addFavorite = function(){
-    		$http.get('http://api.wpm.zeit.style/add-favorite/' + $scope.track.id, {
+    		$http.get('http://api.djdownload.me/add-favorite/' + $scope.track.id, {
     			withCredentials: true,
     			headers : {
     				'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,
@@ -84,7 +84,7 @@ angular.module('WhoPlayMusic')
     			})
     	}
     	$scope.removeFavorite = function(){
-    		$http.get('http://api.wpm.zeit.style/remove-favorite/' + $scope.track.id, {
+    		$http.get('http://api.djdownload.me/remove-favorite/' + $scope.track.id, {
     			withCredentials: true,
     			headers : {
     				'Authorization':  'Bearer ' + $rootScope.globals.currentUser.token,

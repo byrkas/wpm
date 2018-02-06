@@ -1,8 +1,8 @@
 angular.module('WhoPlayMusic').factory( 'Track', function($resource, $rootScope){  
 	if($rootScope.globals.currentUser){
-		return $resource('http://api.wpm.zeit.style/track/:id?token='+$rootScope.globals.currentUser.token);
+		return $resource('http://api.djdownload.me/track/:id?token='+$rootScope.globals.currentUser.token);
 	}
-  return $resource('http://api.wpm.zeit.style/track/:id');
+  return $resource('http://api.djdownload.me/track/:id');
 });
 
 angular.module('WhoPlayMusic').controller('TrackViewController', function($scope, $http, Track, $filter, $routeParams, $window, $rootScope, $location, ngMeta) {

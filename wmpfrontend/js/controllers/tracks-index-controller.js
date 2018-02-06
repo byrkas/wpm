@@ -1,8 +1,8 @@
 angular.module('WhoPlayMusic').factory( 'Tracks', function($resource, $rootScope){
 	if($rootScope.globals.currentUser){
-		return $resource('http://api.wpm.zeit.style/tracks?token='+$rootScope.globals.currentUser.token);
+		return $resource('http://api.djdownload.me/tracks?token='+$rootScope.globals.currentUser.token);
 	}
-	return $resource('http://api.wpm.zeit.style/tracks');
+	return $resource('http://api.djdownload.me/tracks');
 });
 
 angular.module('WhoPlayMusic').controller('TracksIndexController', function($scope, $http, Tracks, $filter, $routeParams, $location, $rootScope, $cookies, $window, $httpParamSerializer) {
@@ -189,14 +189,14 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 			return;
 		}
 		$rootScope.isLoading = true;
-		$http.get('http://api.wpm.zeit.style/download-tracks/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams)).then(function(response){
+		$http.get('http://api.djdownload.me/download-tracks/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams)).then(function(response){
 	    		$rootScope.isLoading = false;
 				if(!response.data.success){
 					$location.path('/payment-page');
 				}else{
 					$scope.quoteSub = response.data.quoteSub;
 					$scope.quote = response.data.quote;
-					$window.location = 'http://api.wpm.zeit.style/download-tracks-stream/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams);
+					$window.location = 'http://api.djdownload.me/download-tracks-stream/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams);
 					$scope.downloaded = true;
 				if($scope.quoteSub && $scope.quote.length > 0){
 					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;

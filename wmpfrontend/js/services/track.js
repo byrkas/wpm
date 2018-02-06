@@ -7,7 +7,7 @@ angular.module('WhoPlayMusic').factory('Track', function TrackFactory($http, $q)
       if(tracks) {
         deferred.resolve(tracks);
       } else {
-        $http.get("http://api.wpm.zeit.style/tracks")
+        $http.get("http://api.djdownload.me/tracks")
         .then(
         function (response){
         	tracks = response.data;
@@ -20,7 +20,7 @@ angular.module('WhoPlayMusic').factory('Track', function TrackFactory($http, $q)
       return deferred.promise;
     },
     find: function(id){
-      return $http({method:'GET', url: 'http://api.wpm.zeit.style/tracks/' + id});
+      return $http({method:'GET', url: 'http://api.djdownload.me/tracks/' + id});
     },
   };
 });

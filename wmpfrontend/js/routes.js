@@ -135,7 +135,7 @@ angular.module('WhoPlayMusic').config(
 
 							$rootScope.$on("$routeChangeStart", function (event, next, current) {
 								//if(current !== undefined && next.templateUrl != current.templateUrl)
-									var maintainPath = 'http://api.wpm.zeit.style/is-maintain/';
+									var maintainPath = 'http://api.djdownload.me/is-maintain/';
 									if($rootScope.isLogged()){
 										maintainPath = maintainPath + '?token='+$rootScope.globals.currentUser.token;
 									}

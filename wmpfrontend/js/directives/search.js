@@ -18,7 +18,7 @@ angular.module('WhoPlayMusic')
     	    	 $scope.toggleAutoSearch = 'visible';
     	    	 if($scope.autoSearch != $scope.search){
     	    		 $scope.autoSearch = $scope.search;
-    	    		 $http.get('http://api.wpm.zeit.style/search?query=' + $scope.search).then(function(response){
+    	    		 $http.get('http://api.djdownload.me/search?query=' + $scope.search).then(function(response){
         	    		 $scope.searchData = response.data;
         	    		 $scope.toggleAutoSearch = 'block';
         			})

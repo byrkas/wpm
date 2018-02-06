@@ -1,8 +1,8 @@
 angular.module('WhoPlayMusic').factory( 'Top', function($resource, $rootScope){
 	if($rootScope.globals.currentUser){
-		return $resource('http://api.wpm.zeit.style/top?token='+$rootScope.globals.currentUser.token);
+		return $resource('http://api.djdownload.me/top?token='+$rootScope.globals.currentUser.token);
 	}
-	return $resource('http://api.wpm.zeit.style/top');
+	return $resource('http://api.djdownload.me/top');
 });
 
 angular.module('WhoPlayMusic').controller('TopController', function($scope, $http, $filter, Top, $routeParams, $rootScope, $location, $window, $httpParamSerializer, $cookies) {
@@ -123,14 +123,14 @@ angular.module('WhoPlayMusic').controller('TopController', function($scope, $htt
 			return;
 		}
 		$rootScope.isLoading = true;
-		$http.get('http://api.wpm.zeit.style/download-top/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams)).then(function(response){
+		$http.get('http://api.djdownload.me/download-top/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams)).then(function(response){
 	    		$rootScope.isLoading = false;
 				if(!response.data.success){
 					$location.path('/payment-page');
 				}else{
 					$scope.quoteSub = response.data.quoteSub;
 					$scope.quote = response.data.quote;
-					$window.location = 'http://api.wpm.zeit.style/download-top-stream/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams);
+					$window.location = 'http://api.djdownload.me/download-top-stream/?token='+$rootScope.globals.currentUser.token +'&'+ $httpParamSerializer($scope.queryParams);
 					$scope.downloaded = true;
   				if($scope.quoteSub && $scope.quote.length > 0){
   					$rootScope.globals.currentUser.quotes.quotePromo = $scope.quote.quotePromo;

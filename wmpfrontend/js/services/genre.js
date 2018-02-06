@@ -7,7 +7,7 @@ angular.module('WhoPlayMusic').factory('Genre', function GenreFactory($http, $q)
       if(genres) {
         deferred.resolve(genres);
       } else {
-        $http.get("http://api.wpm.zeit.style/genres")
+        $http.get("http://api.djdownload.me/genres")
         .then(
         function (response){
       	  genres = response.data;
