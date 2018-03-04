@@ -275,7 +275,7 @@ return [
     'access_filter' => [
         'controllers' => [
             Controller\BackendController::class => [
-                ['actions' => ['login', 'logout'], 'allow' => '*'],
+                ['actions' => ['login', 'logout','publishTrack'], 'allow' => '*'],
                 ['actions' => ['index','import','genre','setting','ban','page','user','tracks'], 'allow' => '@']
             ],
             Controller\IndexController::class => [

@@ -737,6 +737,7 @@ class IndexController extends AbstractActionController
 
     public function downloadAction()
     {
+        set_time_limit(0);
         $now = new \DateTime(date('Y-m-d') . ' 23:59:59');
         $filter = new \Zend\Filter\Word\SeparatorToDash();
         $result = [];
@@ -798,6 +799,7 @@ class IndexController extends AbstractActionController
 
     public function downloadAlbumAction()
     {
+        set_time_limit(0);
         $now = new \DateTime(date('Y-m-d') . ' 23:59:59');
         $id = (int) $this->params()->fromRoute('id', 0);
         $result = [];
@@ -866,6 +868,7 @@ class IndexController extends AbstractActionController
 
     public function downloadTopAction()
     {
+        set_time_limit(0);
         $now = new \DateTime(date('Y-m-d') . ' 23:59:59');
         $result = [];
         $success = false;
@@ -961,6 +964,7 @@ class IndexController extends AbstractActionController
 
     public function downloadTopStreamAction()
     {
+        set_time_limit(0);
         $nameFilter = new \Zend\Filter\Word\SeparatorToDash();
         $request = $this->getRequest();
         $remoteAddr = $request->getServer('REMOTE_ADDR');
@@ -1007,7 +1011,7 @@ class IndexController extends AbstractActionController
                 $bytes = 0;
 
                 foreach ($tracks as $track) {
-                    $size = $track['fileSize'];
+                    $size = filesize($track['fileDestination']);
                     $bytes += $size;
                     if ($this->formatSizeGb($bytes) > $maxSize) {
                         $maxSizeLimited = true;
@@ -1061,6 +1065,7 @@ class IndexController extends AbstractActionController
 
     public function downloadTracksAction()
     {
+        set_time_limit(0);
         $now = new \DateTime(date('Y-m-d') . ' 23:59:59');
         $result = [];
         $success = false;
@@ -1182,6 +1187,7 @@ class IndexController extends AbstractActionController
 
     public function downloadTracksStreamAction()
     {
+        set_time_limit(0);
         $nameFilter = new \Zend\Filter\Word\SeparatorToDash();
         $request = $this->getRequest();
         $remoteAddr = $request->getServer('REMOTE_ADDR');
@@ -1254,7 +1260,7 @@ class IndexController extends AbstractActionController
                 $bytes = 0;
 
                 foreach ($tracks as $track) {
-                    $size = $track['fileSize'];
+                    $size = filesize($track['fileDestination']);
                     $bytes += $size;
                     if ($this->formatSizeGb($bytes) > $maxSize) {
                         $maxSizeLimited = true;
@@ -1308,6 +1314,7 @@ class IndexController extends AbstractActionController
 
     public function downloadFavoritesAction()
     {
+        set_time_limit(0);
         $now = new \DateTime(date('Y-m-d') . ' 23:59:59');
         $result = [];
         $success = false;
@@ -1433,6 +1440,7 @@ class IndexController extends AbstractActionController
 
     public function downloadFavoritesStreamAction()
     {
+        set_time_limit(0);
         $nameFilter = new \Zend\Filter\Word\SeparatorToDash();
         $request = $this->getRequest();
         $remoteAddr = $request->getServer('REMOTE_ADDR');
@@ -1512,7 +1520,7 @@ class IndexController extends AbstractActionController
                 $bytes = 0;
 
                 foreach ($tracks as $track) {
-                    $size = $track['fileSize'];
+                    $size = filesize($track['fileDestination']);
                     $bytes += $size;
                     if ($this->formatSizeGb($bytes) > $maxSize) {
                         $maxSizeLimited = true;
@@ -1566,6 +1574,7 @@ class IndexController extends AbstractActionController
 
     public function downloadFileAction()
     {
+        set_time_limit(0);
         $filter = new \Zend\Filter\Word\SeparatorToDash();
         $id = (int) $this->params()->fromRoute('id', 0);
         $request = $this->getRequest();
@@ -1621,6 +1630,7 @@ class IndexController extends AbstractActionController
 
     public function downloadFileStreamAction()
     {
+        set_time_limit(0);
         $filter = new \Zend\Filter\Word\SeparatorToDash();
         $id = (int) $this->params()->fromRoute('id', 0);
         $format = $this->params()->fromQuery('format');
@@ -1700,6 +1710,7 @@ class IndexController extends AbstractActionController
 
     public function downloadArchiveAction()
     {
+        set_time_limit(0);
         $filter = new \Zend\Filter\Word\SeparatorToDash();
         $request = $this->getRequest();
         $userId = 1;
@@ -1749,6 +1760,7 @@ class IndexController extends AbstractActionController
 
     public function downloadArchiveStreamAction()
     {
+        set_time_limit(0);
         $nameFilter = new \Zend\Filter\Word\SeparatorToDash();
         $request = $this->getRequest();
         $remoteAddr = $request->getServer('REMOTE_ADDR');
@@ -1817,7 +1829,7 @@ class IndexController extends AbstractActionController
                 $bytes = 0;
 
                 foreach ($tracks as $track) {
-                    $size = $track['fileSize'];
+                    $size = filesize($track['fileDestination']);//$track['fileSize'];
                     $bytes += $size;
                     if ($this->formatSizeGb($bytes) > $maxSize) {
                         $maxSizeLimited = true;
@@ -1863,6 +1875,7 @@ class IndexController extends AbstractActionController
 
     public function downloadAlbumStreamAction()
     {
+        set_time_limit(0);
         $nameFilter = new \Zend\Filter\Word\SeparatorToDash();
         $request = $this->getRequest();
         $remoteAddr = $request->getServer('REMOTE_ADDR');
@@ -1891,7 +1904,7 @@ class IndexController extends AbstractActionController
                 $bytes = 0;
 
                 foreach ($tracks as $track) {
-                    $size = $track['fileSize'];
+                    $size = filesize($track['fileDestination']);
                     $bytes += $size;
                     if ($this->formatSizeGb($bytes) > $maxSize) {
                         $maxSizeLimited = true;
@@ -1998,7 +2011,7 @@ class IndexController extends AbstractActionController
             $bytes = 0;
 
             foreach ($tracks as $track) {
-                $size = $track['fileSize'];
+                $size = filesize($track['fileDestination']);
                 $bytes += $size;
                 if ($this->formatSizeGb($bytes) > $maxSize) {
                     $maxSizeLimited = true;

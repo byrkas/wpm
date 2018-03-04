@@ -28,8 +28,13 @@ class ImportManager
 
     protected $saveSample;
 
+    protected $logger;
+
     public function __construct($config, $em)
     {
+        $writer = new \Zend\Log\Writer\Stream('logs/ffmpeg.log');
+        $this->logger = new \Zend\Log\Logger();
+        $this->logger->addWriter($writer);
         $this->config = $config;
         $this->objectManager = $em;
         $this->flashMessenger = new FlashMessenger();
@@ -74,7 +79,7 @@ class ImportManager
             return false;
         
         $Track = $this->objectManager->find('Application\Entity\Track', $id);
-        if($Track->getFileFormat() == 'mp3'){
+        if ($Track->getFileFormat() == 'mp3') {
             $Track->setFileDestinationMp3($Track->getFileDestination());
         }
         $data['fileDestination'] = $fileDestination;
@@ -88,7 +93,7 @@ class ImportManager
             $data['Album'] = $this->getAlbum($trackData['album'], $trackData['publishDate']);
         }
         
-        $data['sampleDestination'] = $this->createSample($trackData);
+        $data['sampleDestination'] = $this->createSample($trackData, $data['fileDestination']);
         $data['wave'] = $this->createWave($trackData, $data['sampleDestination']);
         $data['crc32'] = hash_file('crc32b', realpath($data['fileDestination']));
         
@@ -131,10 +136,10 @@ class ImportManager
         $artistsData = $this->getArtists($trackData['artists_string']);
         $data['Artists'] = $artistsData['Artists'];
         $data['artistsString'] = $artistsData['string'];
-        $data['sampleDestination'] = $this->createSample($trackData);
-       // $data['wave'] = $this->createWave($trackData, $data['sampleDestination']);
+        $data['sampleDestination'] = $this->createSample($trackData, $data['fileDestination'], true);
+        // $data['wave'] = $this->createWave($trackData, $data['sampleDestination']);
         $data['crc32'] = hash_file('crc32b', realpath($data['fileDestination']));
-        if($data['fileFormat'] == 'riff'){
+        if ($data['fileFormat'] == 'riff') {
             $data['fileDestinationMp3'] = self::convertMp3($data['fileDestination']);
         }
         
@@ -165,15 +170,14 @@ class ImportManager
             $name = trim($artEntry);
             $Artist = $this->objectManager->getRepository('Application\Entity\Artist')->findOneByName($name);
             if (! $Artist) {
-                $Artist = new Artist($name);                
+                $Artist = new Artist($name);
                 $this->objectManager->persist($Artist);
                 $this->objectManager->flush($Artist);
             }
-            if(!$Artists->contains($Artist)){
+            if (! $Artists->contains($Artist)) {
                 $Artists[] = $Artist;
                 $artistsString = str_replace($name, '{' . $Artist->getId() . '}', $artistsString);
-            }           
-           
+            }
         }
         
         return [
@@ -347,7 +351,7 @@ class ImportManager
         }
         if (! isset($track['title'])) {
             $errors['title'] = 'Title is empty!';
-        }else{            
+        } else {
             $titleSimple = str_ireplace('(Original Mix)', '', $track['title']);
             $titleSimple = str_ireplace('Original Mix', '', $titleSimple);
             $track['titleSimple'] = trim($titleSimple);
@@ -386,6 +390,15 @@ class ImportManager
                     break;
                 }
             }
+        }
+        
+        if (isset($track['album']) && $track['album'] != null && mb_strlen($track['album']) > 100) {
+            $errors['albumLength'] = 'Album name too long!';
+        }
+        
+        $size = filesize($track['filePath']);
+        if ($track['fileSize'] != $size) {
+            $errors['sizeMismatch'] = 'Track size in id3tag and fisical mismatch!';
         }
         
         return [
@@ -535,8 +548,8 @@ class ImportManager
         $ffmpeg = FFMpeg::create([
             'ffmpeg.binaries' => '/usr/bin/ffmpeg',
             'ffprobe.binaries' => '/usr/bin/ffprobe',
-            'timeout' => 3600, // The timeout for the underlying process
-           // 'ffmpeg.threads' => 1 // The number of threads that FFMpeg should use
+            'timeout' => 3600 // The timeout for the underlying process
+                                   // 'ffmpeg.threads' => 1 // The number of threads that FFMpeg should use
         ]);
         $audio = $ffmpeg->open($sample);
         // color #cbcbcb; 203,203,203 //transparent
@@ -557,7 +570,7 @@ class ImportManager
         }
     }
 
-    public function createSample($track)
+    public function createSample($track, $trackpath, $publish = false)
     {
         $filePath = $this->saveSample . '/' . $track['year'] . '/' . $track['month_number'] . '/' . $track['day'];
         if (! file_exists($filePath)) {
@@ -565,18 +578,29 @@ class ImportManager
         }
         $filePath = $filePath . '/sample_' . md5($track['title']) . '.mp3';
         
-        $ffmpeg = FFMpeg::create([
+        /* $ffmpeg = FFMpeg::create([
             'ffmpeg.binaries' => '/usr/bin/ffmpeg',
             'ffprobe.binaries' => '/usr/bin/ffprobe',
-            'timeout' => 3600, // The timeout for the underlying process
-            //'ffmpeg.threads' => 3 // The number of threads that FFMpeg should use
+            'timeout' => 0 // The timeout for the underlying process
+                                // 'ffmpeg.threads' => 3 // The number of threads that FFMpeg should use
         ]);
-        //$format = new \FFMpeg\Format\Audio\Mp3();
+        // $format = new \FFMpeg\Format\Audio\Mp3();
         $format = new Shine();
         $audio = $ffmpeg->open($track['filePath']);
+        
         $filter = new \FFMpeg\Filters\Audio\AudioClipFilter(\FFMpeg\Coordinate\TimeCode::fromSeconds(30), \FFMpeg\Coordinate\TimeCode::fromSeconds(120));
-        $audio->addFilter($filter);
-        $audio->save($format, $filePath);
+        $audio->addFilter($filter); 
+         //$audio->save($format, $filePath);
+        $command = $audio->getFinalCommand($format, $filePath);*/
+        
+        
+        if($publish){
+            $command = "(ffmpeg -y -i ".$trackpath." -ss 00:00:30.00 -t 00:02:00.00 -acodec copy -acodec libshine -b:a 128k $filePath && wget http://backend.djdownload.me/publish-track -q --post-data=\"sample=$filePath\") </dev/null >/dev/null 2>/var/www/html/wmp/logs/ffmpeg.log &";
+        }else{
+            $command = "ffmpeg -y -i ".$trackpath." -ss 00:00:30.00 -t 00:02:00.00 -acodec copy -acodec libshine -b:a 128k $filePath </dev/null >/dev/null 2>/var/www/html/wmp/logs/ffmpeg.log &";
+        }
+        
+        exec($command);
         
         return $filePath;
     }
@@ -585,17 +609,22 @@ class ImportManager
     {
         $convertedPath = str_replace('.wav', '.mp3', $filePath);
         
-        $ffmpeg = FFMpeg::create([
+        /* $ffmpeg = FFMpeg::create([
             'ffmpeg.binaries' => '/usr/bin/ffmpeg',
             'ffprobe.binaries' => '/usr/bin/ffprobe',
-            'timeout' => 3600, // The timeout for the underlying process
-            //'ffmpeg.threads' => 4 // The number of threads that FFMpeg should use
+            'timeout' => 3600 // The timeout for the underlying process
+                                   // 'ffmpeg.threads' => 4 // The number of threads that FFMpeg should use
         ]);
-        //$format = new \FFMpeg\Format\Audio\Mp3();
+        // $format = new \FFMpeg\Format\Audio\Mp3();
         $format = new Shine();
         $format->setAudioKiloBitrate(320)->setAudioChannels(2);
         $audio = $ffmpeg->open($filePath);
-        $audio->save($format, $convertedPath);
+        //$audio->save($format, $convertedPath);
+        $command = $audio->getFinalCommand($format, $convertedPath);
+        echo $command;die; */
+        
+        $command = "ffmpeg -y -i $filePath -acodec libshine -b:a 320k -ac 2 $convertedPath </dev/null >/dev/null 2>/var/www/html/wmp/logs/ffmpeg.log &";        
+        exec($command);
         
         return $convertedPath;
     }

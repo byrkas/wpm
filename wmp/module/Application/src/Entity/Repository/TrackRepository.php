@@ -109,6 +109,20 @@ class TrackRepository extends EntityRepository
         return $res;
     }
     
+    public function publishTrack($sampleDestination)
+    {
+        $query = $this->getEntityManager()->createQueryBuilder();
+        $res = $query->update('Application\Entity\Track', 't')
+        ->set('t.isPublished', 1)
+        ->where('t.isPublished != 1')
+        ->andWhere('t.sampleDestination = :sample')
+        ->setParameter('sample', $sampleDestination)
+        ->getQuery()
+        ->execute();
+        
+        return $res;
+    }
+    
     public function updateLabel($label, $labelOld)
     {
         $query = $this->getEntityManager()->createQueryBuilder();
@@ -931,7 +945,7 @@ class TrackRepository extends EntityRepository
     public function getDownloadedForArchive($user, $limit, $start, $filter = [], $sortBy = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('t.id', 't.fileDestination', 't.publishDate as release','t.title', 't.fileSize', 't.crc32', 'l.name as label', "GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') as artists")
+        $query->select('t.id', 't.fileDestination', 't.publishDate as release','t.title as title', 't.fileSize', 't.crc32', 'l.name as label', "GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') as artists")
             ->from('Application\Entity\Download', 'd')
             ->leftJoin('d.Track', 't')
             ->leftJoin('t.Artists', 'a')
@@ -1389,5 +1403,41 @@ class TrackRepository extends EntityRepository
             ->setMaxResults($limit);
         
         return $query->getQuery()->getArrayResult();
+    }
+    
+    public function getWithoutSamples()
+    {
+        $query = $this->getEntityManager()->createQueryBuilder();
+        $query->select('t')
+        ->from('Application\Entity\Track', 't')
+        ->where('t.sampleDestination IS NULL')
+        ->orderBy('t.updated','DESC');
+        
+        return $query->getQuery()->getResult();
+    }
+    
+    public function getFirstTracks($limit = 50)
+    {
+        $query = $this->getEntityManager()->createQueryBuilder();
+        $query->select('t.fileDestination as filePath','t.title','t.id')
+        ->from('Application\Entity\Track', 't')
+        ->where("t.created > '2018-03-03 21:00'")
+        //->where("t.fileFormat like 'riff'")
+        ->orderBy('t.created','DESC')
+        ->setMaxResults($limit);
+        
+        return $query->getQuery()->getArrayResult();
+    }
+    
+    public function getUpdated($limit = 50)
+    {
+        $query = $this->getEntityManager()->createQueryBuilder();
+        $query->select('t')
+        ->from('Application\Entity\Track', 't')
+        ->where('t.updated > t.created')
+        ->setMaxResults($limit)
+        ->orderBy('t.updated','DESC');
+        
+        return $query->getQuery()->getResult();
     }
 }

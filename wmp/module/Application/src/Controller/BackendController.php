@@ -22,7 +22,6 @@ use Application\Entity\User;
 use Application\Service\ImportManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use \Imagine\Image\ImageInterface;
-
 use FFMpeg\Format\Audio\Mp3;
 use FFMpeg\FFMpeg;
 use Application\Service\Shine;
@@ -80,50 +79,55 @@ class BackendController extends AbstractActionController
          * echo " exist!";
          * }
          */
-        /* $label = 'Dnc';
-        $labelExist = $this->importManager->getLabel($label);
-        if ($labelExist) {
-            echo "exist! " . $labelExist->getId();
-        } else {
-            echo "not exist!";
-            } */
-        
-       /*  $artists = $this->em->getRepository('Application\Entity\Artist')->findAll();
-        foreach ($artists as $artist){
-            if(!$artist->getNameTranslit())
-            {                
-                $name = $artist->getName();
-                $nameTranslit = iconv('UTF-8', 'ASCII//TRANSLIT', $name);
-                $artist->setNameTranslit($nameTranslit);
-            }
-        } 
-        $this->em->flush();
-        die; */
         /*
-        $string = 'Lvna Nøx'; // file must be UTF-8 encoded
-        echo $string.' '.iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+         * $label = 'Dnc';
+         * $labelExist = $this->importManager->getLabel($label);
+         * if ($labelExist) {
+         * echo "exist! " . $labelExist->getId();
+         * } else {
+         * echo "not exist!";
+         * }
+         */
         
-        die; */
-       
+        /*
+         * $artists = $this->em->getRepository('Application\Entity\Artist')->findAll();
+         * foreach ($artists as $artist){
+         * if(!$artist->getNameTranslit())
+         * {
+         * $name = $artist->getName();
+         * $nameTranslit = iconv('UTF-8', 'ASCII//TRANSLIT', $name);
+         * $artist->setNameTranslit($nameTranslit);
+         * }
+         * }
+         * $this->em->flush();
+         * die;
+         */
+        /*
+         * $string = 'Lvna Nøx'; // file must be UTF-8 encoded
+         * echo $string.' '.iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+         *
+         * die;
+         */
         
-        /* $artStr = 'Lvna Nox feat. tormo, Aasavz';
-        $artists = $this->importManager->getArtists($artStr);
-        
-        echo count($artists['Artists']).' '.$artists['string'];   */
-        
+        /*
+         * $artStr = 'Lvna Nox feat. tormo, Aasavz';
+         * $artists = $this->importManager->getArtists($artStr);
+         *
+         * echo count($artists['Artists']).' '.$artists['string'];
+         */
         $art = $this->em->getRepository('Application\Entity\Artist')->findStrange();
-        foreach ($art as $entry){
+        foreach ($art as $entry) {
             $artStr = $entry->getName();
             $artId = $entry->getId();
             $tracks = $entry->getTracks();
-            echo $artId.'# '.$artStr.'<br>';
+            echo $artId . '# ' . $artStr . '<br>';
             
             $artists = $this->importManager->getArtists($artStr);
-            echo count($artists['Artists']).' '.$artists['string'];
-            foreach ($artists['Artists'] as $artist){
+            echo count($artists['Artists']) . ' ' . $artists['string'];
+            foreach ($artists['Artists'] as $artist) {
                 $artist->addTracks($tracks);
             }
-            foreach ($tracks as $track){
+            foreach ($tracks as $track) {
                 $track->addArtists($artists['Artists']);
                 $track->setArtistsString($artists['string']);
             }
@@ -274,7 +278,6 @@ class BackendController extends AbstractActionController
          */
         exit();
     }
-    
 
     public function removeUnusedAction()
     {
@@ -392,7 +395,35 @@ class BackendController extends AbstractActionController
         $path = $this->importManager->getImportFolder() . '/2017/11-November/28-Exclusive/Trance/Stranded-(Infinity-State-Remix).mp3';
         $path = "data/import-music/2018/02-February/05-Promo/Minimal/Paul Cart - Where Is The Party (Manu-L Remix) [Shitfuck Records].wav";
         
-        $info = $this->importManager->getAudioInfo($path);
+        $path = "data/import-music/2018/02-February/05-Promo/Deep House/Spirit Catcher - Hold You Tight [90watts].wav";
+        $path = "data/import-music/2018/02-February/11-Exclusive/Classic House/Deep Brothers - Soul Talkin' (Original Mix) [Wave Music].mp3";
+        
+        $getId3 = new \GetId3\GetId3Core();
+        /*
+         * $getId3->option_md5_data = true;
+         * $getId3->option_md5_data_source = true;
+         * $getId3->encoding = 'UTF-8';
+         */
+        
+        try {
+            $audio = $getId3->setOptionMD5Data(true)
+                ->setOptionMD5DataSource(true)
+                ->
+            // ->setEncoding('UTF-8')
+            // ->setEncoding('ISO-8859-1')
+            analyze($path);
+        } catch (\Exception $e) {
+            echo 'asd';
+        }
+        
+        var_dump($audio);
+        die();
+        
+        try {
+            $info = $this->importManager->getAudioInfo($path);
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+        }
         
         var_dump($info);
         exit();
@@ -470,14 +501,13 @@ class BackendController extends AbstractActionController
         $request = $this->getRequest();
         $this->layout()->contentFluid = true;
         
-        $structure = [];//
+        $structure = []; //
         $structure = $this->importManager->scanDirectories($this->importManager->getImportFolder());
-        $structure = array_slice($structure, 0, 100);
+        $total = count($structure);
+        $structure = array_slice($structure, 0, 1000);
         
-        $structure = [];//
-         
         return new ViewModel([
-            'title' => 'Import In Maintaince',
+            'title' => sprintf('Import - show %s from %s', count($structure), $total),
             'structure' => json_encode($structure)
         ]);
     }
@@ -508,11 +538,68 @@ class BackendController extends AbstractActionController
             return FALSE;
     }
 
+    public function checkSizeAction()
+    {
+        $tracks = $this->em->getRepository('Application\Entity\Track')->getUpdated(5000);
+        
+        foreach ($tracks as $track) {
+            $size = $track->getFileSize();
+            $path = $track->getFileDestination();
+            $checkSize = filesize($path);
+            
+            if ($checkSize != $size) {
+                $track->setFileSize($checkSize);
+                echo $path . ' ' . $size . ' ' . $checkSize . '<br/>';
+            }
+        }
+        $this->em->flush();
+        exit();
+    }
+
+    public function sampleAction()
+    {                
+        //$tracks = $this->em->getRepository('Application\Entity\Track')->getWithoutSamples();
+        $tracks = $this->em->getRepository('Application\Entity\Track')->getFirstTracks(100);
+        
+        foreach ($tracks as $track) {
+            $data = $track;
+            $str = explode('/', $data['filePath']);
+            $data['year'] = $str[3];
+            $data['month_number'] = $str[4];
+            $data['day'] = $str[5];
+            echo $data['filePath'].'<br/>';
+            $sample = $this->importManager->createSample($data);
+           // $track->setSampleDestination($sample);
+        }
+        //$this->em->flush();
+        exit();
+    }
+    
+    public function ddAction()
+    {
+        $data = ['ip' => '127.0.0.1'];
+        $banIp = new BanIp();
+        $banIp->exchangeArray($data);
+        $this->em->persist($banIp);
+        $this->em->flush();
+        exit;
+    }
+    
+    public function execAction()
+    {
+        $trackpath = "data/music/test/jimmy.mp3";
+        $filePath = "data/music/test/sample.mp3";
+        $command = "(ffmpeg -y -i ".$trackpath." -ss 00:00:30.00 -t 00:02:00.00 -acodec copy -acodec libshine -b:a 128k $filePath && wget http://backend.djdownload.me/dd) </dev/null >/dev/null 2>/var/www/html/wmp/logs/ffmpeg.log &";
+        exec($command);
+        exit;
+    }
+
     public function deleteTestAction()
     {
         $path = "data/import-music/2018/01-January/04-Exclusive/House/Lvna Nox - Umbra (Original Mix) [Dnc Limited].mp3";
         $path = "data/music/Abrupt Gear - Koyrta (Original Mix) [Alter Ego Progressive].mp3";
         $path = "data/import-music/2017/12-December/27-Exclusive/Big Room/Arty, April Bender - Sunrise (Extended Mix) [Armada Music].mp3";
+        
         // var_dump(unlink($path));
         $user_name = "www-data";
         
@@ -525,17 +612,18 @@ class BackendController extends AbstractActionController
             echo " not exist!";
         } else {
             echo " exist!<br/><pre>";
-            //unlink($path);
-                        
+            // unlink($path);
+            
             // chown($path, $user_name);
             
-             var_dump(chmod($path, 0777));
-                         
-             echo substr(sprintf('%o', fileperms($path)), -4).'<br>';
+            var_dump(chmod($path, 0777));
             
-             /*$stat = stat($path);
-             print_r(posix_getpwuid($stat['uid']));*/
+            echo substr(sprintf('%o', fileperms($path)), - 4) . '<br>';
             
+            /*
+             * $stat = stat($path);
+             * print_r(posix_getpwuid($stat['uid']));
+             */
         }
         
         exit();
@@ -588,7 +676,7 @@ class BackendController extends AbstractActionController
                     $this->importManager->createTrack($track);
                     $result['success'] = true;
                     $result['result'] = 'created';
-                } elseif (! empty($entry['errors'])) {
+                } elseif (! empty($entry['errors']) && isset($entry['errors']['trackExist'])) {
                     unlink($track['filePath']);
                     $result['path'] = $track['filePath'];
                     $result['success'] = true;
@@ -766,23 +854,23 @@ class BackendController extends AbstractActionController
         
         exit();
     }
-    
+
     public function infoAction()
-    {        
+    {
         $path = 'data/import-music/2018/01-January/27-Exclusive/Deep House/Hyenah feat. B’utiza, Hyenah - Usutu (Mr Raoul K Remix) [Freerange].wav';
         
         $trackEntry = $this->importManager->trackFromStructure($path);
         $track = $this->importManager->formatTrackFromInfo($trackEntry);
-        $validatedTrack = $this->importManager->validateTrack($track, []);               
+        $validatedTrack = $this->importManager->validateTrack($track, []);
         
         echo "<pre>";
-       // var_dump($validatedTrack);
-        //echo count($validatedTrack['track']['Artists']);
+        // var_dump($validatedTrack);
+        // echo count($validatedTrack['track']['Artists']);
         
         $Artists = $this->importManager->getArtists($validatedTrack['track']['artists_string']);
         echo count($Artists['Artists']);
         
-        exit;
+        exit();
     }
 
     public function downloadsAction()
@@ -934,6 +1022,17 @@ class BackendController extends AbstractActionController
         return new JsonModel([
             'success' => true
         ]);
+    }
+    
+    public function publishTrackAction()
+    {
+        $request = $this->getRequest();        
+        if($request->isPost()){
+            $data = $request->getPost();
+            if(isset($data['sample']))
+                $this->em->getRepository('Application\Entity\Track')->publishTrack($data['sample']);
+        }
+        exit;
     }
 
     public function banAction()
@@ -1157,24 +1256,25 @@ class BackendController extends AbstractActionController
             'effect' => $effect
         ]);
     }
-        
+
     public function tttAction()
     {
-     
         $path = "data/music/test/ttt.wav";
-        /* $mp3 = $this->importManager->convertMp3($path);
-        echo $mp3; */
+        /*
+         * $mp3 = $this->importManager->convertMp3($path);
+         * echo $mp3;
+         */
         
         $filePath = 'data/music/test/sample.mp3';
         
-        //$format = new \FFMpeg\Format\Audio\Mp3();
-        //$format->setAudioKiloBitrate(320)->setAudioChannels(2);
+        // $format = new \FFMpeg\Format\Audio\Mp3();
+        // $format->setAudioKiloBitrate(320)->setAudioChannels(2);
         
-        $ffmpeg = FFMpeg::create([ 
+        $ffmpeg = FFMpeg::create([
             'ffmpeg.binaries' => '/usr/bin/ffmpeg',
             'ffprobe.binaries' => '/usr/bin/ffprobe',
-            'timeout' => 3600, // The timeout for the underlying process
-            //'ffmpeg.threads' => 5 // The number of threads that FFMpeg should use
+            'timeout' => 3600 // The timeout for the underlying process
+                                   // 'ffmpeg.threads' => 5 // The number of threads that FFMpeg should use
         ]);
         $format = new Shine();
         $audio = $ffmpeg->open($path);
@@ -1182,9 +1282,9 @@ class BackendController extends AbstractActionController
         $audio->addFilter($filter);
         $audio->save($format, $filePath);
         
-        exit;
+        exit();
     }
-    
+
     public function settingAction()
     {
         $code = $this->params()->fromRoute('code');
@@ -1298,15 +1398,15 @@ class BackendController extends AbstractActionController
         $this->authManager->logout();
         return $this->redirect()->toRoute('backend/login');
     }
-    
+
     public function coverAction()
     {
         $filePath = 'media/img/2018/01/31/cover_4fc38e6feedc1aff8d8f8f9a40ddf183.png';
         $imagine = new \Imagine\Gd\Imagine();
-        $image   = $imagine->open($filePath);
+        $image = $imagine->open($filePath);
         $options = array(
             'jpeg_quality' => 70,
-            'png_compression_level' => 9,
+            'png_compression_level' => 9
         );
     }
 }
