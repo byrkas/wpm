@@ -38,14 +38,15 @@ angular.module('WhoPlayMusic').controller('SearchResultsController', function($s
 	  var search = $location.search();
 	 if(page===undefined){
 		 page = $scope.currentPage;
-		 if(page > 0){
+		 if (page != 1 || $routeParams.page !== undefined){
 			 search.page = page;
-		 }
+		 }	
      }
 	 if(limit===undefined){
 		 limit = $scope.itemsPerPage;
-		 if(limit != 50)
+		 if (limit != 50 || $routeParams.limit !== undefined){
 			 search.limit = limit;
+		 }
 	 }
 	 if($scope.sortBy != 'release-desc'){
 		 search.sort = $scope.sortBy;

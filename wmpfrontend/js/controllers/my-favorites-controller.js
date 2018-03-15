@@ -75,14 +75,16 @@ angular.module('WhoPlayMusic').controller('MyFavoritesController', function($sco
   $scope.query = function(page, limit){	  
 	  var search = $location.search();
 	  if(page===undefined){
-			 page = $scope.currentPage;
-			 if(page > 0){
+		  	page = $scope.currentPage;
+			 if (page != 1 || $routeParams.page !== undefined){
 				 search.page = page;
-			 }
+			 }	
 	     }
 		 if(limit===undefined){
 			 limit = $scope.itemsPerPage;
-			 search.limit = limit;
+			 if (limit != 50 || $routeParams.limit !== undefined){
+				 search.limit = limit;
+			 }
 		 }
 		 if($scope.sortBy != 'created-desc'){
 			 search.sort = $scope.sortBy;

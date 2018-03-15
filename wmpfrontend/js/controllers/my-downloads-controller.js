@@ -72,13 +72,15 @@ angular.module('WhoPlayMusic').controller('MyDownloadsController', function($sco
 	  var search = $location.search();
 		 if(page===undefined){
 			 page = $scope.currentPage;
-			 if(page > 0){
+			 if (page != 1 || $routeParams.page !== undefined){
 				 search.page = page;
 			 }
 	     }
 		 if(limit===undefined){
 			 limit = $scope.itemsPerPage;
-			 search.limit = limit;
+			 if (limit != 50 || $routeParams.limit !== undefined){
+				 search.limit = limit;
+			 }
 		 }
 		 if($scope.sortBy != 'created-desc'){
 			 search.sort = $scope.sortBy;

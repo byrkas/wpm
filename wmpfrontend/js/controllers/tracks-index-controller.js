@@ -75,7 +75,9 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 
 		 if(page===undefined){
 			 page = $scope.currentPage;
-			 search.page = page;
+			 if (page != 1 || $routeParams.page !== undefined){
+				 search.page = page;
+			 }			 
 			 /*if(page >= 1){
 			 }else if(page == 1 && $routeParams.page !== undefined && $routeParams.page != 1){
 				 search.page = page;
@@ -83,7 +85,10 @@ angular.module('WhoPlayMusic').controller('TracksIndexController', function($sco
 	     }
 		 if(limit===undefined){
 			 limit = $scope.itemsPerPage;
-			 search.limit = limit;
+			 if (limit != 50 || $routeParams.limit !== undefined){
+				 search.limit = limit;
+			 }
+			 
 			 /*if(limit != 50){
 				 search.limit = limit;
 			 }else if(limit == 50 && $routeParams.limit !== undefined && $routeParams.limit != 50){
