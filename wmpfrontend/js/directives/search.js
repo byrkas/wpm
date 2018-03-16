@@ -24,6 +24,8 @@ angular.module('WhoPlayMusic')
         			})
     	    	 }
 	    		 $scope.toggleAutoSearch = 'block';
+    		 }else if($scope.search.length < 3) {
+    			 $scope.toggleAutoSearch = 'none';
     		 }
     	 }
 
@@ -62,7 +64,13 @@ angular.module('WhoPlayMusic')
     	element.on("keydown keypress", function (event) {
     		scope.clicked = false;
             if(event.which === 13) {
-            	if(liSelected !== undefined && liSelected.hasClass('tt-link')){
+            	if (scope.toggleAutoSearch == "none") {
+            		scope.$apply(function(){
+            			scope.toggleAutoSearch = 'none';
+                    	scope.startSearch();
+                    });
+            	}
+            	else if(liSelected !== undefined && liSelected.hasClass('tt-link')){
             		location.url(liSelected.attr('ng-href'));
             		scope.$apply(function(){
                     	scope.toggleAutoSearch = 'none';

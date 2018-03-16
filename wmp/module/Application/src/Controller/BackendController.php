@@ -504,7 +504,7 @@ class BackendController extends AbstractActionController
         $structure = []; //
         $structure = $this->importManager->scanDirectories($this->importManager->getImportFolder());
         $total = count($structure);
-        $structure = array_slice($structure, 0, 1000);
+        $structure = array_slice($structure, 0, 100);
         
         return new ViewModel([
             'title' => sprintf('Import - show %s from %s', count($structure), $total),
