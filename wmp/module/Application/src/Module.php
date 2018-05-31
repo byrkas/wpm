@@ -27,11 +27,51 @@ class Module
         $eventManager        = $event->getApplication()->getEventManager();    
         $sharedEventManager = $eventManager->getSharedManager();
         $sharedEventManager->attach(AbstractActionController::class, MvcEvent::EVENT_DISPATCH, [$this, 'onDispatch'], 100); 
+        
+        $eventManager->attach('dispatch.error', function($event){
+            $logger = new \Zend\Log\Logger;
+            $writer = new \Zend\Log\Writer\Stream('data/exception.log');
+            $logger->addWriter($writer);
+            
+            // Log PHP errors
+            \Zend\Log\Logger::registerErrorHandler($logger);
+            // Log exceptions
+            \Zend\Log\Logger::registerExceptionHandler($logger);
+            
+            $exception = $event->getResult()->exception;
+            if ($exception) {
+                $request = $event->getApplication()->getRequest();
+                $response = $event->getApplication()->getResponse();
+                
+                $logger->info([
+                    'status' => $response->getStatusCode(),
+                    'method' => $request->getMethod(),
+                    'uri'    => (string) $request->getUri(),
+                    'exception'  => $exception->getMessage(),
+                ]);
+            }
+        });
+        
         $moduleRouteListener = new ModuleRouteListener();
         $moduleRouteListener->attach($eventManager);
 
         $sessionManager = $serviceManager->get(SessionManager::class);
+        $this->forgetInvalidSession($sessionManager);
     }    
+    
+    protected function forgetInvalidSession($sessionManager) {
+        try {
+            $sessionManager->start();
+            return;
+        } catch (\Exception $e) {
+        }
+        /**
+         * Session validation failed: toast it and carry on.
+         */
+        // @codeCoverageIgnoreStart
+        session_unset();
+        // @codeCoverageIgnoreEnd
+    }
     
     public function onDispatch(MvcEvent $event)
     {

@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityRepository;
 class TrackRepository extends EntityRepository
 {
 
-    public function getTotal($search = '')
+    public function getTotal($search = '', $filter = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
         $query->select('COUNT(t.id) as cnt')
@@ -19,14 +19,19 @@ class TrackRepository extends EntityRepository
         if (! empty($search)) {
             $query->andWhere('t.title like :search OR l.name like :search OR r.name like :search OR g.title like :search OR a.name like :search')->setParameter('search', '%' . $search . '%');
         }
+        if(!empty($filter)){
+            foreach ($filter as $key => $val){
+                $query->andWhere('t.'.$key.'= :'.$key)->setParameter($key, $val);
+            }            
+        }
 
         return $query->getQuery()->getSingleScalarResult();
     }
 
-    public function getList($start, $limit, $orderBy, $order, $search = '')
+    public function getList($start, $limit, $orderBy, $order, $search = '', $filter = [])
     {
         $query = $this->getEntityManager()->createQueryBuilder();
-        $query->select('t.id as id', 't.title as title', 't.publishDate as publishDate','t.created as created', "GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') as artists", 't.fileType as fileType', "REPLACE(t.fileDestination, 'public/','/') as track", "REPLACE(t.wave, 'public/','/') as wave", "REPLACE(t.sampleDestination, 'public/','/') as sample", "REPLACE(t.cover, 'public/','/') as cover", 'l.name as label', 'r.name as album', 'g.title as genre', 'tt.name as type', 't.playtimeString', 't.isPublished as isPublished', 'COUNT(DISTINCT d.id) as downloaded')
+        $query->select('t.id as id', 't.title as title', 't.publishDate as publishDate','t.created as created', "GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') as artists", 't.fileType as fileType', "REPLACE(t.fileDestination, 'public/','/') as track", "REPLACE(t.wave, 'public/','/') as wave", "REPLACE(t.sampleDestination, 'public/','/') as sample", "REPLACE(t.cover, 'public/','/') as cover", 'l.name as label', 'r.name as album', 'g.title as genre', 'tt.name as type', 't.playtimeString', 't.isPublished as isPublished', 'COUNT(DISTINCT d.id) as downloaded','t.isCorrupted')
             ->from('Application\Entity\Track', 't')
             ->leftJoin('t.Artists', 'a')
             ->leftJoin('t.Label', 'l')
@@ -43,6 +48,11 @@ class TrackRepository extends EntityRepository
         }
         if (! empty($search)) {
             $query->andWhere('t.title like :search OR l.name like :search OR r.name like :search OR g.title like :search OR a.name like :search')->setParameter('search', '%' . $search . '%');
+        }
+        if(!empty($filter)){
+            foreach ($filter as $key => $val){
+                $query->andWhere('t.'.$key.'= :'.$key)->setParameter($key, $val);
+            }
         }
 
         return $query->getQuery()->getArrayResult();

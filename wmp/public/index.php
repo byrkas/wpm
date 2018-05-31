@@ -1,5 +1,5 @@
 <?php
-if( $_SERVER['REMOTE_ADDR'] == '178.18.45.25' ||  $_SERVER['REMOTE_ADDR'] == '188.237.151.222'){
+/* if( $_SERVER['REMOTE_ADDR'] == '178.18.45.25' ||  $_SERVER['REMOTE_ADDR'] == '188.237.151.222'){
     //error_reporting(E_ALL &~E_DEPRECATED &~E_USER_DEPRECATED &~E_WARNING );
     error_reporting(E_ALL &~E_WARNING);
     ini_set("display_errors", 1);
@@ -7,7 +7,8 @@ if( $_SERVER['REMOTE_ADDR'] == '178.18.45.25' ||  $_SERVER['REMOTE_ADDR'] == '18
 }else{
     error_reporting(0);
     ini_set("display_errors", 0);
-}
+} */
+
 
 use Zend\Mvc\Application;
 use Zend\Stdlib\ArrayUtils;

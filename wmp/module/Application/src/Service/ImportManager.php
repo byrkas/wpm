@@ -385,7 +385,7 @@ class ImportManager
         if (! empty($otherTracks)) {
             foreach ($otherTracks as $key => $oTEntry) {
                 $otherTrack = $oTEntry['track'];
-                if ($track['titleSimple'] == $otherTrack['titleSimple'] && $track['labelId'] == $otherTrack['labelId'] && $track['artists_string'] == $otherTrack['artists_string']) {
+                if (isset($track['titleSimple']) && isset($otherTrack['titleSimple']) && $track['titleSimple'] == $otherTrack['titleSimple'] && $track['labelId'] == $otherTrack['labelId'] && $track['artists_string'] == $otherTrack['artists_string']) {
                     $errors['trackExist'] = 'Track is the same as track #' . ($key + 1) . ' !';
                     break;
                 }

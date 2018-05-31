@@ -38,6 +38,24 @@ angular.module('WhoPlayMusic').controller('PageController', function($scope, $ht
 	 })	
 });
 
+angular.module('WhoPlayMusic').controller('PageForgotController', function($scope, $http, $routeParams,Page, ngMeta, $sce) {
+	$scope.page = {};	
+	Page.get({slug: "forgot-password"}, function(response){
+		 $scope.page = response.page;
+		 ngMeta.setTitle($scope.page.title);
+		 $scope.page.content = $sce.trustAsHtml($scope.page.content);
+	 })	
+});
+
+angular.module('WhoPlayMusic').controller('PageSignupController', function($scope, $http, $routeParams,Page, ngMeta, $sce) {
+	$scope.page = {};	
+	Page.get({slug: "signup"}, function(response){
+		 $scope.page = response.page;
+		 ngMeta.setTitle($scope.page.title);
+		 $scope.page.content = $sce.trustAsHtml($scope.page.content);
+	 })	
+});
+
 angular.module('WhoPlayMusic').controller('ErrorPageController', function($scope, $http, $routeParams,Page, ngMeta, $sce) {
 	ngMeta.setTitle('Oh No! 404 — Not Found');
 });

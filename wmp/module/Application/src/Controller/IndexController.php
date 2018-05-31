@@ -1012,6 +1012,13 @@ class IndexController extends AbstractActionController
 
                 foreach ($tracks as $track) {
                     $size = filesize($track['fileDestination']);
+                    if($size === false){
+                        $trackEntry = $this->em->find('Application\Entity\Track',$track['id']);
+                        $trackEntry->setIsPublished(false);
+                        $trackEntry->setIsCorrupted(true);
+                        $this->em->flush($trackEntry);
+                        continue;
+                    }
                     $bytes += $size;
                     if ($this->formatSizeGb($bytes) > $maxSize) {
                         $maxSizeLimited = true;
@@ -1261,6 +1268,14 @@ class IndexController extends AbstractActionController
 
                 foreach ($tracks as $track) {
                     $size = filesize($track['fileDestination']);
+                    if($size === false){
+                        $trackEntry = $this->em->find('Application\Entity\Track',$track['id']);
+                        $trackEntry->setIsPublished(false);
+                        $trackEntry->setIsCorrupted(true);
+                        $this->em->flush($trackEntry);
+                        continue;
+                    }
+                        
                     $bytes += $size;
                     if ($this->formatSizeGb($bytes) > $maxSize) {
                         $maxSizeLimited = true;
@@ -1521,6 +1536,13 @@ class IndexController extends AbstractActionController
 
                 foreach ($tracks as $track) {
                     $size = filesize($track['fileDestination']);
+                    if($size === false){
+                        $trackEntry = $this->em->find('Application\Entity\Track',$track['id']);
+                        $trackEntry->setIsPublished(false);
+                        $trackEntry->setIsCorrupted(true);
+                        $this->em->flush($trackEntry);
+                        continue;
+                    }
                     $bytes += $size;
                     if ($this->formatSizeGb($bytes) > $maxSize) {
                         $maxSizeLimited = true;
@@ -1646,6 +1668,13 @@ class IndexController extends AbstractActionController
                 if ($track && $user) {
                     $filePath = $track->getFileDestination();
                     $fileContent = file_get_contents($filePath);
+                    if($fileContent === false)
+                    {
+                        $track->setIsPublished(false);
+                        $track->setIsCorrupted(true);
+                        $this->em->flush($track);
+                    }
+                        
                     $fileFormat = $track->getFileFormat();
                     $contentType = $track->getFileType();
                     $contentLength = $track->getFileSize();
@@ -1830,6 +1859,13 @@ class IndexController extends AbstractActionController
 
                 foreach ($tracks as $track) {
                     $size = filesize($track['fileDestination']);//$track['fileSize'];
+                    if($size === false){
+                        $trackEntry = $this->em->find('Application\Entity\Track',$track['id']);
+                        $trackEntry->setIsPublished(false);
+                        $trackEntry->setIsCorrupted(true);
+                        $this->em->flush($trackEntry);
+                        continue;
+                    }
                     $bytes += $size;
                     if ($this->formatSizeGb($bytes) > $maxSize) {
                         $maxSizeLimited = true;
@@ -1905,6 +1941,13 @@ class IndexController extends AbstractActionController
 
                 foreach ($tracks as $track) {
                     $size = filesize($track['fileDestination']);
+                    if($size === false){
+                        $trackEntry = $this->em->find('Application\Entity\Track',$track['id']);
+                        $trackEntry->setIsPublished(false);
+                        $trackEntry->setIsCorrupted(true);
+                        $this->em->flush($trackEntry);
+                        continue;
+                    }
                     $bytes += $size;
                     if ($this->formatSizeGb($bytes) > $maxSize) {
                         $maxSizeLimited = true;
@@ -2012,6 +2055,13 @@ class IndexController extends AbstractActionController
 
             foreach ($tracks as $track) {
                 $size = filesize($track['fileDestination']);
+                if($size === false){
+                    $trackEntry = $this->em->find('Application\Entity\Track',$track['id']);
+                    $trackEntry->setIsPublished(false);
+                    $trackEntry->setIsCorrupted(true);
+                    $this->em->flush($trackEntry);
+                    continue;
+                }
                 $bytes += $size;
                 if ($this->formatSizeGb($bytes) > $maxSize) {
                     $maxSizeLimited = true;

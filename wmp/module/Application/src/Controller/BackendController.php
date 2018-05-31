@@ -384,6 +384,9 @@ class BackendController extends AbstractActionController
 
     public function testAction()
     {
+        throw new \Exception('My exception error message.');
+        die;
+        
         echo "<pre>";
         $path = $this->importManager->getImportFolder() . '/2017/11-November/28-Exclusive/House/Dj Pierre - Love And Happiness 2017 (Original Mix) [Get Physical Music].wav';
         $path = $this->importManager->getImportFolder() . '/2017/11-November/28-Exclusive/Techno/Gianni Ruocco, Le Roi Carmoña - Esgarrifança (Original Mix) [Vamos Music].mp3';
@@ -812,6 +815,7 @@ class BackendController extends AbstractActionController
     {
         $effect = $this->params()->fromRoute('effect', 'list');
         $id = (int) $this->params()->fromRoute('id', 0);
+        $showCorrupted = $this->params()->fromQuery('corrupted', false);
         
         $request = $this->getRequest();
         if ($request->isPost()) {
@@ -836,7 +840,8 @@ class BackendController extends AbstractActionController
         $tracks = [];
         
         return new ViewModel([
-            'title' => 'Tracks'
+            'title' => 'Tracks',
+            'showCorrupted' => $showCorrupted,
         ]);
     }
 
@@ -929,6 +934,7 @@ class BackendController extends AbstractActionController
 
     public function getTracksAction()
     {
+        $showCorrupted = $this->params()->fromQuery('corrupted', false);
         $columns = [
             'id',
             'title',
@@ -956,7 +962,11 @@ class BackendController extends AbstractActionController
             $sortOrder = (isset($data['order'])) ? $data['order'][0]['dir'] : 'asc';
             $sortBy = (isset($data['order'])) ? $columns[$data['order'][0]['column']] : '';
             $search = (isset($data['search'])) ? $data['search']['value'] : '';
-            $total = $this->em->getRepository('Application\Entity\Track')->getTotal($search);
+            $filter = [];
+            if($showCorrupted){
+                $filter['isCorrupted'] = true;
+            }
+            $total = $this->em->getRepository('Application\Entity\Track')->getTotal($search, $filter);
             
             $start = $data['start'];
             $limit = $data['length'];
@@ -966,7 +976,7 @@ class BackendController extends AbstractActionController
                 'recordsFiltered' => $total,
                 'recordsTotal' => $total
             ];
-            $tracks = $this->em->getRepository('Application\Entity\Track')->getList($start, $limit, $sortBy, $sortOrder, $search);
+            $tracks = $this->em->getRepository('Application\Entity\Track')->getList($start, $limit, $sortBy, $sortOrder, $search, $filter);
             foreach ($tracks as $key => $track) {
                 $tracks[$key]['publishDate'] = $track['publishDate']->format('Y-m-d');
                 $tracks[$key]['created'] = $track['created']->format('Y-m-d H:i:s');
@@ -980,6 +990,24 @@ class BackendController extends AbstractActionController
         return new JsonModel($result);
     }
 
+    public function checkTracksAction()
+    {
+        //139 011
+        $tracks = $this->em->getRepository('Application\Entity\Track')->findBy(['isCorrupted' => 0],['id' => 'DESC'],10000, 140000);
+        foreach ($tracks as $track){
+            $destination = $track->getFileDestination();
+            $size = filesize($destination);
+            
+            if($size === false){
+                echo $destination.'<br/>';
+                $track->setIsCorrupted(true);
+            }
+        }
+        $this->em->flush();
+        
+        exit;
+    }
+    
     public function start($page, $limit)
     {
         return ($page - 1) * $limit;

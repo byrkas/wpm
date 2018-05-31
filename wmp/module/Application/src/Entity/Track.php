@@ -137,6 +137,11 @@ class Track
      */
     private $isPublished = false;
 
+    /**
+     * @ORM\Column(name="is_corrupted",type="boolean", nullable=false)
+     */
+    private $isCorrupted = false;
+
     public function __construct()
     {
         $this->Artists = new ArrayCollection();
@@ -578,6 +583,24 @@ class Track
             $name .= ' [' . $label->getName() . ']';
         }
         return $name;
+    }
+
+    /**
+     *
+     * @return the $isCorrupted
+     */
+    public function getIsCorrupted()
+    {
+        return $this->isCorrupted;
+    }
+
+    /**
+     *
+     * @param boolean $isCorrupted            
+     */
+    public function setIsCorrupted($isCorrupted)
+    {
+        $this->isCorrupted = $isCorrupted;
     }
 
     public function __toString()

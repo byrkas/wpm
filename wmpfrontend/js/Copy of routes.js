@@ -50,20 +50,20 @@ angular.module('WhoPlayMusic').config(
 					        }
 					      }
 					}).when('/account/signup', {
-						templateUrl : 'templates/pages/page.html',
-						controller : 'PageSignupController as US',
+						templateUrl : 'templates/pages/user-signup.html',
+						controller : 'UserSignupController as US',
 					    data: {
 					        meta: {
 					          'title': 'Sign up'
 					        }
 					      }
 					}).when('/account/forgot-password', {
-						templateUrl : 'templates/pages/page.html',
-						controller : 'PageForgotController as PF',
+						templateUrl : 'templates/pages/user-forgot-password.html',
+						controller : 'UserForgotController as UF',
 					    data: {
 					        meta: {
 					          'title': 'Forgot password'
-					        },
+					        }
 					      }
 					}).when('/account/profile', {
 						templateUrl : 'templates/pages/user-profile.html',
